@@ -1,0 +1,25 @@
+apiVersion: meta.pkg.crossplane.io/v1alpha1
+kind: Provider
+metadata:
+  name: provider-cloudflare
+  annotations:
+    meta.crossplane.io/maintainer: Ross Golder <ross@golder.tech>
+    meta.crossplane.io/source: github.com/rossigee/provider-cloudflare
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/description: |
+      A Crossplane provider for managing Cloudflare resources.
+    meta.crossplane.io/readme: |
+      `provider-cloudflare` is the Crossplane infrastructure provider for
+      [Cloudflare](https://cloudflare.com/).
+
+      Available resources include:
+      * Zones
+      * DNS Records
+      * Firewall Rules and Filters
+      * Spectrum Applications
+      * SSL for SaaS (Custom Hostnames and Fallback Origins)
+      * Worker Routes
+
+spec:
+  crossplane:
+    version: ">=v1.14.0"

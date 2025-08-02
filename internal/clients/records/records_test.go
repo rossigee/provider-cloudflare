@@ -23,7 +23,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/benagricola/provider-cloudflare/apis/dns/v1alpha1"
+	"github.com/rossigee/provider-cloudflare/apis/dns/v1alpha1"
 
 	ptr "k8s.io/utils/pointer"
 )

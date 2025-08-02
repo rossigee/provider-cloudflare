@@ -18,79 +18,207 @@ package route
 
 import (
 	"context"
-	"net/http"
-	"strings"
+	"time"
 
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	"github.com/benagricola/provider-cloudflare/apis/workers/v1alpha1"
-	clients "github.com/benagricola/provider-cloudflare/internal/clients"
+	rtv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1alpha1"
+	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
 )
 
 const (
-	// Cloudflare returns this code when a route isnt found.
-	errRouteNotFound = "10007"
+	errNotRoute = "managed resource is not a Route custom resource"
+
+	errClientConfig = "error getting client config"
+
+	errRouteLookup   = "cannot lookup Route"
+	errRouteCreation = "cannot create Route"
+	errRouteUpdate   = "cannot update Route"
+	errRouteDeletion = "cannot delete Route"
+	errRouteNoZone   = "no zone found"
+
+	maxConcurrency = 5
 )
 
-// Client is a Cloudflare API client that implements methods for working
-// with Worker Routes.
-type Client interface {
-	CreateWorkerRoute(ctx context.Context, zoneID string, route cloudflare.WorkerRoute) (cloudflare.WorkerRouteResponse, error)
-	UpdateWorkerRoute(ctx context.Context, zoneID string, routeID string, route cloudflare.WorkerRoute) (cloudflare.WorkerRouteResponse, error)
-	GetWorkerRoute(ctx context.Context, zoneID string, routeID string) (cloudflare.WorkerRouteResponse, error)
-	DeleteWorkerRoute(ctx context.Context, zoneID string, routeID string) (cloudflare.WorkerRouteResponse, error)
-}
+// Setup adds a controller that reconciles Route managed resources.
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+	name := managed.ControllerName(v1alpha1.RouteGroupKind)
 
-// NewClient returns a new Cloudflare API client for working with Worker Routes.
-func NewClient(cfg clients.Config, hc *http.Client) (Client, error) {
-	return clients.NewClient(cfg, hc)
-}
-
-// IsRouteNotFound returns true if the passed error indicates
-// a Worker Route was not found.
-func IsRouteNotFound(err error) bool {
-	return strings.Contains(err.Error(), errRouteNotFound)
-}
-
-// UpToDate checks if the remote Route is up to date with the
-// requested resource parameters.
-func UpToDate(spec *v1alpha1.RouteParameters, o cloudflare.WorkerRoute) bool { //nolint:gocyclo
-	// NOTE(bagricola): The complexity here is simply repeated
-	// if statements checking for updated fields. You should think
-	// before adding further complexity to this method, but adding
-	// more field checks should not be an issue.
-	if spec == nil {
-		return true
+	o := controller.Options{
+		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		MaxConcurrentReconciles: maxConcurrency,
 	}
 
-	// Check if mutable fields are up to date with resource
-	if spec.Pattern != o.Pattern {
-		return false
-	}
+	hc := metrics.NewInstrumentedHTTPClient(name)
+	r := managed.NewReconciler(mgr,
+		resource.ManagedKind(v1alpha1.RouteGroupVersionKind),
+		managed.WithExternalConnecter(&connector{
+			kube: mgr.GetClient(),
+			newCloudflareClientFn: func(cfg clients.Config) (route.Client, error) {
+				return route.NewClient(cfg, hc)
+			},
+		}),
+		managed.WithLogger(l.WithValues("controller", name)),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithPollInterval(5*time.Minute),
+		// Do not initialize external-name field.
+		managed.WithInitializers(),
+	)
 
-	if spec.Script == nil && o.Script != "" {
-		return false
-	}
-
-	if spec.Script != nil && *spec.Script != o.Script {
-		return false
-	}
-
-	return true
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		WithOptions(o).
+		For(&v1alpha1.Route{}).
+		Complete(r)
 }
 
-// UpdateRoute updates mutable values on a Worker Route.
-func UpdateRoute(ctx context.Context, client Client, routeID string, spec *v1alpha1.RouteParameters) error {
+// A connector is expected to produce an ExternalClient when its Connect method
+// is called.
+type connector struct {
+	kube                  client.Client
+	newCloudflareClientFn func(cfg clients.Config) (route.Client, error)
+}
+
+// Connect produces a valid configuration for a Cloudflare API
+// instance, and returns it as an external client.
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	_, ok := mg.(*v1alpha1.Route)
+	if !ok {
+		return nil, errors.New(errNotRoute)
+	}
+
+	// Get client configuration
+	config, err := clients.GetConfig(ctx, c.kube, mg)
+	if err != nil {
+		return nil, errors.Wrap(err, errClientConfig)
+	}
+
+	client, err := c.newCloudflareClientFn(*config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &external{client: client}, nil
+}
+
+// An ExternalClient observes, then either creates, updates, or deletes an
+// external resource to ensure it reflects the managed resource's desired state.
+type external struct {
+	client route.Client
+}
+
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mg.(*v1alpha1.Route)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errNotRoute)
+	}
+
+	// Route does not exist if we dont have an ID stored in external-name
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalObservation{}, errors.New(errRouteNoZone)
+	}
+
+	r, err := e.client.GetWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, rid)
+
+	if err != nil {
+		return managed.ExternalObservation{},
+			errors.Wrap(resource.Ignore(route.IsRouteNotFound, err), errRouteLookup)
+	}
+
+	cr.Status.SetConditions(rtv1.Available())
+
+	return managed.ExternalObservation{
+		ResourceExists:   true,
+		ResourceUpToDate: route.UpToDate(&cr.Spec.ForProvider, r.WorkerRoute),
+	}, nil
+}
+
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mg.(*v1alpha1.Route)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errNotRoute)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalCreation{}, errors.Wrap(errors.New(errRouteNoZone), errRouteCreation)
+	}
+
 	r := cloudflare.WorkerRoute{
-		Pattern: spec.Pattern,
+		Pattern: cr.Spec.ForProvider.Pattern,
+	}
+	if cr.Spec.ForProvider.Script != nil {
+		r.Script = *cr.Spec.ForProvider.Script
 	}
 
-	if spec.Script != nil {
-		r.Script = *spec.Script
+	nr, err := e.client.CreateWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, r)
+
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errRouteCreation)
 	}
 
-	_, err := client.UpdateWorkerRoute(ctx, *spec.Zone, routeID, r)
+	// Update the external name with the ID of the new Route
+	meta.SetExternalName(cr, nr.WorkerRoute.ID)
 
-	return err
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+}
 
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*v1alpha1.Route)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errNotRoute)
+	}
+
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return managed.ExternalUpdate{}, errors.New(errRouteUpdate)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalUpdate{}, errors.Wrap(errors.New(errRouteNoZone), errRouteUpdate)
+	}
+
+	return managed.ExternalUpdate{},
+		errors.Wrap(
+			route.UpdateRoute(ctx, e.client, meta.GetExternalName(cr), &cr.Spec.ForProvider),
+			errRouteUpdate,
+		)
+}
+
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*v1alpha1.Route)
+	if !ok {
+		return errors.New(errNotRoute)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return errors.Wrap(errors.New(errRouteNoZone), errRouteDeletion)
+	}
+
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return errors.New(errRouteDeletion)
+	}
+
+	_, err := e.client.DeleteWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
+
+	return errors.Wrap(err, errRouteDeletion)
 }

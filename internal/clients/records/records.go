@@ -24,8 +24,8 @@ import (
 	"github.com/cloudflare/cloudflare-go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/benagricola/provider-cloudflare/apis/dns/v1alpha1"
-	clients "github.com/benagricola/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/apis/dns/v1alpha1"
+	clients "github.com/rossigee/provider-cloudflare/internal/clients"
 )
 
 const (
@@ -36,10 +36,10 @@ const (
 // Client is a Cloudflare API client that implements methods for working
 // with DNS Records.
 type Client interface {
-	CreateDNSRecord(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error)
-	UpdateDNSRecord(ctx context.Context, zoneID, recordID string, rr cloudflare.DNSRecord) error
-	DNSRecord(ctx context.Context, zoneID, recordID string) (cloudflare.DNSRecord, error)
-	DeleteDNSRecord(ctx context.Context, zoneID, recordID string) error
+	CreateDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error)
+	UpdateDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error)
+	GetDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error)
+	DeleteDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error
 }
 
 // NewClient returns a new Cloudflare API client for working with DNS Records.
@@ -58,8 +58,8 @@ func GenerateObservation(in cloudflare.DNSRecord) v1alpha1.RecordObservation {
 	return v1alpha1.RecordObservation{
 		Proxiable:  in.Proxiable,
 		FQDN:       in.Name,
-		Zone:       in.ZoneName,
-		Locked:     in.Locked,
+		Zone:       "",    // Zone name not available in new API response
+		Locked:     false, // Locked field not available in new API response
 		CreatedOn:  &metav1.Time{Time: in.CreatedOn},
 		ModifiedOn: &metav1.Time{Time: in.ModifiedOn},
 	}
@@ -99,13 +99,8 @@ func UpToDate(spec *v1alpha1.RecordParameters, o cloudflare.DNSRecord) bool { //
 
 	// Check if mutable fields are up to date with resource
 
-	// If the Spec Name doesn't have the zone name on the end of it
-	// Add it on the end when checking the result from the API
-	// As CF returns the name as the full DNS record (including zone name)
+	// Compare names directly - new API handles zone naming differently
 	fn := spec.Name
-	if !strings.HasSuffix(fn, o.ZoneName) {
-		fn = fn + "." + o.ZoneName
-	}
 
 	if fn != o.Name {
 		return false
@@ -131,22 +126,29 @@ func UpToDate(spec *v1alpha1.RecordParameters, o cloudflare.DNSRecord) bool { //
 }
 
 // UpdateRecord updates mutable values on a DNS Record.
-func UpdateRecord(ctx context.Context, client Client, recordID string, spec *v1alpha1.RecordParameters) error {
-	// Cloudflare probably should not rely on the int type like this
-	ttl := int(*spec.TTL)
+func UpdateRecord(ctx context.Context, client Client, zoneID, recordID string, spec *v1alpha1.RecordParameters) error {
+	rc := cloudflare.ZoneIdentifier(zoneID)
 
-	rr := cloudflare.DNSRecord{
+	params := cloudflare.UpdateDNSRecordParams{
+		ID:      recordID,
 		Type:    *spec.Type,
 		Name:    spec.Name,
-		TTL:     ttl,
 		Content: spec.Content,
-		Proxied: spec.Proxied,
+	}
+
+	if spec.TTL != nil {
+		params.TTL = int(*spec.TTL)
+	}
+
+	if spec.Proxied != nil {
+		params.Proxied = spec.Proxied
 	}
 
 	if spec.Priority != nil {
-		*rr.Priority = uint16(*spec.Priority)
+		priority := uint16(*spec.Priority)
+		params.Priority = &priority
 	}
 
-	return client.UpdateDNSRecord(ctx, *spec.Zone, recordID, rr)
-
+	_, err := client.UpdateDNSRecord(ctx, rc, params)
+	return err
 }

@@ -37,11 +37,11 @@ import (
 	rtfake "github.com/crossplane/crossplane-runtime/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	pcv1alpha1 "github.com/benagricola/provider-cloudflare/apis/v1alpha1"
-	"github.com/benagricola/provider-cloudflare/apis/zone/v1alpha1"
-	clients "github.com/benagricola/provider-cloudflare/internal/clients"
-	zones "github.com/benagricola/provider-cloudflare/internal/clients/zones"
-	"github.com/benagricola/provider-cloudflare/internal/clients/zones/fake"
+	pcv1alpha1 "github.com/rossigee/provider-cloudflare/apis/v1alpha1"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1alpha1"
+	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	zones "github.com/rossigee/provider-cloudflare/internal/clients/zones"
+	"github.com/rossigee/provider-cloudflare/internal/clients/zones/fake"
 )
 
 type zoneModifier func(*v1alpha1.Zone)
@@ -444,9 +444,7 @@ func TestCreate(t *testing.T) {
 				mg: zone(withPaused(ptr.BoolPtr(false)), withType(ptr.StringPtr("full"))),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},

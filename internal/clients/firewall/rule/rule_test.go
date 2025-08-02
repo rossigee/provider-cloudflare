@@ -1,245 +1,111 @@
+/*
+Copyright 2021 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package rule
 
 import (
 	"context"
+	"net/http"
 	"testing"
-	"time"
 
 	"github.com/cloudflare/cloudflare-go"
 
+	"github.com/rossigee/provider-cloudflare/apis/firewall/v1alpha1"
+
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/benagricola/provider-cloudflare/apis/firewall/v1alpha1"
-	"github.com/benagricola/provider-cloudflare/internal/clients/firewall/rule/fake"
-
 	"github.com/pkg/errors"
 
+	"github.com/rossigee/provider-cloudflare/internal/clients/firewall/rule/fake"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	rtfake "github.com/crossplane/crossplane-runtime/pkg/resource/fake"
+	corev1 "k8s.io/api/core/v1"
 	ptr "k8s.io/utils/pointer"
+
+	pcv1alpha1 "github.com/rossigee/provider-cloudflare/apis/v1alpha1"
+	clients "github.com/rossigee/provider-cloudflare/internal/clients"
 )
 
-func TestLateInitialize(t *testing.T) {
-	type args struct {
-		rp *v1alpha1.RuleParameters
-		r  cloudflare.FirewallRule
-	}
+// Unlike many Kubernetes projects Crossplane does not use third party testing
+// libraries, per the common Go test review comments. Crossplane encourages the
+// use of table driven unit tests. The tests of the crossplane-runtime project
+// are representative of the testing style Crossplane encourages.
+//
+// https://github.com/golang/go/wiki/TestComments
+// https://github.com/crossplane/crossplane/blob/master/CONTRIBUTING.md#contributing-code
 
-	type want struct {
-		o  bool
-		rp *v1alpha1.RuleParameters
-	}
+type ruleModifer func(*v1alpha1.Rule)
 
-	cases := map[string]struct {
-		reason string
-		args   args
-		want   want
-	}{
-		"LateInitSpecNil": {
-			reason: "LateInit should return false when not passed a spec",
-			args:   args{},
-			want: want{
-				o: false,
-			},
-		},
-		"LateInitDontUpdate": {
-			reason: "LateInit should not update already-set spec fields from a Rule",
-			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					Description:    ptr.String("Test Description - Original"),
-					Priority:       ptr.Int32(4),
-					Paused:         ptr.BoolPtr(false),
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-				},
-				r: cloudflare.FirewallRule{
-					Action:      "allow",
-					Description: "Test Description - Changed",
-					Priority:    ptr.Int32(1),
-					Paused:      true,
-					Products:    []string{"rateLimit"},
-				},
-			},
-			want: want{
-				o: false,
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					Description:    ptr.String("Test Description - Original"),
-					Priority:       ptr.Int32(4),
-					Paused:         ptr.BoolPtr(false),
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-				},
-			},
-		},
-		"LateInitUpdate": {
-			reason: "LateInit should update unset spec fields from a Rule",
-			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action: "allow",
-					Filter: ptr.String("372e67954025e0ba6aaa6d586b9e0b61"),
-				},
-				r: cloudflare.FirewallRule{
-					ID:          "f2d427378e7542acb295380d352e2ebd",
-					Paused:      false,
-					Description: "Test Description",
-					Action:      "allow",
-					Priority:    1.0,
-					Filter: cloudflare.Filter{
-						ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-						Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.155",
-						Paused:      false,
-						Description: "Test Description",
-						Ref:         "SQ-100",
-					},
-					Products:   []string{"waf"},
-					CreatedOn:  time.Time{},
-					ModifiedOn: time.Time{},
-				},
-			},
-			want: want{
-				o: true,
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-					Description:    ptr.StringPtr("Test Description"),
-					Filter:         ptr.String("372e67954025e0ba6aaa6d586b9e0b61"),
-					Paused:         ptr.BoolPtr(false),
-					Priority:       ptr.Int32(1),
-				},
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			got := LateInitialize(tc.args.rp, tc.args.r)
-			if diff := cmp.Diff(tc.want.o, got); diff != "" {
-				t.Errorf("\n%s\nLateInit(...): -want, +got:\n%s\n", tc.reason, diff)
-			}
-			if diff := cmp.Diff(tc.want.rp, tc.args.rp); diff != "" {
-				t.Errorf("\n%s\nLateInit(...): -want, +got:\n%s\n", tc.reason, diff)
-			}
-		})
-	}
+func withAction(action string) ruleModifer {
+	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Action = action }
 }
 
-func TestUpToDate(t *testing.T) {
-	type args struct {
-		rp *v1alpha1.RuleParameters
-		r  cloudflare.FirewallRule
-	}
-
-	type want struct {
-		o bool
-	}
-
-	cases := map[string]struct {
-		reason string
-		args   args
-		want   want
-	}{
-		"UpToDateSpecNil": {
-			reason: "UpToDate should return true when not passed a spec",
-			args:   args{},
-			want: want{
-				o: true,
-			},
-		},
-		"UpToDateEmptyParams": {
-			reason: "UpToDate should return true and not panic with nil values",
-			args: args{
-				rp: &v1alpha1.RuleParameters{},
-				r:  cloudflare.FirewallRule{},
-			},
-			want: want{
-				o: true,
-			},
-		},
-		"UpToDateDifferent": {
-			reason: "UpToDate should return false if the spec does not match the record",
-			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-					Description:    ptr.StringPtr("Test Description - Original"),
-					Filter:         ptr.StringPtr("372e67954025e0ba6aaa6d586b9e0b61"),
-					Paused:         ptr.BoolPtr(false),
-					Priority:       ptr.Int32(1),
-					Zone:           ptr.StringPtr("Test Zone"),
-				},
-				r: cloudflare.FirewallRule{
-					Action:      "allow",
-					Description: "Test Description",
-					Filter: cloudflare.Filter{
-						ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-						Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.155",
-						Paused:      false,
-						Description: "Test description - Changed",
-						Ref:         "SQ-100",
-					},
-					Paused:   true,
-					Priority: 2.0,
-					Products: []string{"rateLimit"},
-				},
-			},
-			want: want{
-				o: false,
-			},
-		},
-		"UpToDateIdentical": {
-			reason: "UpToDate should return true if the spec matches the record",
-			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-					Description:    ptr.StringPtr("Test Description"),
-					Filter:         ptr.StringPtr("372e67954025e0ba6aaa6d586b9e0b61"),
-					Paused:         ptr.BoolPtr(false),
-					Priority:       ptr.Int32(1),
-					Zone:           ptr.StringPtr("Test Zone"),
-				},
-				r: cloudflare.FirewallRule{
-					Action:      "allow",
-					Description: "Test Description",
-					Filter: cloudflare.Filter{
-						ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-						Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.155",
-						Paused:      false,
-						Description: "Test description",
-						Ref:         "SQ-100",
-					},
-					Priority: 1.0,
-					Products: []string{"waf"},
-				},
-			},
-			want: want{
-				o: true,
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			got := UpToDate(tc.args.rp, tc.args.r)
-			if diff := cmp.Diff(tc.want.o, got); diff != "" {
-				t.Errorf("\n%s\nUpToDate(...): -want, +got:\n%s\n", tc.reason, diff)
-			}
-		})
-	}
+func withDescription(description string) ruleModifer {
+	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Description = &description }
 }
 
-func TestCreateRule(t *testing.T) {
+func withPaused(paused bool) ruleModifer {
+	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Paused = &paused }
+}
+
+func withBypassProducts(bp []v1alpha1.RuleBypassProduct) ruleModifer {
+	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.BypassProducts = bp }
+}
+
+func withZone(zone string) ruleModifer {
+	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Zone = &zone }
+}
+
+func withExternalName(ruleID string) ruleModifer {
+	return func(r *v1alpha1.Rule) { meta.SetExternalName(r, ruleID) }
+}
+
+func withFilter(filter string) ruleModifer {
+	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Filter = ptr.String(filter) }
+}
+
+func ruleBuild(m ...ruleModifer) *v1alpha1.Rule {
+	cr := &v1alpha1.Rule{}
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
+func TestObserve(t *testing.T) {
 	errBoom := errors.New("boom")
+
 	type fields struct {
-		client Client
+		client rule.Client
 	}
 
 	type args struct {
 		ctx context.Context
-		rp  *v1alpha1.RuleParameters
+		mg  resource.Managed
 	}
 
 	type want struct {
+		o   managed.ExternalObservation
 		err error
 	}
 
@@ -249,56 +115,150 @@ func TestCreateRule(t *testing.T) {
 		args   args
 		want   want
 	}{
-		"CreateRuleSpecNil": {
-			reason: "CreateRule should return errSpecNil if not passed a spec",
+		"ErrNotRule": {
+			reason: "An error should be returned if the managed resource is not a *Rule",
 			fields: fields{
 				client: fake.MockClient{},
 			},
-			args: args{},
+			args: args{
+				mg: nil,
+			},
 			want: want{
-				err: errors.New(errSpecNil),
+				err: errors.New(errNotRule),
 			},
 		},
-		"CreateRule": {
-			reason: "CreateRule should return no error when creating a rule successfully",
+		"ErrNoRule": {
+			reason: "We should return ResourceExists: false when no external name is set",
+			fields: fields{
+				client: fake.MockClient{},
+			},
+			args: args{
+				mg: &v1alpha1.Rule{},
+			},
+			want: want{
+				o: managed.ExternalObservation{ResourceExists: false},
+			},
+		},
+		"ErrRuleLookup": {
+			reason: "We should return an empty observation and an error if the API returned an error",
 			fields: fields{
 				client: fake.MockClient{
-					MockCreateFirewallRules: func(ctx context.Context, zoneID string, rr []cloudflare.FirewallRule) ([]cloudflare.FirewallRule, error) {
-						return []cloudflare.FirewallRule{
-							{
-								Action:      "allow",
-								Description: "Test Description",
-								Filter: cloudflare.Filter{
-									ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-									Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.100",
-									Paused:      false,
-									Description: "Test description",
-									Ref:         "SQ-100",
-								},
-								Priority: 1.0,
-								Products: []string{"waf"},
-							},
+					MockFirewallRule: func(ctx context.Context, zoneID string, ruleID string) (cloudflare.FirewallRule, error) {
+						return cloudflare.FirewallRule{}, errBoom
+					},
+				},
+			},
+			args: args{
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withZone("Test Zone"),
+				),
+			},
+			want: want{
+				o:   managed.ExternalObservation{},
+				err: errors.Wrap(errBoom, errRuleLookup),
+			},
+		},
+		"ErrRuleNoZone": {
+			reason: "We should return an error if the rule does not have a zone",
+			fields: fields{
+				client: fake.MockClient{},
+			},
+			args: args{
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
+			},
+			want: want{
+				o:   managed.ExternalObservation{},
+				err: errors.New(errNoZone),
+			},
+		},
+		"Success": {
+			reason: "We should return ResourceExists: true and no error when a rule is found",
+			fields: fields{
+				client: fake.MockClient{
+					MockFirewallRule: func(ctx context.Context, zoneID string, ruleID string) (cloudflare.FirewallRule, error) {
+						return cloudflare.FirewallRule{
+							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
+							Paused:      false,
+							Description: "Test Description",
+							Action:      "allow",
+							Priority:    "1.0",
+							Filter:      cloudflare.Filter{},
+							Products:    []string{"waf"},
 						}, nil
 					},
 				},
 			},
 			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-					Description:    ptr.StringPtr("Test Description"),
-					Filter:         ptr.StringPtr("372e67954025e0ba6aaa6d586b9e0b61"),
-					Paused:         ptr.BoolPtr(false),
-					Priority:       ptr.Int32(1),
-					Zone:           ptr.StringPtr("Test Zone"),
-				},
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+				),
 			},
 			want: want{
+				o: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
 				err: nil,
 			},
 		},
-		"CreateRuleFailed": {
-			reason: "CreateRule should return error when creating a rule fails",
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := external{client: tc.fields.client}
+			got, err := e.Observe(tc.args.ctx, tc.args.mg)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
+			}
+			if diff := cmp.Diff(tc.want.o, got); diff != "" {
+				t.Errorf("\n%s\ne.Observe(...): -want, +got:\n%s\n", tc.reason, diff)
+			}
+		})
+	}
+}
+
+func TestCreate(t *testing.T) {
+	errBoom := errors.New("boom")
+
+	type fields struct {
+		client rule.Client
+	}
+
+	type args struct {
+		ctx context.Context
+		mg  resource.Managed
+	}
+
+	type want struct {
+		o   managed.ExternalCreation
+		err error
+	}
+
+	cases := map[string]struct {
+		reason string
+		fields fields
+		args   args
+		want   want
+	}{
+		"ErrNotRule": {
+			reason: "An error should be returned if the managed resource is not a *Rule",
+			args: args{
+				mg: nil,
+			},
+			want: want{
+				err: errors.New(errNotRule),
+			},
+		},
+		"ErrRuleCreate": {
+			reason: "We should return any errors during the create process",
 			fields: fields{
 				client: fake.MockClient{
 					MockCreateFirewallRules: func(ctx context.Context, zoneID string, rr []cloudflare.FirewallRule) ([]cloudflare.FirewallRule, error) {
@@ -307,42 +267,341 @@ func TestCreateRule(t *testing.T) {
 				},
 			},
 			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-					Description:    ptr.StringPtr("Test Description"),
-					Filter:         ptr.StringPtr("372e67954025e0ba6aaa6d586b9e0b61"),
-					Paused:         ptr.BoolPtr(false),
-					Priority:       ptr.Int32(1),
-					Zone:           ptr.StringPtr("Test Zone"),
-				},
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, errCreateRule),
+				o:   managed.ExternalCreation{},
+				err: errors.Wrap(errors.Wrap(errBoom, "error creating firewall rule"), errRuleCreation),
+			},
+		},
+		"Success": {
+			reason: "We should return ExternalNameAssigned: true and no error when a rule is created",
+			fields: fields{
+				client: fake.MockClient{
+					MockCreateFirewallRules: func(ctx context.Context, zoneID string, rr []cloudflare.FirewallRule) ([]cloudflare.FirewallRule, error) {
+						return []cloudflare.FirewallRule{{
+							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
+							Paused:      false,
+							Description: "Test Description",
+							Action:      "allow",
+							Priority:    "1.0",
+							Filter:      cloudflare.Filter{},
+							Products:    []string{"waf"},
+						}}, nil
+					},
+				},
+			},
+			args: args{
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
+			},
+			want: want{
+				o: managed.ExternalCreation{
+					ExternalNameAssigned: true,
+				},
+				err: nil,
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := CreateRule(tc.args.ctx, tc.fields.client, tc.args.rp)
+			e := external{client: tc.fields.client}
+			got, err := e.Create(tc.args.ctx, tc.args.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("\n%s\nCreateRule(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("\n%s\ne.Create(...): -want error, +got error:\n%s\n", tc.reason, diff)
+			}
+			if diff := cmp.Diff(tc.want.o, got); diff != "" {
+				t.Errorf("\n%s\ne.Create(...): -want, +got:\n%s\n", tc.reason, diff)
 			}
 		})
 	}
 }
 
-func TestUpdateRule(t *testing.T) {
-	errBoom := errors.New("boom")
+func TestConnect(t *testing.T) {
+	mc := &test.MockClient{
+		MockGet: test.NewMockGetFn(nil),
+	}
+
+	_, errGetProviderConfig := clients.GetConfig(context.Background(), mc, &rtfake.Managed{})
+
 	type fields struct {
-		client Client
+		kube      client.Client
+		newClient func(cfg clients.Config, hc *http.Client) (rule.Client, error)
 	}
 
 	type args struct {
 		ctx context.Context
-		id  string
-		rp  *v1alpha1.RuleParameters
+		mg  resource.Managed
+	}
+
+	cases := map[string]struct {
+		reason string
+		fields fields
+		args   args
+		want   error
+	}{
+		"ErrNotRule": {
+			reason: "An error should be returned if the managed resource is not a Rule",
+			args: args{
+				mg: nil,
+			},
+			want: errors.New(errNotRule),
+		},
+		"ErrGetConfig": {
+			reason: "Any errors from GetConfig should be wrapped",
+			fields: fields{
+				kube: mc,
+			},
+			args: args{
+				mg: &v1alpha1.Rule{
+					Spec: v1alpha1.RuleSpec{
+						ResourceSpec: xpv1.ResourceSpec{},
+					},
+				},
+			},
+			want: errors.Wrap(errGetProviderConfig, errClientConfig),
+		},
+		"ConnectReturnOK": {
+			reason: "Connect should return no error when passed the correct values",
+			fields: fields{
+				kube: &test.MockClient{
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+						switch o := obj.(type) {
+						case *pcv1alpha1.ProviderConfig:
+							o.Spec.Credentials.Source = "Secret"
+							o.Spec.Credentials.SecretRef = &xpv1.SecretKeySelector{
+								Key: "creds",
+							}
+						case *corev1.Secret:
+							o.Data = map[string][]byte{
+								"creds": []byte("{\"APIKey\":\"foo\",\"Email\":\"foo@bar.com\"}"),
+							}
+						}
+						return nil
+					}),
+				},
+				newClient: rule.NewClient,
+			},
+			args: args{
+				mg: &v1alpha1.Rule{
+					Spec: v1alpha1.RuleSpec{
+						ResourceSpec: xpv1.ResourceSpec{
+							ProviderConfigReference: &xpv1.Reference{
+								Name: "blah",
+							},
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			nc := func(cfg clients.Config) (rule.Client, error) {
+				return tc.fields.newClient(cfg, nil)
+			}
+			e := &connector{kube: tc.fields.kube, newCloudflareClientFn: nc}
+			_, err := e.Connect(tc.args.ctx, tc.args.mg)
+			if diff := cmp.Diff(tc.want, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\ne.Connect(...): -want error, +got error:\n%s\n", tc.reason, diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	errBoom := errors.New("boom")
+
+	type fields struct {
+		client rule.Client
+	}
+
+	type args struct {
+		ctx context.Context
+		mg  resource.Managed
+	}
+
+	type want struct {
+		o   managed.ExternalUpdate
+		err error
+	}
+
+	cases := map[string]struct {
+		reason string
+		fields fields
+		args   args
+		want   want
+	}{
+		"ErrNotRule": {
+			reason: "An error should be returned if the managed resource is not a *Rule",
+			args: args{
+				mg: nil,
+			},
+			want: want{
+				err: errors.New(errNotRule),
+			},
+		}, "ErrNoRule": {
+			reason: "We should return an error when no external name is set",
+			fields: fields{
+				client: fake.MockClient{},
+			},
+			args: args{
+				mg: ruleBuild(
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
+			},
+			want: want{
+				o:   managed.ExternalUpdate{},
+				err: errors.New(errRuleUpdate),
+			},
+		}, "ErrNoZone": {
+			reason: "We should return an error when no Zone is set",
+			fields: fields{
+				client: fake.MockClient{},
+			},
+			args: args{
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withDescription("Test Description"),
+					withPaused(false),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
+			},
+			want: want{
+				o:   managed.ExternalUpdate{},
+				err: errors.Wrap(errors.New(errNoZone), errRuleUpdate),
+			},
+		}, "ErrRuleUpdate": {
+			reason: "We should return any errors during the update process",
+			fields: fields{
+				client: fake.MockClient{
+					MockUpdateFirewallRule: func(ctx context.Context, zoneID string, rr cloudflare.FirewallRule) (cloudflare.FirewallRule, error) {
+						return cloudflare.FirewallRule{}, errBoom
+					},
+					MockFirewallRule: func(ctx context.Context, zoneID string, ruleID string) (cloudflare.FirewallRule, error) {
+						return cloudflare.FirewallRule{
+							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
+							Paused:      false,
+							Description: "Test Description",
+							Action:      "allow",
+							Priority:    "1.0",
+							Filter:      cloudflare.Filter{},
+							Products:    []string{"waf"},
+						}, nil
+					},
+				},
+			},
+			args: args{
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
+			},
+			want: want{
+				o:   managed.ExternalUpdate{},
+				err: errors.Wrap(errors.Wrap(errBoom, "error updating firewall rule"), errRuleUpdate),
+			},
+		},
+		"Success": {
+			reason: "We should return no error when a rule is updated successfully",
+			fields: fields{
+				client: fake.MockClient{
+					MockFirewallRule: func(ctx context.Context, zoneID string, ruleID string) (cloudflare.FirewallRule, error) {
+						return cloudflare.FirewallRule{
+							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
+							Paused:      false,
+							Description: "Test Description",
+							Action:      "allow",
+							Priority:    "1.0",
+							Filter:      cloudflare.Filter{},
+							Products:    []string{"waf"},
+						}, nil
+					},
+					MockUpdateFirewallRule: func(ctx context.Context, zoneID string, rr cloudflare.FirewallRule) (cloudflare.FirewallRule, error) {
+						return cloudflare.FirewallRule{
+							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
+							Paused:      false,
+							Description: "Test Description - Changed",
+							Action:      "allow",
+							Priority:    "9.0",
+							Filter:      cloudflare.Filter{},
+							Products:    []string{"waf"},
+						}, nil
+					},
+				},
+			},
+			args: args{
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
+			},
+			want: want{
+				o:   managed.ExternalUpdate{},
+				err: nil,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := external{client: tc.fields.client}
+			got, err := e.Update(tc.args.ctx, tc.args.mg)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\ne.Update(...): -want error, +got error:\n%s\n", tc.reason, diff)
+			}
+			if diff := cmp.Diff(tc.want.o, got); diff != "" {
+				t.Errorf("\n%s\ne.Update(...): -want, +got:\n%s\n", tc.reason, diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	errBoom := errors.New("boom")
+
+	type fields struct {
+		client rule.Client
+	}
+
+	type args struct {
+		ctx context.Context
+		mg  resource.Managed
 	}
 
 	type want struct {
@@ -355,130 +614,90 @@ func TestUpdateRule(t *testing.T) {
 		args   args
 		want   want
 	}{
-		"UpdateRuleNotFound": {
-			reason: "UpdateRule should return errUpdateRule if the rule is not found",
-			fields: fields{
-				client: fake.MockClient{
-					MockUpdateFirewallRule: func(ctx context.Context, zoneID string, rr cloudflare.FirewallRule) (cloudflare.FirewallRule, error) {
-						return cloudflare.FirewallRule{}, errBoom
-					},
-					MockFirewallRule: func(ctx context.Context, zoneID, ruleID string) (cloudflare.FirewallRule, error) {
-						return cloudflare.FirewallRule{
-							Action:      "allow",
-							Description: "Test Description",
-							Filter: cloudflare.Filter{
-								ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-								Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.100",
-								Paused:      false,
-								Description: "Test description",
-								Ref:         "SQ-100",
-							},
-							Priority: 1.0,
-							Products: []string{"waf"},
-						}, nil
-					},
-				},
-			},
+		"ErrNotRule": {
+			reason: "An error should be returned if the managed resource is not a *Rule",
 			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-					Description:    ptr.StringPtr("Test Description"),
-					Filter:         ptr.StringPtr("372e67954025e0ba6aaa6d586b9e0b61"),
-					Paused:         ptr.BoolPtr(false),
-					Priority:       ptr.Int32(1),
-					Zone:           ptr.StringPtr("Test Zone"),
-				},
+				mg: nil,
 			},
 			want: want{
-				err: errors.Wrap(errBoom, errUpdateRule),
+				err: errors.New(errNotRule),
 			},
 		},
-		"UpdateRule": {
-			reason: "UpdateRule should return no error when updating a rule successfully",
+		"ErrNoRule": {
+			reason: "We should return an error when no external name is set",
+			fields: fields{
+				client: fake.MockClient{},
+			},
+			args: args{
+				mg: ruleBuild(
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
+			},
+			want: want{
+				err: errors.New(errRuleDeletion),
+			},
+		},
+		"ErrRuleDelete": {
+			reason: "We should return any errors during the delete process",
 			fields: fields{
 				client: fake.MockClient{
-					MockUpdateFirewallRule: func(ctx context.Context, zoneID string, rr cloudflare.FirewallRule) (cloudflare.FirewallRule, error) {
-						return cloudflare.FirewallRule{
-							Action:      "allow",
-							Description: "New Description",
-							Filter: cloudflare.Filter{
-								ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-								Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.100",
-								Paused:      false,
-								Description: "Test description",
-								Ref:         "SQ-100",
-							},
-							Priority: 1.0,
-							Products: []string{"waf"},
-						}, nil
-					},
-					MockFirewallRule: func(ctx context.Context, zoneID, ruleID string) (cloudflare.FirewallRule, error) {
-						return cloudflare.FirewallRule{
-							Action:      "allow",
-							Description: "Old Description",
-							Filter: cloudflare.Filter{
-								ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-								Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.155",
-								Paused:      false,
-								Description: "Test description",
-								Ref:         "SQ-100",
-							},
-							Priority: 1.0,
-							Products: []string{"waf"},
-						}, nil
+					MockDeleteFirewallRule: func(ctx context.Context, zoneID string, ruleID string) error {
+						return errBoom
 					},
 				},
 			},
 			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-					Description:    ptr.StringPtr("Test Description"),
-					Filter:         ptr.StringPtr("372e67954025e0ba6aaa6d586b9e0b61"),
-					Paused:         ptr.BoolPtr(false),
-					Priority:       ptr.Int32(1),
-					Zone:           ptr.StringPtr("Test Zone"),
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errRuleDeletion),
+			},
+		},
+		"Success": {
+			reason: "We should return no error when a rule is deleted",
+			fields: fields{
+				client: fake.MockClient{
+					MockDeleteFirewallRule: func(ctx context.Context, zoneID string, ruleID string) error {
+						return nil
+					},
 				},
+			},
+			args: args{
+				mg: ruleBuild(
+					withExternalName("372e67954025e0ba6aaa6d586b9e0b61"),
+					withDescription("Test Description"),
+					withPaused(false),
+					withZone("Test Zone"),
+					withAction("allow"),
+					withBypassProducts([]v1alpha1.RuleBypassProduct{"waf"}),
+					withFilter("372e67954025e0ba6aaa6d586b9e0b61"),
+				),
 			},
 			want: want{
 				err: nil,
-			},
-		},
-		"UpdateRuleFailed": {
-			reason: "UpdateRule should return an error if the update failed",
-			fields: fields{
-				client: fake.MockClient{
-					MockUpdateFirewallRule: func(ctx context.Context, zoneID string, rr cloudflare.FirewallRule) (cloudflare.FirewallRule, error) {
-						return cloudflare.FirewallRule{}, errBoom
-					},
-					MockFirewallRule: func(ctx context.Context, zoneID, ruleID string) (cloudflare.FirewallRule, error) {
-						return cloudflare.FirewallRule{}, nil
-					},
-				},
-			},
-			args: args{
-				rp: &v1alpha1.RuleParameters{
-					Action:         "allow",
-					BypassProducts: []v1alpha1.RuleBypassProduct{"waf"},
-					Description:    ptr.StringPtr("Test Description"),
-					Filter:         ptr.StringPtr("372e67954025e0ba6aaa6d586b9e0b61"),
-					Paused:         ptr.BoolPtr(false),
-					Priority:       ptr.Int32(1),
-					Zone:           ptr.StringPtr("Test Zone"),
-				},
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errUpdateRule),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := UpdateRule(tc.args.ctx, tc.fields.client, tc.args.id, tc.args.rp)
+			e := external{client: tc.fields.client}
+			err := e.Delete(tc.args.ctx, tc.args.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("\n%s\nUpdateRule(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("\n%s\ne.Delete(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
 		})
 	}

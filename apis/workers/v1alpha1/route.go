@@ -26,7 +26,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/pkg/errors"
 
-	"github.com/benagricola/provider-cloudflare/apis/zone/v1alpha1"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1alpha1"
 )
 
 // RouteParameters are the configurable fields of a DNS Route.

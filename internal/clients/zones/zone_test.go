@@ -29,8 +29,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/benagricola/provider-cloudflare/apis/zone/v1alpha1"
-	"github.com/benagricola/provider-cloudflare/internal/clients/zones/fake"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1alpha1"
+	"github.com/rossigee/provider-cloudflare/internal/clients/zones/fake"
 )
 
 func TestLateInitialize(t *testing.T) {

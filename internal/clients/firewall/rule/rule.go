@@ -18,223 +18,213 @@ package rule
 
 import (
 	"context"
-	"net/http"
-	"strings"
-
-	"github.com/google/go-cmp/cmp"
+	"time"
 
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	"github.com/cloudflare/cloudflare-go"
+	rtv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/benagricola/provider-cloudflare/apis/firewall/v1alpha1"
-	clients "github.com/benagricola/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/apis/firewall/v1alpha1"
+	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
 )
 
 const (
-	errUpdateRule = "error updating firewall rule"
-	errCreateRule = "error creating firewall rule"
-	errSpecNil    = "rule spec is empty"
+	errNotRule = "managed resource is not a Rule custom resource"
+
+	errClientConfig = "error getting client config"
+
+	errRuleLookup   = "cannot lookup firewall rule"
+	errRuleCreation = "cannot create firewall rule"
+	errRuleUpdate   = "cannot update firewall rule"
+	errRuleDeletion = "cannot delete firewall rule"
+	errNoZone       = "no zone found"
+	errNoFilter     = "no filter found"
+
+	maxConcurrency = 5
 )
 
-// Client is a Cloudflare API client that implements methods for working
-// with Firewall rules.
-type Client interface {
-	// Note there is no singular CreateRule in cloudflare-go
-	CreateFirewallRules(ctx context.Context, zoneID string, firewallRules []cloudflare.FirewallRule) ([]cloudflare.FirewallRule, error)
-	UpdateFirewallRule(ctx context.Context, zoneID string, firewallRule cloudflare.FirewallRule) (cloudflare.FirewallRule, error)
-	DeleteFirewallRule(ctx context.Context, zoneID, firewallRuleID string) error
-	FirewallRule(ctx context.Context, zoneID, firewallRuleID string) (cloudflare.FirewallRule, error)
-}
+// Setup adds a controller that reconciles Rule managed resources.
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+	name := managed.ControllerName(v1alpha1.RuleGroupKind)
 
-// NewClient returns a new Cloudflare API client for working with Firewall rules.
-func NewClient(cfg clients.Config, hc *http.Client) (Client, error) {
-	return clients.NewClient(cfg, hc)
-}
-
-// IsRuleNotFound returns true if the passed error indicates
-// a Rule was not found.
-func IsRuleNotFound(err error) bool {
-	return strings.Contains(err.Error(), "HTTP status 404")
-}
-
-// GenerateObservation creates an observation of a cloudflare Rule
-func GenerateObservation(in cloudflare.FirewallRule) v1alpha1.RuleObservation {
-	return v1alpha1.RuleObservation{}
-}
-
-func productsToBypassProducts(products []string) []v1alpha1.RuleBypassProduct {
-	bpp := make([]v1alpha1.RuleBypassProduct, len(products))
-	for i, v := range products {
-		bpp[i] = v1alpha1.RuleBypassProduct(v)
-	}
-	return bpp
-}
-
-func bypassProductsToProducts(bypassProducts []v1alpha1.RuleBypassProduct) []string {
-	p := make([]string, len(bypassProducts))
-	for i, v := range bypassProducts {
-		p[i] = string(v)
-	}
-	return p
-}
-
-// LateInitialize initializes RuleParameters based on the remote resource
-func LateInitialize(spec *v1alpha1.RuleParameters, r cloudflare.FirewallRule) bool { //nolint:gocyclo
-	// NOTE: Gocyclo ignored here because this method has to check each field.
-
-	if spec == nil {
-		return false
+	o := controller.Options{
+		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		MaxConcurrentReconciles: maxConcurrency,
 	}
 
-	li := false
-	if len(spec.BypassProducts) == 0 && len(r.Products) > 0 {
-		spec.BypassProducts = productsToBypassProducts(r.Products)
-		li = true
-	}
-
-	if spec.Paused == nil {
-		spec.Paused = &r.Paused
-		li = true
-	}
-
-	if spec.Description == nil && len(r.Description) > 0 {
-		spec.Description = &r.Description
-		li = true
-	}
-
-	// Note that the cloudflare field itself can be a float, but
-	// we represent it in the Kubernetes API as an int32.
-	// We think this gives users adequate ability to control
-	// priority without resorting to decimals.
-	if spec.Priority == nil {
-		// Priority should be a whole number
-		if p, ok := r.Priority.(float64); ok {
-			in := int32(p)
-			spec.Priority = &in
-			li = true
-		}
-	}
-
-	return li
-}
-
-// UpToDate checks if the remote resource is up to date with the
-// requested resource parameters.
-func UpToDate(spec *v1alpha1.RuleParameters, r cloudflare.FirewallRule) bool { //nolint:gocyclo
-	// If we don't have a spec, we _must_ be up to date.
-	if spec == nil {
-		return true
-	}
-
-	// Check if mutable fields are up to date with resource
-	if spec.Action != r.Action {
-		return false
-	}
-
-	cbp := productsToBypassProducts(r.Products)
-
-	// IF bypassProducts IS NOT a nil slice AND is not equal to current products
-	// OR if bypassProducts IS a nil slice AND there is more than 0 current products.
-	if (spec.BypassProducts != nil && !cmp.Equal(spec.BypassProducts, cbp)) ||
-		(spec.BypassProducts == nil && len(cbp) > 0) {
-		return false
-	}
-
-	if spec.Description != nil && *spec.Description != r.Description {
-		return false
-	}
-
-	if spec.Filter != nil && *spec.Filter != r.Filter.ID {
-		return false
-	}
-
-	if spec.Paused != nil && *spec.Paused != r.Paused {
-		return false
-	}
-
-	if spec.Priority != nil {
-		if p, ok := r.Priority.(float64); ok {
-			if int32(p) != *spec.Priority {
-				return false
-			}
-		} else {
-			// Remote value is unset but requested value is set
-			return false
-		}
-	}
-
-	return true
-}
-
-// CreateRule creates a new Rule
-func CreateRule(ctx context.Context, client Client, spec *v1alpha1.RuleParameters) (*cloudflare.FirewallRule, error) {
-
-	if spec == nil {
-		return nil, errors.New(errSpecNil)
-	}
-
-	r := cloudflare.FirewallRule{
-		Action: spec.Action,
-		Filter: cloudflare.Filter{
-			ID: *spec.Filter,
-		},
-		Products: bypassProductsToProducts(spec.BypassProducts),
-	}
-
-	if spec.Description != nil {
-		r.Description = *spec.Description
-	}
-	if spec.Paused != nil {
-		r.Paused = *spec.Paused
-	}
-	if spec.Priority != nil {
-		r.Priority = *spec.Priority
-	}
-
-	res, err := client.CreateFirewallRules(
-		ctx,
-		*spec.Zone,
-		[]cloudflare.FirewallRule{r},
+	hc := metrics.NewInstrumentedHTTPClient(name)
+	r := managed.NewReconciler(mgr,
+		resource.ManagedKind(v1alpha1.RuleGroupVersionKind),
+		managed.WithExternalConnecter(&connector{
+			kube: mgr.GetClient(),
+			newCloudflareClientFn: func(cfg clients.Config) (rule.Client, error) {
+				return rule.NewClient(cfg, hc)
+			},
+		}),
+		managed.WithLogger(l.WithValues("controller", name)),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithPollInterval(5*time.Minute),
+		// Do not initialize external-name field.
+		managed.WithInitializers(),
 	)
 
-	if err != nil || len(res) != 1 {
-		return nil, errors.Wrap(err, errCreateRule)
-	}
-
-	return &res[0], nil
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		WithOptions(o).
+		For(&v1alpha1.Rule{}).
+		Complete(r)
 }
 
-// UpdateRule updates mutable values on a Rule
-func UpdateRule(ctx context.Context, client Client, ruleID string, spec *v1alpha1.RuleParameters) error { //nolint:gocyclo
-	// Get current firewall rule status
-	r, err := client.FirewallRule(ctx, *spec.Zone, ruleID)
+// A connector is expected to produce an ExternalClient when its Connect method
+// is called.
+type connector struct {
+	kube                  client.Client
+	newCloudflareClientFn func(cfg clients.Config) (rule.Client, error)
+}
+
+// Connect produces a valid configuration for a Cloudflare API
+// instance, and returns it as an external client.
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	_, ok := mg.(*v1alpha1.Rule)
+	if !ok {
+		return nil, errors.New(errNotRule)
+	}
+
+	// Get client configuration
+	config, err := clients.GetConfig(ctx, c.kube, mg)
 	if err != nil {
-		return errors.Wrap(err, errUpdateRule)
+		return nil, errors.Wrap(err, errClientConfig)
 	}
 
-	r.Action = spec.Action
-	r.Products = bypassProductsToProducts(spec.BypassProducts)
-
-	if spec.Description != nil {
-		r.Description = *spec.Description
+	client, err := c.newCloudflareClientFn(*config)
+	if err != nil {
+		return nil, err
 	}
 
-	if spec.Filter != nil {
-		r.Filter.ID = *spec.Filter
+	return &external{client: client}, nil
+}
+
+// An ExternalClient observes, then either creates, updates, or deletes an
+// external resource to ensure it reflects the managed resource's desired state.
+type external struct {
+	client rule.Client
+}
+
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mg.(*v1alpha1.Rule)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errNotRule)
 	}
 
-	if spec.Paused != nil {
-		r.Paused = *spec.Paused
+	// Rule does not exist if we dont have an ID stored in external-name
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	if spec.Priority != nil {
-		r.Priority = *spec.Priority
-	} else {
-		r.Priority = nil
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalObservation{}, errors.New(errNoZone)
 	}
 
-	// Update firewall rule
-	_, err = client.UpdateFirewallRule(ctx, *spec.Zone, r)
-	return errors.Wrap(err, errUpdateRule)
+	r, err := e.client.FirewallRule(ctx, *cr.Spec.ForProvider.Zone, rid)
+
+	if err != nil {
+		return managed.ExternalObservation{},
+			errors.Wrap(resource.Ignore(rule.IsRuleNotFound, err), errRuleLookup)
+	}
+
+	cr.Status.AtProvider = rule.GenerateObservation(r)
+
+	cr.Status.SetConditions(rtv1.Available())
+
+	return managed.ExternalObservation{
+		ResourceExists:          true,
+		ResourceLateInitialized: rule.LateInitialize(&cr.Spec.ForProvider, r),
+		ResourceUpToDate:        rule.UpToDate(&cr.Spec.ForProvider, r),
+	}, nil
+}
+
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mg.(*v1alpha1.Rule)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errNotRule)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalCreation{}, errors.New(errNoZone)
+	}
+
+	if cr.Spec.ForProvider.Filter == nil {
+		return managed.ExternalCreation{}, errors.New(errNoFilter)
+	}
+
+	nr, err := rule.CreateRule(ctx, e.client, &cr.Spec.ForProvider)
+
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errRuleCreation)
+	}
+
+	cr.Status.AtProvider = rule.GenerateObservation(*nr)
+
+	// Update the external name with the ID of the new Rule
+	meta.SetExternalName(cr, nr.ID)
+
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+}
+
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*v1alpha1.Rule)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errNotRule)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalUpdate{}, errors.Wrap(errors.New(errNoZone), errRuleUpdate)
+	}
+
+	rid := meta.GetExternalName(cr)
+
+	// Update should never be called on a nonexistent resource
+	if rid == "" {
+		return managed.ExternalUpdate{}, errors.New(errRuleUpdate)
+	}
+
+	return managed.ExternalUpdate{},
+		errors.Wrap(
+			rule.UpdateRule(ctx, e.client, meta.GetExternalName(cr), &cr.Spec.ForProvider),
+			errRuleUpdate,
+		)
+}
+
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*v1alpha1.Rule)
+	if !ok {
+		return errors.New(errNotRule)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return errors.Wrap(errors.New(errNoZone), errRuleDeletion)
+	}
+
+	rid := meta.GetExternalName(cr)
+
+	// Delete should never be called on a nonexistent resource
+	if rid == "" {
+		return errors.New(errRuleDeletion)
+	}
+
+	return errors.Wrap(
+		e.client.DeleteFirewallRule(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr)),
+		errRuleDeletion)
 }

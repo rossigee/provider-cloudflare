@@ -1,0 +1,10 @@
+# Multi-stage build for CloudFlare provider
+FROM ghcr.io/rossigee/provider-mailgun:v0.6.6 as source
+
+# Use distroless as minimal base image  
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=source / /
+USER 65532:65532
+
+ENTRYPOINT ["/provider"]

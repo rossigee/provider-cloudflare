@@ -32,14 +32,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/benagricola/provider-cloudflare/apis/zone/v1alpha1"
-	clients "github.com/benagricola/provider-cloudflare/internal/clients"
-	zones "github.com/benagricola/provider-cloudflare/internal/clients/zones"
-	metrics "github.com/benagricola/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1alpha1"
+	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	zones "github.com/rossigee/provider-cloudflare/internal/clients/zones"
+	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
 )
 
 const (
@@ -63,7 +62,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.ZoneGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		RateLimiter:             rl,
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -206,7 +205,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	meta.SetExternalName(cr, z.ID)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {

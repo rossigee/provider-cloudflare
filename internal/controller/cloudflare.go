@@ -22,34 +22,29 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
-	"github.com/benagricola/provider-cloudflare/internal/controller/config"
-	record "github.com/benagricola/provider-cloudflare/internal/controller/dns"
-	filter "github.com/benagricola/provider-cloudflare/internal/controller/firewall/filter"
-	rule "github.com/benagricola/provider-cloudflare/internal/controller/firewall/rule"
-	application "github.com/benagricola/provider-cloudflare/internal/controller/spectrum"
-	customhostname "github.com/benagricola/provider-cloudflare/internal/controller/sslsaas/customhostname"
-	fallbackorigin "github.com/benagricola/provider-cloudflare/internal/controller/sslsaas/fallbackorigin"
-	route "github.com/benagricola/provider-cloudflare/internal/controller/workers/route"
-	zone "github.com/benagricola/provider-cloudflare/internal/controller/zone"
+	"github.com/rossigee/provider-cloudflare/internal/controller/config"
+	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
+	spectrum "github.com/rossigee/provider-cloudflare/internal/controller/spectrum"
+	zone "github.com/rossigee/provider-cloudflare/internal/controller/zone"
 )
 
-// Setup creates all Template controllers with the supplied logger and adds them to
+// Setup creates all CloudFlare controllers with the supplied logger and adds them to
 // the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
-		application.Setup,
 		config.Setup,
-		rule.Setup,
-		filter.Setup,
-		customhostname.Setup,
 		zone.Setup,
 		record.Setup,
-		route.Setup,
-		fallbackorigin.Setup,
+		spectrum.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// SetupMinimal creates minimal controllers with only config, zone, and dns record support.
+func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
+	return Setup(mgr, l, wl)
 }

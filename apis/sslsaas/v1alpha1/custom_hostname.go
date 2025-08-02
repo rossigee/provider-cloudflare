@@ -27,8 +27,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/pkg/errors"
 
-	dns "github.com/benagricola/provider-cloudflare/apis/dns/v1alpha1"
-	zone "github.com/benagricola/provider-cloudflare/apis/zone/v1alpha1"
+	dns "github.com/rossigee/provider-cloudflare/apis/dns/v1alpha1"
+	zone "github.com/rossigee/provider-cloudflare/apis/zone/v1alpha1"
 )
 
 // CustomHostnameSSLValidationErrors represents errors that occurred during SSL validation.
@@ -139,7 +139,7 @@ type CustomHostnameSSLObserved struct {
 	Status               string                                         `json:"status"`
 	HTTPUrl              string                                         `json:"httpURL"`
 	HTTPBody             string                                         `json:"httpBody"`
-	ValidationErrors     []cloudflare.CustomHostnameSSLValidationErrors `json:"validationErrors,omitempty"`
+	ValidationErrors     []CustomHostnameSSLValidationErrors `json:"validationErrors,omitempty"`
 	CertificateAuthority string                                         `json:"certificateAuthority"`
 	CnameName            string                                         `json:"cname"`
 	CnameTarget          string                                         `json:"cnameTarget"`

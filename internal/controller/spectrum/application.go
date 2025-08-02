@@ -30,16 +30,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/cloudflare/cloudflare-go"
-
-	"github.com/benagricola/provider-cloudflare/apis/spectrum/v1alpha1"
-	clients "github.com/benagricola/provider-cloudflare/internal/clients"
-	applications "github.com/benagricola/provider-cloudflare/internal/clients/applications"
-	metrics "github.com/benagricola/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1alpha1"
+	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	applications "github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
+	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
 )
 
 const (
@@ -61,7 +58,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.ApplicationGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		RateLimiter:             rl,
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -159,7 +156,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) { //nolint:gocyclo
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mg.(*v1alpha1.Application)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotApplication)
@@ -172,99 +169,18 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.SetConditions(rtv1.Creating())
 
-	dns := cloudflare.SpectrumApplicationDNS{
-		Type: cr.Spec.ForProvider.DNS.Type,
-		Name: cr.Spec.ForProvider.DNS.Name,
-	}
-
-	var oport *cloudflare.SpectrumApplicationOriginPort
-	if cr.Spec.ForProvider.OriginPort != nil {
-		oport = &cloudflare.SpectrumApplicationOriginPort{}
-		if cr.Spec.ForProvider.OriginPort.Port != nil {
-			oport.Port = uint16(*cr.Spec.ForProvider.OriginPort.Port)
-		}
-
-		if cr.Spec.ForProvider.OriginPort.Start != nil {
-			oport.Start = uint16(*cr.Spec.ForProvider.OriginPort.Start)
-		}
-
-		if cr.Spec.ForProvider.OriginPort.End != nil {
-			oport.End = uint16(*cr.Spec.ForProvider.OriginPort.End)
-		}
-	}
-
-	var odns *cloudflare.SpectrumApplicationOriginDNS
-	if cr.Spec.ForProvider.OriginDNS != nil {
-		odns = &cloudflare.SpectrumApplicationOriginDNS{
-			Name: cr.Spec.ForProvider.OriginDNS.Name,
-		}
-	}
-
-	var eips *cloudflare.SpectrumApplicationEdgeIPs
-
-	if cr.Spec.ForProvider.EdgeIPs != nil {
-		eips = &cloudflare.SpectrumApplicationEdgeIPs{
-			Type: cloudflare.SpectrumApplicationEdgeType(cr.Spec.ForProvider.EdgeIPs.Type),
-		}
-
-		if cr.Spec.ForProvider.EdgeIPs.Connectivity != nil {
-			eips.Connectivity = (*cloudflare.SpectrumApplicationConnectivity)(cr.Spec.ForProvider.EdgeIPs.Connectivity)
-		}
-
-		if cr.Spec.ForProvider.EdgeIPs.IPs != nil {
-			ips, iperr := applications.ConvertIPs(cr.Spec.ForProvider.EdgeIPs.IPs)
-			if iperr != nil {
-				return managed.ExternalCreation{}, errors.Wrap(iperr, errApplicationCreation)
-			}
-			eips.IPs = ips
-		}
-	}
-
-	ap := cloudflare.SpectrumApplication{
-		Protocol:     cr.Spec.ForProvider.Protocol,
-		DNS:          dns,
-		OriginDirect: cr.Spec.ForProvider.OriginDirect,
-		OriginPort:   oport,
-		OriginDNS:    odns,
-		EdgeIPs:      eips,
-	}
-
-	if cr.Spec.ForProvider.ProxyProtocol != nil {
-		ap.ProxyProtocol = cloudflare.ProxyProtocol(*cr.Spec.ForProvider.ProxyProtocol)
-	}
-
-	if cr.Spec.ForProvider.IPFirewall != nil {
-		ap.IPFirewall = *cr.Spec.ForProvider.IPFirewall
-	}
-
-	if cr.Spec.ForProvider.TLS != nil {
-		ap.TLS = *cr.Spec.ForProvider.TLS
-	}
-
-	if cr.Spec.ForProvider.TrafficType != nil {
-		ap.TrafficType = *cr.Spec.ForProvider.TrafficType
-	}
-
-	if cr.Spec.ForProvider.ArgoSmartRouting != nil {
-		ap.ArgoSmartRouting = *cr.Spec.ForProvider.ArgoSmartRouting
-	}
-
-	res, err := e.client.CreateSpectrumApplication(
-		ctx,
-		*cr.Spec.ForProvider.Zone,
-		ap,
-	)
+	application, err := e.client.CreateSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, &cr.Spec.ForProvider)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errApplicationCreation)
 	}
 
-	cr.Status.AtProvider = applications.GenerateObservation(res)
+	cr.Status.AtProvider = applications.GenerateObservation(application)
 
 	// Update the external name with the ID of the new Spectrum Application
-	meta.SetExternalName(cr, res.ID)
+	meta.SetExternalName(cr, application.ID)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -284,11 +200,12 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errApplicationUpdate)
 	}
 
-	return managed.ExternalUpdate{},
-		errors.Wrap(
-			applications.UpdateSpectrumApplication(ctx, e.client, meta.GetExternalName(cr), &cr.Spec.ForProvider),
-			errApplicationUpdate,
-		)
+	err := e.client.UpdateSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, aid, &cr.Spec.ForProvider)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errApplicationUpdate)
+	}
+
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -299,7 +216,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	aid := meta.GetExternalName(cr)
 
-	// Update should never be called on a nonexistent resource
+	// Delete should never be called on a nonexistent resource
 	if aid == "" {
 		return errors.New(errApplicationDeletion)
 	}
@@ -309,6 +226,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 
 	return errors.Wrap(
-		e.client.DeleteSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr)),
+		e.client.DeleteSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, aid),
 		errApplicationDeletion)
 }
