@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package customhostname
+package sslsaas
 
 import (
 	"context"
@@ -30,12 +30,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1alpha1"
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	customhostname "github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname"
 	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
 )
 
@@ -57,22 +57,22 @@ const (
 	maxConcurrency = 5
 )
 
-// Setup adds a controller that reconciles CustomHostname managed resources.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+// SetupCustomHostname adds a controller that reconciles CustomHostname managed resources.
+func SetupCustomHostname(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.CustomHostnameGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		RateLimiter:             rl,
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
 	hc := metrics.NewInstrumentedHTTPClient(name)
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1alpha1.CustomHostnameGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
+		managed.WithExternalConnecter(&customHostnameConnector{
 			kube: mgr.GetClient(),
-			newCloudflareClientFn: func(cfg clients.Config) (customhostnames.Client, error) {
-				return customhostnames.NewClient(cfg, hc)
+			newCloudflareClientFn: func(cfg clients.Config) (customhostname.Client, error) {
+				return customhostname.NewClient(cfg, hc)
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
@@ -91,14 +91,14 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 
 // A connector is expected to produce an ExternalClient when its Connect method
 // is called.
-type connector struct {
+type customHostnameConnector struct {
 	kube                  client.Client
-	newCloudflareClientFn func(cfg clients.Config) (customhostnames.Client, error)
+	newCloudflareClientFn func(cfg clients.Config) (customhostname.Client, error)
 }
 
 // Connect produces a valid configuration for a Cloudflare API
 // instance, and returns it as an external client.
-func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+func (c *customHostnameConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	_, ok := mg.(*v1alpha1.CustomHostname)
 	if !ok {
 		return nil, errors.New(errNotCustomHostname)
@@ -115,16 +115,16 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, err
 	}
 
-	return &external{client: client}, nil
+	return &customHostnameExternal{client: client}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an
 // external resource to ensure it reflects the managed resource's desired state.
-type external struct {
-	client customhostnames.Client
+type customHostnameExternal struct {
+	client customhostname.Client
 }
 
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+func (e *customHostnameExternal) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1alpha1.CustomHostname)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotCustomHostname)
@@ -143,13 +143,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	ch, err := e.client.CustomHostname(ctx, *cr.Spec.ForProvider.Zone, chid)
 
 	if err != nil {
-		if customhostnames.IsCustomHostnameNotFound(err) {
+		if customhostname.IsCustomHostnameNotFound(err) {
 			return managed.ExternalObservation{ResourceExists: false}, nil
 		}
 		return managed.ExternalObservation{}, errors.Wrap(err, errCustomHostnameLookup)
 	}
 
-	cr.Status.AtProvider = customhostnames.GenerateObservation(ch)
+	cr.Status.AtProvider = customhostname.GenerateObservation(ch)
 
 	// Mark as ready when the Hostname is ready
 	// Note that this does not mean that the SSL Certificate is ready
@@ -168,11 +168,11 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: customhostnames.UpToDate(&cr.Spec.ForProvider, ch),
+		ResourceUpToDate: customhostname.UpToDate(&cr.Spec.ForProvider, ch),
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+func (e *customHostnameExternal) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mg.(*v1alpha1.CustomHostname)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotCustomHostname)
@@ -186,24 +186,25 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errCustomHostnameCreation)
 	}
 
+	cr.SetConditions(rtv1.Creating())
+
 	rch, err := e.client.CreateCustomHostname(
 		ctx,
 		*cr.Spec.ForProvider.Zone,
-		customhostnames.ParametersToCustomHostname(cr.Spec.ForProvider),
+		customhostname.ParametersToCustomHostname(cr.Spec.ForProvider),
 	)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCustomHostnameCreation)
 	}
 
-	cr.Status.AtProvider = customhostnames.GenerateObservation(rch.Result)
+	cr.Status.AtProvider = customhostname.GenerateObservation(rch.Result)
 	meta.SetExternalName(cr, rch.Result.ID)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
-
+	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+func (e *customHostnameExternal) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mg.(*v1alpha1.CustomHostname)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotCustomHostname)
@@ -225,7 +226,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		ctx,
 		*cr.Spec.ForProvider.Zone,
 		chid,
-		customhostnames.ParametersToCustomHostname(cr.Spec.ForProvider),
+		customhostname.ParametersToCustomHostname(cr.Spec.ForProvider),
 	)
 	return managed.ExternalUpdate{},
 		errors.Wrap(
@@ -234,7 +235,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *customHostnameExternal) Delete(ctx context.Context, mg resource.Managed) error {
 	cr, ok := mg.(*v1alpha1.CustomHostname)
 	if !ok {
 		return errors.New(errNotCustomHostname)

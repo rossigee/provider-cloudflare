@@ -14,41 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package sslsaas
 
 import (
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
-
-	"github.com/rossigee/provider-cloudflare/internal/controller/config"
-	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
-	spectrum "github.com/rossigee/provider-cloudflare/internal/controller/spectrum"
-	sslsaas "github.com/rossigee/provider-cloudflare/internal/controller/sslsaas"
-	workers "github.com/rossigee/provider-cloudflare/internal/controller/workers"
-	zone "github.com/rossigee/provider-cloudflare/internal/controller/zone"
 )
 
-// Setup creates all CloudFlare controllers with the supplied logger and adds them to
+// Setup creates all SSL for SaaS controllers with the supplied logger and adds them to
 // the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
-		config.Setup,
-		zone.Setup,
-		record.Setup,
-		spectrum.Setup,
-		workers.Setup,
-		sslsaas.Setup,
+		SetupCustomHostname,
+		SetupFallbackOrigin,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-// SetupMinimal creates minimal controllers with only config, zone, and dns record support.
-func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
-	return Setup(mgr, l, wl)
 }

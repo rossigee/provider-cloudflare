@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package route
+package workers
 
 import (
 	"context"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -31,12 +30,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1alpha1"
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	workers "github.com/rossigee/provider-cloudflare/internal/clients/workers"
 	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
 )
 
@@ -59,7 +58,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.RouteGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		RateLimiter:             rl,
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -68,8 +67,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		resource.ManagedKind(v1alpha1.RouteGroupVersionKind),
 		managed.WithExternalConnecter(&connector{
 			kube: mgr.GetClient(),
-			newCloudflareClientFn: func(cfg clients.Config) (route.Client, error) {
-				return route.NewClient(cfg, hc)
+			newCloudflareClientFn: func(cfg clients.Config) (workers.Client, error) {
+				return workers.NewClient(cfg, hc)
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
@@ -90,7 +89,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 // is called.
 type connector struct {
 	kube                  client.Client
-	newCloudflareClientFn func(cfg clients.Config) (route.Client, error)
+	newCloudflareClientFn func(cfg clients.Config) (workers.Client, error)
 }
 
 // Connect produces a valid configuration for a Cloudflare API
@@ -118,7 +117,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 // An ExternalClient observes, then either creates, updates, or deletes an
 // external resource to ensure it reflects the managed resource's desired state.
 type external struct {
-	client route.Client
+	client workers.Client
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -137,18 +136,19 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errRouteNoZone)
 	}
 
-	r, err := e.client.GetWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, rid)
+	r, err := e.client.WorkerRoute(ctx, *cr.Spec.ForProvider.Zone, rid)
 
 	if err != nil {
 		return managed.ExternalObservation{},
-			errors.Wrap(resource.Ignore(route.IsRouteNotFound, err), errRouteLookup)
+			errors.Wrap(resource.Ignore(workers.IsRouteNotFound, err), errRouteLookup)
 	}
 
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.AtProvider = workers.GenerateObservation(r)
+	cr.SetConditions(rtv1.Available())
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: route.UpToDate(&cr.Spec.ForProvider, r.WorkerRoute),
+		ResourceUpToDate: workers.UpToDate(&cr.Spec.ForProvider, r),
 	}, nil
 }
 
@@ -162,23 +162,19 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.Wrap(errors.New(errRouteNoZone), errRouteCreation)
 	}
 
-	r := cloudflare.WorkerRoute{
-		Pattern: cr.Spec.ForProvider.Pattern,
-	}
-	if cr.Spec.ForProvider.Script != nil {
-		r.Script = *cr.Spec.ForProvider.Script
-	}
+	cr.SetConditions(rtv1.Creating())
 
-	nr, err := e.client.CreateWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, r)
+	nr, err := e.client.CreateWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, &cr.Spec.ForProvider)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errRouteCreation)
 	}
 
 	// Update the external name with the ID of the new Route
-	meta.SetExternalName(cr, nr.WorkerRoute.ID)
+	meta.SetExternalName(cr, nr.ID)
+	cr.Status.AtProvider = workers.GenerateObservation(nr)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -196,11 +192,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.Wrap(errors.New(errRouteNoZone), errRouteUpdate)
 	}
 
-	return managed.ExternalUpdate{},
-		errors.Wrap(
-			route.UpdateRoute(ctx, e.client, meta.GetExternalName(cr), &cr.Spec.ForProvider),
-			errRouteUpdate,
-		)
+	err := e.client.UpdateWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr), &cr.Spec.ForProvider)
+	return managed.ExternalUpdate{}, errors.Wrap(err, errRouteUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -218,7 +211,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errRouteDeletion)
 	}
 
-	_, err := e.client.DeleteWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
+	err := e.client.DeleteWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
 
 	return errors.Wrap(err, errRouteDeletion)
 }

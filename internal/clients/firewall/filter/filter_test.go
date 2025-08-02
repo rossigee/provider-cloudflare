@@ -86,7 +86,7 @@ func TestObserve(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client filter.Client
+		client Client
 	}
 
 	type args struct {
@@ -108,7 +108,7 @@ func TestObserve(t *testing.T) {
 		"ErrNotFilter": {
 			reason: "An error should be returned if the managed resource is not a *Filter",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: nil,
@@ -120,7 +120,7 @@ func TestObserve(t *testing.T) {
 		"ErrNoFilter": {
 			reason: "We should return ResourceExists: false when no external name is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: &v1alpha1.Filter{},
@@ -132,7 +132,7 @@ func TestObserve(t *testing.T) {
 		"ErrFilterLookup": {
 			reason: "We should return an empty observation and an error if the API returned an error",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockFilter: func(ctx context.Context, zoneID string, filterID string) (cloudflare.Filter, error) {
 						return cloudflare.Filter{}, errBoom
 					},
@@ -152,7 +152,7 @@ func TestObserve(t *testing.T) {
 		"ErrFilterNoZone": {
 			reason: "We should return an error if the filter does not have a zone",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: filterBuild(
@@ -167,15 +167,14 @@ func TestObserve(t *testing.T) {
 		"Success": {
 			reason: "We should return ResourceExists: true and no error when a filter is found",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateFilters: func(ctx context.Context, zoneID string, firewallFilters []cloudflare.Filter) ([]cloudflare.Filter, error) {
-						return []cloudflare.Filter{{
+				client: &fake.MockClient{
+					MockCreateFilter: func(ctx context.Context, zoneID string, filter cloudflare.Filter) (*cloudflare.Filter, error) {
+						return &cloudflare.Filter{
 							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
 							Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.100",
 							Paused:      false,
 							Description: "Test Description",
-							Ref:         "SQ-100",
-						}}, nil
+						}, nil
 					},
 					MockFilter: func(ctx context.Context, zoneID string, filterID string) (cloudflare.Filter, error) {
 						return cloudflare.Filter{
@@ -225,7 +224,7 @@ func TestCreate(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client filter.Client
+		client Client
 	}
 
 	type args struct {
@@ -256,9 +255,9 @@ func TestCreate(t *testing.T) {
 		"ErrFilterCreate": {
 			reason: "We should return any errors during the create process",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateFilters: func(ctx context.Context, zoneID string, firewallFilters []cloudflare.Filter) ([]cloudflare.Filter, error) {
-						return []cloudflare.Filter{{}}, errBoom
+				client: &fake.MockClient{
+					MockCreateFilter: func(ctx context.Context, zoneID string, filter cloudflare.Filter) (*cloudflare.Filter, error) {
+						return nil, errBoom
 					},
 				},
 			},
@@ -273,21 +272,20 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				o:   managed.ExternalCreation{},
-				err: errors.Wrap(errors.Wrap(errBoom, "error creating filter"), errFilterCreation),
+				err: errors.Wrap(errBoom, errFilterCreation),
 			},
 		},
 		"Success": {
 			reason: "We should return ExternalNameAssigned: true and no error when a record is created",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateFilters: func(ctx context.Context, zoneID string, firewallFilters []cloudflare.Filter) ([]cloudflare.Filter, error) {
-						return []cloudflare.Filter{{
+				client: &fake.MockClient{
+					MockCreateFilter: func(ctx context.Context, zoneID string, filter cloudflare.Filter) (*cloudflare.Filter, error) {
+						return &cloudflare.Filter{
 							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
 							Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.100",
 							Paused:      false,
 							Description: "Test Description",
-							Ref:         "SQ-100",
-						}}, nil
+						}, nil
 					},
 				},
 			},
@@ -301,9 +299,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -332,7 +328,7 @@ func TestConnect(t *testing.T) {
 
 	type fields struct {
 		kube      client.Client
-		newClient func(cfg clients.Config, hc *http.Client) (filter.Client, error)
+		newClient func(cfg clients.Config, hc *http.Client) (Client, error)
 	}
 
 	type args struct {
@@ -386,7 +382,7 @@ func TestConnect(t *testing.T) {
 						return nil
 					}),
 				},
-				newClient: filter.NewClient,
+				newClient: NewClient,
 			},
 			args: args{
 				mg: &v1alpha1.Filter{
@@ -405,7 +401,7 @@ func TestConnect(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			nc := func(cfg clients.Config) (filter.Client, error) {
+			nc := func(cfg clients.Config) (Client, error) {
 				return tc.fields.newClient(cfg, nil)
 			}
 			e := &connector{kube: tc.fields.kube, newCloudflareClientFn: nc}
@@ -421,7 +417,7 @@ func TestUpdate(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client filter.Client
+		client Client
 	}
 
 	type args struct {
@@ -451,7 +447,7 @@ func TestUpdate(t *testing.T) {
 		}, "ErrNoFilter": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: filterBuild(
@@ -468,7 +464,7 @@ func TestUpdate(t *testing.T) {
 		}, "ErrNoZone": {
 			reason: "We should return an error when no Zone is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: filterBuild(
@@ -485,9 +481,9 @@ func TestUpdate(t *testing.T) {
 		}, "ErrFilterUpdate": {
 			reason: "We should return any errors during the update process",
 			fields: fields{
-				client: fake.MockClient{
-					MockUpdateFilter: func(ctx context.Context, zoneID string, firewallFilter cloudflare.Filter) (cloudflare.Filter, error) {
-						return cloudflare.Filter{}, errBoom
+				client: &fake.MockClient{
+					MockUpdateFilter: func(ctx context.Context, zoneID, filterID string, filter cloudflare.Filter) error {
+						return errBoom
 					},
 					MockFilter: func(ctx context.Context, zoneID string, filterID string) (cloudflare.Filter, error) {
 						return cloudflare.Filter{
@@ -511,21 +507,15 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				o:   managed.ExternalUpdate{},
-				err: errors.Wrap(errors.Wrap(errBoom, "error updating filter"), errFilterUpdate),
+				err: errors.Wrap(errBoom, errFilterUpdate),
 			},
 		},
 		"Success": {
 			reason: "We should return no error when a filter is updated successfully",
 			fields: fields{
-				client: fake.MockClient{
-					MockUpdateFilter: func(ctx context.Context, zoneID string, firewallFilter cloudflare.Filter) (cloudflare.Filter, error) {
-						return cloudflare.Filter{
-							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-							Expression:  "http.request.uri.path ~ \".*wp-login.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.addr ne 172.16.22.100",
-							Paused:      false,
-							Description: "Test Description",
-							Ref:         "SQ-100",
-						}, nil
+				client: &fake.MockClient{
+					MockUpdateFilter: func(ctx context.Context, zoneID, filterID string, filter cloudflare.Filter) error {
+						return nil
 					},
 					MockFilter: func(ctx context.Context, zoneID string, filterID string) (cloudflare.Filter, error) {
 						return cloudflare.Filter{
@@ -572,7 +562,7 @@ func TestDelete(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client filter.Client
+		client Client
 	}
 
 	type args struct {
@@ -602,7 +592,7 @@ func TestDelete(t *testing.T) {
 		"ErrNoFilter": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: filterBuild(
@@ -619,7 +609,7 @@ func TestDelete(t *testing.T) {
 		"ErrFilterDelete": {
 			reason: "We should return any errors during the delete process",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockDeleteFilter: func(ctx context.Context, zoneID string, firewallFilterID string) error {
 						return errBoom
 					},
@@ -641,7 +631,7 @@ func TestDelete(t *testing.T) {
 		"Success": {
 			reason: "We should return no error when a filter is deleted",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockDeleteFilter: func(ctx context.Context, zoneID string, firewallFilterID string) error {
 						return nil
 					},

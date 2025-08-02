@@ -24,28 +24,40 @@ import (
 
 // A MockClient acts as a testable representation of the Cloudflare API.
 type MockClient struct {
-	MockCreateDNSRecord func(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error)
-	MockUpdateDNSRecord func(ctx context.Context, zoneID, recordID string, rr cloudflare.DNSRecord) error
-	MockDNSRecord       func(ctx context.Context, zoneID, recordID string) (cloudflare.DNSRecord, error)
-	MockDeleteDNSRecord func(ctx context.Context, zoneID, recordID string) error
+	MockCreateDNSRecord func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error)
+	MockUpdateDNSRecord func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error)
+	MockGetDNSRecord    func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error)
+	MockDeleteDNSRecord func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error
 }
 
 // CreateDNSRecord mocks the CreateDNSRecord method of the Cloudflare API.
-func (m MockClient) CreateDNSRecord(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
-	return m.MockCreateDNSRecord(ctx, zoneID, rr)
+func (m MockClient) CreateDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+	if m.MockCreateDNSRecord != nil {
+		return m.MockCreateDNSRecord(ctx, rc, params)
+	}
+	return cloudflare.DNSRecord{}, nil
 }
 
 // UpdateDNSRecord mocks the UpdateDNSRecord method of the Cloudflare API.
-func (m MockClient) UpdateDNSRecord(ctx context.Context, zoneID, recordID string, rr cloudflare.DNSRecord) error {
-	return m.MockUpdateDNSRecord(ctx, zoneID, recordID, rr)
+func (m MockClient) UpdateDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+	if m.MockUpdateDNSRecord != nil {
+		return m.MockUpdateDNSRecord(ctx, rc, params)
+	}
+	return cloudflare.DNSRecord{}, nil
 }
 
-// DNSRecord mocks the DNSRecord method of the Cloudflare API.
-func (m MockClient) DNSRecord(ctx context.Context, zoneID, recordID string) (cloudflare.DNSRecord, error) {
-	return m.MockDNSRecord(ctx, zoneID, recordID)
+// GetDNSRecord mocks the GetDNSRecord method of the Cloudflare API.
+func (m MockClient) GetDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error) {
+	if m.MockGetDNSRecord != nil {
+		return m.MockGetDNSRecord(ctx, rc, recordID)
+	}
+	return cloudflare.DNSRecord{}, nil
 }
 
 // DeleteDNSRecord mocks the DeleteDNSRecord method of the Cloudflare API.
-func (m MockClient) DeleteDNSRecord(ctx context.Context, zoneID, recordID string) error {
-	return m.MockDeleteDNSRecord(ctx, zoneID, recordID)
+func (m MockClient) DeleteDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error {
+	if m.MockDeleteDNSRecord != nil {
+		return m.MockDeleteDNSRecord(ctx, rc, recordID)
+	}
+	return nil
 }

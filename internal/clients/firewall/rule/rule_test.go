@@ -96,7 +96,7 @@ func TestObserve(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client rule.Client
+		client Client
 	}
 
 	type args struct {
@@ -118,7 +118,7 @@ func TestObserve(t *testing.T) {
 		"ErrNotRule": {
 			reason: "An error should be returned if the managed resource is not a *Rule",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: nil,
@@ -130,7 +130,7 @@ func TestObserve(t *testing.T) {
 		"ErrNoRule": {
 			reason: "We should return ResourceExists: false when no external name is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: &v1alpha1.Rule{},
@@ -142,7 +142,7 @@ func TestObserve(t *testing.T) {
 		"ErrRuleLookup": {
 			reason: "We should return an empty observation and an error if the API returned an error",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockFirewallRule: func(ctx context.Context, zoneID string, ruleID string) (cloudflare.FirewallRule, error) {
 						return cloudflare.FirewallRule{}, errBoom
 					},
@@ -162,7 +162,7 @@ func TestObserve(t *testing.T) {
 		"ErrRuleNoZone": {
 			reason: "We should return an error if the rule does not have a zone",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: ruleBuild(
@@ -177,7 +177,7 @@ func TestObserve(t *testing.T) {
 		"Success": {
 			reason: "We should return ResourceExists: true and no error when a rule is found",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockFirewallRule: func(ctx context.Context, zoneID string, ruleID string) (cloudflare.FirewallRule, error) {
 						return cloudflare.FirewallRule{
 							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
@@ -229,7 +229,7 @@ func TestCreate(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client rule.Client
+		client Client
 	}
 
 	type args struct {
@@ -260,9 +260,9 @@ func TestCreate(t *testing.T) {
 		"ErrRuleCreate": {
 			reason: "We should return any errors during the create process",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateFirewallRules: func(ctx context.Context, zoneID string, rr []cloudflare.FirewallRule) ([]cloudflare.FirewallRule, error) {
-						return []cloudflare.FirewallRule{}, errBoom
+				client: &fake.MockClient{
+					MockCreateFirewallRule: func(ctx context.Context, zoneID string, rule cloudflare.FirewallRule) (*cloudflare.FirewallRule, error) {
+						return nil, errBoom
 					},
 				},
 			},
@@ -279,15 +279,15 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				o:   managed.ExternalCreation{},
-				err: errors.Wrap(errors.Wrap(errBoom, "error creating firewall rule"), errRuleCreation),
+				err: errors.Wrap(errBoom, errRuleCreation),
 			},
 		},
 		"Success": {
 			reason: "We should return ExternalNameAssigned: true and no error when a rule is created",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateFirewallRules: func(ctx context.Context, zoneID string, rr []cloudflare.FirewallRule) ([]cloudflare.FirewallRule, error) {
-						return []cloudflare.FirewallRule{{
+				client: &fake.MockClient{
+					MockCreateFirewallRule: func(ctx context.Context, zoneID string, rule cloudflare.FirewallRule) (*cloudflare.FirewallRule, error) {
+						return &cloudflare.FirewallRule{
 							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
 							Paused:      false,
 							Description: "Test Description",
@@ -295,7 +295,7 @@ func TestCreate(t *testing.T) {
 							Priority:    "1.0",
 							Filter:      cloudflare.Filter{},
 							Products:    []string{"waf"},
-						}}, nil
+						}, nil
 					},
 				},
 			},
@@ -311,9 +311,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -342,7 +340,7 @@ func TestConnect(t *testing.T) {
 
 	type fields struct {
 		kube      client.Client
-		newClient func(cfg clients.Config, hc *http.Client) (rule.Client, error)
+		newClient func(cfg clients.Config, hc *http.Client) (Client, error)
 	}
 
 	type args struct {
@@ -396,7 +394,7 @@ func TestConnect(t *testing.T) {
 						return nil
 					}),
 				},
-				newClient: rule.NewClient,
+				newClient: NewClient,
 			},
 			args: args{
 				mg: &v1alpha1.Rule{
@@ -415,7 +413,7 @@ func TestConnect(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			nc := func(cfg clients.Config) (rule.Client, error) {
+			nc := func(cfg clients.Config) (Client, error) {
 				return tc.fields.newClient(cfg, nil)
 			}
 			e := &connector{kube: tc.fields.kube, newCloudflareClientFn: nc}
@@ -431,7 +429,7 @@ func TestUpdate(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client rule.Client
+		client Client
 	}
 
 	type args struct {
@@ -458,10 +456,11 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				err: errors.New(errNotRule),
 			},
-		}, "ErrNoRule": {
+		},
+		"ErrNoRule": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: ruleBuild(
@@ -477,10 +476,11 @@ func TestUpdate(t *testing.T) {
 				o:   managed.ExternalUpdate{},
 				err: errors.New(errRuleUpdate),
 			},
-		}, "ErrNoZone": {
+		},
+		"ErrNoZone": {
 			reason: "We should return an error when no Zone is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: ruleBuild(
@@ -496,12 +496,13 @@ func TestUpdate(t *testing.T) {
 				o:   managed.ExternalUpdate{},
 				err: errors.Wrap(errors.New(errNoZone), errRuleUpdate),
 			},
-		}, "ErrRuleUpdate": {
+		},
+		"ErrRuleUpdate": {
 			reason: "We should return any errors during the update process",
 			fields: fields{
-				client: fake.MockClient{
-					MockUpdateFirewallRule: func(ctx context.Context, zoneID string, rr cloudflare.FirewallRule) (cloudflare.FirewallRule, error) {
-						return cloudflare.FirewallRule{}, errBoom
+				client: &fake.MockClient{
+					MockUpdateFirewallRule: func(ctx context.Context, zoneID, ruleID string, rule cloudflare.FirewallRule) error {
+						return errBoom
 					},
 					MockFirewallRule: func(ctx context.Context, zoneID string, ruleID string) (cloudflare.FirewallRule, error) {
 						return cloudflare.FirewallRule{
@@ -529,13 +530,13 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				o:   managed.ExternalUpdate{},
-				err: errors.Wrap(errors.Wrap(errBoom, "error updating firewall rule"), errRuleUpdate),
+				err: errors.Wrap(errBoom, errRuleUpdate),
 			},
 		},
 		"Success": {
 			reason: "We should return no error when a rule is updated successfully",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockFirewallRule: func(ctx context.Context, zoneID string, ruleID string) (cloudflare.FirewallRule, error) {
 						return cloudflare.FirewallRule{
 							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
@@ -547,16 +548,8 @@ func TestUpdate(t *testing.T) {
 							Products:    []string{"waf"},
 						}, nil
 					},
-					MockUpdateFirewallRule: func(ctx context.Context, zoneID string, rr cloudflare.FirewallRule) (cloudflare.FirewallRule, error) {
-						return cloudflare.FirewallRule{
-							ID:          "372e67954025e0ba6aaa6d586b9e0b61",
-							Paused:      false,
-							Description: "Test Description - Changed",
-							Action:      "allow",
-							Priority:    "9.0",
-							Filter:      cloudflare.Filter{},
-							Products:    []string{"waf"},
-						}, nil
+					MockUpdateFirewallRule: func(ctx context.Context, zoneID, ruleID string, rule cloudflare.FirewallRule) error {
+						return nil
 					},
 				},
 			},
@@ -596,7 +589,7 @@ func TestDelete(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client rule.Client
+		client Client
 	}
 
 	type args struct {
@@ -626,7 +619,7 @@ func TestDelete(t *testing.T) {
 		"ErrNoRule": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: ruleBuild(
@@ -645,7 +638,7 @@ func TestDelete(t *testing.T) {
 		"ErrRuleDelete": {
 			reason: "We should return any errors during the delete process",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockDeleteFirewallRule: func(ctx context.Context, zoneID string, ruleID string) error {
 						return errBoom
 					},
@@ -669,7 +662,7 @@ func TestDelete(t *testing.T) {
 		"Success": {
 			reason: "We should return no error when a rule is deleted",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockDeleteFirewallRule: func(ctx context.Context, zoneID string, ruleID string) error {
 						return nil
 					},

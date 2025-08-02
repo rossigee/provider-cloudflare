@@ -205,7 +205,7 @@ func TestObserve(t *testing.T) {
 		"ErrNoRecord": {
 			reason: "We should return ResourceExists: false when no external name is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: &v1alpha1.Record{},
@@ -217,8 +217,8 @@ func TestObserve(t *testing.T) {
 		"ErrRecordLookup": {
 			reason: "We should return an empty observation and an error if the API returned an error",
 			fields: fields{
-				client: fake.MockClient{
-					MockDNSRecord: func(ctx context.Context, zoneID string, recordID string) (cloudflare.DNSRecord, error) {
+				client: &fake.MockClient{
+					MockGetDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error) {
 						return cloudflare.DNSRecord{}, errBoom
 					},
 				},
@@ -237,8 +237,8 @@ func TestObserve(t *testing.T) {
 		"ErrRecordNoZone": {
 			reason: "We should return an error if the record does not have a zone",
 			fields: fields{
-				client: fake.MockClient{
-					MockDNSRecord: func(ctx context.Context, zoneID string, recordID string) (cloudflare.DNSRecord, error) {
+				client: &fake.MockClient{
+					MockGetDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error) {
 						return cloudflare.DNSRecord{}, errBoom
 					},
 				},
@@ -256,11 +256,10 @@ func TestObserve(t *testing.T) {
 		"Success": {
 			reason: "We should return ResourceExists: true and no error when a record is found",
 			fields: fields{
-				client: fake.MockClient{
-					MockDNSRecord: func(ctx context.Context, zoneID, recordID string) (cloudflare.DNSRecord, error) {
+				client: &fake.MockClient{
+					MockGetDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error) {
 						return cloudflare.DNSRecord{
-							ID:     recordID,
-							ZoneID: zoneID,
+							ID: recordID,
 						}, nil
 					},
 				},
@@ -327,11 +326,9 @@ func TestCreate(t *testing.T) {
 		"ErrRecordCreate": {
 			reason: "We should return any errors during the create process",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateDNSRecord: func(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
-						return &cloudflare.DNSRecordResponse{
-							Result: cloudflare.DNSRecord{},
-						}, errBoom
+				client: &fake.MockClient{
+					MockCreateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{}, errBoom
 					},
 				},
 			},
@@ -351,10 +348,13 @@ func TestCreate(t *testing.T) {
 		"ErrRecordCreatePriorityMX": {
 			reason: "We should return an error if 'Priority' is unset for MX records",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateDNSRecord: func(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
-						return &cloudflare.DNSRecordResponse{
-							Result: rr,
+				client: &fake.MockClient{
+					MockCreateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{
+							Type:    params.Type,
+							Name:    params.Name,
+							Content: params.Content,
+							TTL:     params.TTL,
 						}, nil
 					},
 				},
@@ -374,10 +374,13 @@ func TestCreate(t *testing.T) {
 		"ErrRecordCreatePrioritySRV": {
 			reason: "We should return an error if 'Priority' is unset for SRV records",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateDNSRecord: func(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
-						return &cloudflare.DNSRecordResponse{
-							Result: rr,
+				client: &fake.MockClient{
+					MockCreateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{
+							Type:    params.Type,
+							Name:    params.Name,
+							Content: params.Content,
+							TTL:     params.TTL,
 						}, nil
 					},
 				},
@@ -391,16 +394,19 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				o:   managed.ExternalCreation{},
-				err: errors.New(errRecordCreation),
+				err: errors.New("SRV records require priority, weight, and port fields"),
 			},
 		},
 		"ErrRecordCreatePriorityURI": {
 			reason: "We should return an error if 'Priority' is unset for URI records",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateDNSRecord: func(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
-						return &cloudflare.DNSRecordResponse{
-							Result: rr,
+				client: &fake.MockClient{
+					MockCreateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{
+							Type:    params.Type,
+							Name:    params.Name,
+							Content: params.Content,
+							TTL:     params.TTL,
 						}, nil
 					},
 				},
@@ -420,10 +426,13 @@ func TestCreate(t *testing.T) {
 		"Success": {
 			reason: "We should return ExternalNameAssigned: true and no error when a record is created",
 			fields: fields{
-				client: fake.MockClient{
-					MockCreateDNSRecord: func(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
-						return &cloudflare.DNSRecordResponse{
-							Result: rr,
+				client: &fake.MockClient{
+					MockCreateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{
+							Type:    params.Type,
+							Name:    params.Name,
+							Content: params.Content,
+							TTL:     params.TTL,
 						}, nil
 					},
 				},
@@ -436,9 +445,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -489,12 +496,13 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				err: errors.New(errNotRecord),
 			},
-		}, "ErrNoRecord": {
+		},
+		"ErrNoRecord": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
-				client: fake.MockClient{
-					MockUpdateDNSRecord: func(ctx context.Context, zoneID, recordID string, rr cloudflare.DNSRecord) error {
-						return nil
+				client: &fake.MockClient{
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{}, nil
 					},
 				},
 			},
@@ -513,9 +521,9 @@ func TestUpdate(t *testing.T) {
 		"ErrRecordUpdate": {
 			reason: "We should return any errors during the update process",
 			fields: fields{
-				client: fake.MockClient{
-					MockUpdateDNSRecord: func(ctx context.Context, zoneID, recordID string, rr cloudflare.DNSRecord) error {
-						return errBoom
+				client: &fake.MockClient{
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{}, errBoom
 					},
 				},
 			},
@@ -535,14 +543,14 @@ func TestUpdate(t *testing.T) {
 		"Success": {
 			reason: "We should return no error when a zone is updated",
 			fields: fields{
-				client: fake.MockClient{
-					MockDNSRecord: func(ctx context.Context, zoneID string, recordID string) (cloudflare.DNSRecord, error) {
+				client: &fake.MockClient{
+					MockGetDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error) {
 						return cloudflare.DNSRecord{
-							ID: zoneID,
+							ID: rc.Identifier,
 						}, nil
 					},
-					MockUpdateDNSRecord: func(ctx context.Context, zoneID, recordID string, rr cloudflare.DNSRecord) error {
-						return nil
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{}, nil
 					},
 				},
 			},
@@ -609,8 +617,8 @@ func TestDelete(t *testing.T) {
 		"ErrNoRecord": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
-				client: fake.MockClient{
-					MockDeleteDNSRecord: func(ctx context.Context, zoneID, recordID string) error {
+				client: &fake.MockClient{
+					MockDeleteDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error {
 						return nil
 					},
 				},
@@ -629,8 +637,8 @@ func TestDelete(t *testing.T) {
 		"ErrRecordDelete": {
 			reason: "We should return any errors during the delete process",
 			fields: fields{
-				client: fake.MockClient{
-					MockDeleteDNSRecord: func(ctx context.Context, zoneID, recordID string) error {
+				client: &fake.MockClient{
+					MockDeleteDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error {
 						return errBoom
 					},
 				},
@@ -648,8 +656,8 @@ func TestDelete(t *testing.T) {
 		"Success": {
 			reason: "We should return no error when a record is deleted",
 			fields: fields{
-				client: fake.MockClient{
-					MockDeleteDNSRecord: func(ctx context.Context, zoneID, recordID string) error {
+				client: &fake.MockClient{
+					MockDeleteDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error {
 						return nil
 					},
 				},

@@ -18,8 +18,10 @@ package rule
 
 import (
 	"context"
+	"net/http"
 	"time"
 
+	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -30,7 +32,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -50,16 +51,196 @@ const (
 	errRuleDeletion = "cannot delete firewall rule"
 	errNoZone       = "no zone found"
 	errNoFilter     = "no filter found"
+	errRuleNotFound = "Rule not found"
 
 	maxConcurrency = 5
 )
+
+// Client is a Cloudflare API client that implements methods for working
+// with Firewall Rules.
+type Client interface {
+	FirewallRule(ctx context.Context, zoneID, ruleID string) (cloudflare.FirewallRule, error)
+	CreateFirewallRule(ctx context.Context, zoneID string, rule cloudflare.FirewallRule) (*cloudflare.FirewallRule, error)
+	UpdateFirewallRule(ctx context.Context, zoneID, ruleID string, rule cloudflare.FirewallRule) error
+	DeleteFirewallRule(ctx context.Context, zoneID, ruleID string) error
+}
+
+type clientImpl struct {
+	cf *cloudflare.API
+}
+
+// NewClient returns a new Cloudflare API client for working with Firewall Rules.
+func NewClient(cfg clients.Config, hc *http.Client) (Client, error) {
+	cf, err := clients.NewClient(cfg, hc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &clientImpl{cf: cf}, nil
+}
+
+// FirewallRule retrieves a Firewall Rule
+func (c *clientImpl) FirewallRule(ctx context.Context, zoneID, ruleID string) (cloudflare.FirewallRule, error) {
+	rc := cloudflare.ZoneIdentifier(zoneID)
+	rule, err := c.cf.FirewallRule(ctx, rc, ruleID)
+	if err != nil {
+		return cloudflare.FirewallRule{}, err
+	}
+
+	if rule.ID == "" {
+		return cloudflare.FirewallRule{}, errors.New(errRuleNotFound)
+	}
+
+	return rule, nil
+}
+
+// CreateFirewallRule creates a new Firewall Rule
+func (c *clientImpl) CreateFirewallRule(ctx context.Context, zoneID string, rule cloudflare.FirewallRule) (*cloudflare.FirewallRule, error) {
+	rc := cloudflare.ZoneIdentifier(zoneID)
+	params := []cloudflare.FirewallRuleCreateParams{{
+		Filter: cloudflare.Filter{ID: rule.Filter.ID},
+		Action: rule.Action,
+	}}
+	
+	rules, err := c.cf.CreateFirewallRules(ctx, rc, params)
+	if err != nil {
+		return nil, err
+	}
+	
+	if len(rules) == 0 {
+		return nil, errors.New("no rule created")
+	}
+
+	return &rules[0], nil
+}
+
+// UpdateFirewallRule updates an existing Firewall Rule
+func (c *clientImpl) UpdateFirewallRule(ctx context.Context, zoneID, ruleID string, rule cloudflare.FirewallRule) error {
+	rc := cloudflare.ZoneIdentifier(zoneID)
+	params := cloudflare.FirewallRuleUpdateParams{
+		ID:     ruleID,
+		Filter: cloudflare.Filter{ID: rule.Filter.ID},
+		Action: rule.Action,
+	}
+	
+	_, err := c.cf.UpdateFirewallRule(ctx, rc, params)
+	return err
+}
+
+// DeleteFirewallRule deletes a Firewall Rule
+func (c *clientImpl) DeleteFirewallRule(ctx context.Context, zoneID, ruleID string) error {
+	rc := cloudflare.ZoneIdentifier(zoneID)
+	err := c.cf.DeleteFirewallRule(ctx, rc, ruleID)
+	return err
+}
+
+// IsRuleNotFound returns true if the error indicates the rule was not found
+func IsRuleNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	return err.Error() == errRuleNotFound ||
+		err.Error() == "404" ||
+		err.Error() == "Not found"
+}
+
+// GenerateObservation creates observation data from a FirewallRule
+func GenerateObservation(rule cloudflare.FirewallRule) v1alpha1.RuleObservation {
+	return v1alpha1.RuleObservation{}
+}
+
+// LateInitialize initializes RuleParameters based on the remote resource
+func LateInitialize(spec *v1alpha1.RuleParameters, rule cloudflare.FirewallRule) bool {
+	if spec == nil {
+		return false
+	}
+
+	li := false
+	if spec.Paused == nil && rule.Paused {
+		spec.Paused = &rule.Paused
+		li = true
+	}
+
+	return li
+}
+
+// UpToDate checks if the remote FirewallRule is up to date with the requested resource parameters
+func UpToDate(spec *v1alpha1.RuleParameters, rule cloudflare.FirewallRule) bool {
+	if spec == nil {
+		return true
+	}
+
+	if spec.Action != rule.Action {
+		return false
+	}
+
+	if spec.Filter != nil && *spec.Filter != rule.Filter.ID {
+		return false
+	}
+
+	if spec.Paused != nil && *spec.Paused != rule.Paused {
+		return false
+	}
+
+	return true
+}
+
+// CreateRule creates a FirewallRule from RuleParameters
+func CreateRule(ctx context.Context, client Client, params *v1alpha1.RuleParameters) (*cloudflare.FirewallRule, error) {
+	if params.Zone == nil {
+		return nil, errors.New("zone is required")
+	}
+
+	if params.Filter == nil {
+		return nil, errors.New("filter is required")
+	}
+
+	rule := cloudflare.FirewallRule{
+		Filter: cloudflare.Filter{ID: *params.Filter},
+		Action: params.Action,
+	}
+
+	if params.Paused != nil {
+		rule.Paused = *params.Paused
+	}
+
+	result, err := client.CreateFirewallRule(ctx, *params.Zone, rule)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UpdateRule updates an existing FirewallRule
+func UpdateRule(ctx context.Context, client Client, ruleID string, params *v1alpha1.RuleParameters) error {
+	if params.Zone == nil {
+		return errors.New("zone is required")
+	}
+
+	if params.Filter == nil {
+		return errors.New("filter is required")
+	}
+
+	rule := cloudflare.FirewallRule{
+		Filter: cloudflare.Filter{ID: *params.Filter},
+		Action: params.Action,
+	}
+
+	if params.Paused != nil {
+		rule.Paused = *params.Paused
+	}
+
+	err := client.UpdateFirewallRule(ctx, *params.Zone, ruleID, rule)
+	return err
+}
 
 // Setup adds a controller that reconciles Rule managed resources.
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.RuleGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		RateLimiter:             rl,
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -68,8 +249,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		resource.ManagedKind(v1alpha1.RuleGroupVersionKind),
 		managed.WithExternalConnecter(&connector{
 			kube: mgr.GetClient(),
-			newCloudflareClientFn: func(cfg clients.Config) (rule.Client, error) {
-				return rule.NewClient(cfg, hc)
+			newCloudflareClientFn: func(cfg clients.Config) (Client, error) {
+				return NewClient(cfg, hc)
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
@@ -90,7 +271,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 // is called.
 type connector struct {
 	kube                  client.Client
-	newCloudflareClientFn func(cfg clients.Config) (rule.Client, error)
+	newCloudflareClientFn func(cfg clients.Config) (Client, error)
 }
 
 // Connect produces a valid configuration for a Cloudflare API
@@ -118,7 +299,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 // An ExternalClient observes, then either creates, updates, or deletes an
 // external resource to ensure it reflects the managed resource's desired state.
 type external struct {
-	client rule.Client
+	client Client
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -141,17 +322,17 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	if err != nil {
 		return managed.ExternalObservation{},
-			errors.Wrap(resource.Ignore(rule.IsRuleNotFound, err), errRuleLookup)
+			errors.Wrap(resource.Ignore(IsRuleNotFound, err), errRuleLookup)
 	}
 
-	cr.Status.AtProvider = rule.GenerateObservation(r)
+	cr.Status.AtProvider = GenerateObservation(r)
 
 	cr.Status.SetConditions(rtv1.Available())
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceLateInitialized: rule.LateInitialize(&cr.Spec.ForProvider, r),
-		ResourceUpToDate:        rule.UpToDate(&cr.Spec.ForProvider, r),
+		ResourceLateInitialized: LateInitialize(&cr.Spec.ForProvider, r),
+		ResourceUpToDate:        UpToDate(&cr.Spec.ForProvider, r),
 	}, nil
 }
 
@@ -169,18 +350,18 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNoFilter)
 	}
 
-	nr, err := rule.CreateRule(ctx, e.client, &cr.Spec.ForProvider)
+	nr, err := CreateRule(ctx, e.client, &cr.Spec.ForProvider)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errRuleCreation)
 	}
 
-	cr.Status.AtProvider = rule.GenerateObservation(*nr)
+	cr.Status.AtProvider = GenerateObservation(*nr)
 
 	// Update the external name with the ID of the new Rule
 	meta.SetExternalName(cr, nr.ID)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -202,7 +383,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	return managed.ExternalUpdate{},
 		errors.Wrap(
-			rule.UpdateRule(ctx, e.client, meta.GetExternalName(cr), &cr.Spec.ForProvider),
+			UpdateRule(ctx, e.client, meta.GetExternalName(cr), &cr.Spec.ForProvider),
 			errRuleUpdate,
 		)
 }

@@ -18,8 +18,10 @@ package filter
 
 import (
 	"context"
+	"net/http"
 	"time"
 
+	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -30,7 +32,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -40,25 +41,202 @@ import (
 )
 
 const (
-	errNotFilter = "managed resource is not a Filter custom resource"
-
-	errClientConfig = "error getting client config"
-
+	errNotFilter      = "managed resource is not a Filter custom resource"
+	errClientConfig   = "error getting client config"
 	errFilterLookup   = "cannot lookup filter"
 	errFilterCreation = "cannot create filter"
 	errFilterUpdate   = "cannot update filter"
 	errFilterDeletion = "cannot delete filter"
 	errNoZone         = "no zone found"
-
-	maxConcurrency = 5
+	errFilterNotFound = "Filter not found"
+	maxConcurrency    = 5
 )
+
+// Client is a Cloudflare API client that implements methods for working
+// with Firewall Filters.
+type Client interface {
+	Filter(ctx context.Context, zoneID, filterID string) (cloudflare.Filter, error)
+	CreateFilter(ctx context.Context, zoneID string, filter cloudflare.Filter) (*cloudflare.Filter, error)
+	UpdateFilter(ctx context.Context, zoneID, filterID string, filter cloudflare.Filter) error
+	DeleteFilter(ctx context.Context, zoneID, filterID string) error
+}
+
+type clientImpl struct {
+	cf *cloudflare.API
+}
+
+// NewClient returns a new Cloudflare API client for working with Firewall Filters.
+func NewClient(cfg clients.Config, hc *http.Client) (Client, error) {
+	cf, err := clients.NewClient(cfg, hc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &clientImpl{cf: cf}, nil
+}
+
+// Filter retrieves a Firewall Filter
+func (c *clientImpl) Filter(ctx context.Context, zoneID, filterID string) (cloudflare.Filter, error) {
+	rc := cloudflare.ZoneIdentifier(zoneID)
+	filter, err := c.cf.Filter(ctx, rc, filterID)
+	if err != nil {
+		return cloudflare.Filter{}, err
+	}
+
+	if filter.ID == "" {
+		return cloudflare.Filter{}, errors.New(errFilterNotFound)
+	}
+
+	return filter, nil
+}
+
+// CreateFilter creates a new Firewall Filter
+func (c *clientImpl) CreateFilter(ctx context.Context, zoneID string, filter cloudflare.Filter) (*cloudflare.Filter, error) {
+	rc := cloudflare.ZoneIdentifier(zoneID)
+	params := []cloudflare.FilterCreateParams{{
+		Expression:  filter.Expression,
+		Description: filter.Description,
+		Paused:      filter.Paused,
+	}}
+	
+	filters, err := c.cf.CreateFilters(ctx, rc, params)
+	if err != nil {
+		return nil, err
+	}
+	
+	if len(filters) == 0 {
+		return nil, errors.New("no filter created")
+	}
+
+	return &filters[0], nil
+}
+
+// UpdateFilter updates an existing Firewall Filter
+func (c *clientImpl) UpdateFilter(ctx context.Context, zoneID, filterID string, filter cloudflare.Filter) error {
+	rc := cloudflare.ZoneIdentifier(zoneID)
+	params := cloudflare.FilterUpdateParams{
+		ID:          filterID,
+		Expression:  filter.Expression,
+		Description: filter.Description,
+		Paused:      filter.Paused,
+	}
+	
+	_, err := c.cf.UpdateFilter(ctx, rc, params)
+	return err
+}
+
+// DeleteFilter deletes a Firewall Filter
+func (c *clientImpl) DeleteFilter(ctx context.Context, zoneID, filterID string) error {
+	rc := cloudflare.ZoneIdentifier(zoneID)
+	err := c.cf.DeleteFilter(ctx, rc, filterID)
+	return err
+}
+
+// IsFilterNotFound returns true if the error indicates the filter was not found
+func IsFilterNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	return err.Error() == errFilterNotFound ||
+		err.Error() == "404" ||
+		err.Error() == "Not found"
+}
+
+// GenerateObservation creates observation data from a Filter
+func GenerateObservation(filter cloudflare.Filter) v1alpha1.FilterObservation {
+	return v1alpha1.FilterObservation{}
+}
+
+// LateInitialize initializes FilterParameters based on the remote resource
+func LateInitialize(spec *v1alpha1.FilterParameters, filter cloudflare.Filter) bool {
+	if spec == nil {
+		return false
+	}
+
+	li := false
+	if spec.Paused == nil {
+		spec.Paused = &filter.Paused
+		li = true
+	}
+
+	return li
+}
+
+// UpToDate checks if the remote Filter is up to date with the requested resource parameters
+func UpToDate(spec *v1alpha1.FilterParameters, filter cloudflare.Filter) bool {
+	if spec == nil {
+		return true
+	}
+
+	if spec.Expression != filter.Expression {
+		return false
+	}
+
+	if spec.Description != nil && *spec.Description != filter.Description {
+		return false
+	}
+
+	if spec.Paused != nil && *spec.Paused != filter.Paused {
+		return false
+	}
+
+	return true
+}
+
+// CreateFilter creates a Filter from FilterParameters
+func CreateFilter(ctx context.Context, client Client, params *v1alpha1.FilterParameters) (*cloudflare.Filter, error) {
+	if params.Zone == nil {
+		return nil, errors.New("zone is required")
+	}
+
+	filter := cloudflare.Filter{
+		Expression: params.Expression,
+	}
+
+	if params.Description != nil {
+		filter.Description = *params.Description
+	}
+
+	if params.Paused != nil {
+		filter.Paused = *params.Paused
+	}
+
+	result, err := client.CreateFilter(ctx, *params.Zone, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// UpdateFilter updates an existing Filter
+func UpdateFilter(ctx context.Context, client Client, filterID string, params *v1alpha1.FilterParameters) error {
+	if params.Zone == nil {
+		return errors.New("zone is required")
+	}
+
+	filter := cloudflare.Filter{
+		Expression: params.Expression,
+	}
+
+	if params.Description != nil {
+		filter.Description = *params.Description
+	}
+
+	if params.Paused != nil {
+		filter.Paused = *params.Paused
+	}
+
+	err := client.UpdateFilter(ctx, *params.Zone, filterID, filter)
+	return err
+}
 
 // Setup adds a controller that reconciles Filter managed resources.
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.FilterGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		RateLimiter:             rl,
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -67,8 +245,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		resource.ManagedKind(v1alpha1.FilterGroupVersionKind),
 		managed.WithExternalConnecter(&connector{
 			kube: mgr.GetClient(),
-			newCloudflareClientFn: func(cfg clients.Config) (filter.Client, error) {
-				return filter.NewClient(cfg, hc)
+			newCloudflareClientFn: func(cfg clients.Config) (Client, error) {
+				return NewClient(cfg, hc)
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
@@ -89,7 +267,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 // is called.
 type connector struct {
 	kube                  client.Client
-	newCloudflareClientFn func(cfg clients.Config) (filter.Client, error)
+	newCloudflareClientFn func(cfg clients.Config) (Client, error)
 }
 
 // Connect produces a valid configuration for a Cloudflare API
@@ -117,7 +295,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 // An ExternalClient observes, then either creates, updates, or deletes an
 // external resource to ensure it reflects the managed resource's desired state.
 type external struct {
-	client filter.Client
+	client Client
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -140,17 +318,17 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	if err != nil {
 		return managed.ExternalObservation{},
-			errors.Wrap(resource.Ignore(filter.IsFilterNotFound, err), errFilterLookup)
+			errors.Wrap(resource.Ignore(IsFilterNotFound, err), errFilterLookup)
 	}
 
-	cr.Status.AtProvider = filter.GenerateObservation(f)
+	cr.Status.AtProvider = GenerateObservation(f)
 
 	cr.Status.SetConditions(rtv1.Available())
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceLateInitialized: filter.LateInitialize(&cr.Spec.ForProvider, f),
-		ResourceUpToDate:        filter.UpToDate(&cr.Spec.ForProvider, f),
+		ResourceLateInitialized: LateInitialize(&cr.Spec.ForProvider, f),
+		ResourceUpToDate:        UpToDate(&cr.Spec.ForProvider, f),
 	}, nil
 }
 
@@ -164,18 +342,18 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNoZone)
 	}
 
-	nr, err := filter.CreateFilter(ctx, e.client, &cr.Spec.ForProvider)
+	nr, err := CreateFilter(ctx, e.client, &cr.Spec.ForProvider)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errFilterCreation)
 	}
 
-	cr.Status.AtProvider = filter.GenerateObservation(*nr)
+	cr.Status.AtProvider = GenerateObservation(*nr)
 
 	// Update the external name with the ID of the new Rule
 	meta.SetExternalName(cr, nr.ID)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -197,7 +375,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	return managed.ExternalUpdate{},
 		errors.Wrap(
-			filter.UpdateFilter(ctx, e.client, meta.GetExternalName(cr), &cr.Spec.ForProvider),
+			UpdateFilter(ctx, e.client, meta.GetExternalName(cr), &cr.Spec.ForProvider),
 			errFilterUpdate,
 		)
 }

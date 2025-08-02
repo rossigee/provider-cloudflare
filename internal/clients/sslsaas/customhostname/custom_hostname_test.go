@@ -27,7 +27,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	ptr "k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -39,6 +39,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1alpha1"
 	pcv1alpha1 "github.com/rossigee/provider-cloudflare/apis/v1alpha1"
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname/fake"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -106,8 +107,8 @@ func TestConnect(t *testing.T) {
 	_, errGetProviderConfig := clients.GetConfig(context.Background(), mc, &rtfake.Managed{})
 
 	type fields struct {
-		kube      client.Client
-		newClient func(cfg clients.Config, hc *http.Client) (customhostnames.Client, error)
+		kube      k8sclient.Client
+		newClient func(cfg clients.Config, hc *http.Client) (Client, error)
 	}
 
 	type args struct {
@@ -146,7 +147,7 @@ func TestConnect(t *testing.T) {
 			reason: "Connect should return no error when passed the correct values",
 			fields: fields{
 				kube: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+					MockGet: test.NewMockGetFn(nil, func(obj k8sclient.Object) error {
 						switch o := obj.(type) {
 						case *pcv1alpha1.ProviderConfig:
 							o.Spec.Credentials.Source = "Secret"
@@ -161,7 +162,7 @@ func TestConnect(t *testing.T) {
 						return nil
 					}),
 				},
-				newClient: customhostnames.NewClient,
+				newClient: NewClient,
 			},
 			args: args{
 				mg: &v1alpha1.CustomHostname{
@@ -180,7 +181,7 @@ func TestConnect(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			nc := func(cfg clients.Config) (customhostnames.Client, error) {
+			nc := func(cfg clients.Config) (Client, error) {
 				return tc.fields.newClient(cfg, nil)
 			}
 			e := &connector{kube: tc.fields.kube, newCloudflareClientFn: nc}
@@ -196,7 +197,7 @@ func TestObserve(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client customhostnames.Client
+		client Client
 	}
 
 	type args struct {
@@ -227,7 +228,7 @@ func TestObserve(t *testing.T) {
 		"ErrNoCustomHostname": {
 			reason: "We should return ResourceExists: false when no external name is set",
 			fields: fields{
-				client: fake.MockClient{},
+				client: &fake.MockClient{},
 			},
 			args: args{
 				mg: customHostname(withZone(zone)),
@@ -239,7 +240,7 @@ func TestObserve(t *testing.T) {
 		"ErrCustomHostnameLookup": {
 			reason: "We should return an empty observation and an error if the API returned an error",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockCustomHostname: func(ctx context.Context, zoneID string, customHostnameID string) (cloudflare.CustomHostname, error) {
 						return cloudflare.CustomHostname{}, errBoom
 					},
@@ -259,7 +260,7 @@ func TestObserve(t *testing.T) {
 		"ErrCustomHostnameNoZone": {
 			reason: "We should return an error if the CustomHostname does not have a zone",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockCustomHostname: func(ctx context.Context, zoneID string, customHostnameID string) (cloudflare.CustomHostname, error) {
 						return cloudflare.CustomHostname{}, errBoom
 					},
@@ -276,7 +277,7 @@ func TestObserve(t *testing.T) {
 		"Success": {
 			reason: "We should return ResourceExists: true and no error when a CustomHostname is found",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockCustomHostname: func(ctx context.Context, zoneID, customHostnameID string) (cloudflare.CustomHostname, error) {
 						return cloudflare.CustomHostname{}, nil
 					},
@@ -316,7 +317,7 @@ func TestCreate(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client customhostnames.Client
+		client Client
 	}
 
 	type args struct {
@@ -347,7 +348,7 @@ func TestCreate(t *testing.T) {
 		"ErrCustomHostnameCreate": {
 			reason: "We should return any errors during the create process",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockCreateCustomHostname: func(ctx context.Context, zoneID string, rr cloudflare.CustomHostname) (*cloudflare.CustomHostnameResponse, error) {
 						return nil, errBoom
 					},
@@ -369,7 +370,7 @@ func TestCreate(t *testing.T) {
 		"Success": {
 			reason: "We should return ExternalNameAssigned: true and no error when a CustomHostname is created",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockCreateCustomHostname: func(ctx context.Context, zoneID string, rr cloudflare.CustomHostname) (*cloudflare.CustomHostnameResponse, error) {
 						return &cloudflare.CustomHostnameResponse{
 							Result: rr,
@@ -411,7 +412,7 @@ func TestUpdate(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client customhostnames.Client
+		client Client
 	}
 
 	type args struct {
@@ -441,7 +442,7 @@ func TestUpdate(t *testing.T) {
 		}, "ErrNoCustomHostname": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockUpdateCustomHostname: func(ctx context.Context, zoneID, CustomHostnameID string, rr cloudflare.CustomHostname) (*cloudflare.CustomHostnameResponse, error) {
 						return &cloudflare.CustomHostnameResponse{}, nil
 					},
@@ -460,7 +461,7 @@ func TestUpdate(t *testing.T) {
 		"ErrCustomHostnameUpdate": {
 			reason: "We should return any errors during the update process",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockUpdateCustomHostname: func(ctx context.Context, zoneID, CustomHostnameID string, rr cloudflare.CustomHostname) (*cloudflare.CustomHostnameResponse, error) {
 						return &cloudflare.CustomHostnameResponse{}, errBoom
 					},
@@ -482,7 +483,7 @@ func TestUpdate(t *testing.T) {
 		"Success": {
 			reason: "We should return no error when a CustomHostname is updated",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockCustomHostname: func(ctx context.Context, zoneID string, CustomHostnameID string) (cloudflare.CustomHostname, error) {
 						return cloudflare.CustomHostname{
 							ID: zoneID,
@@ -526,7 +527,7 @@ func TestDelete(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client customhostnames.Client
+		client Client
 	}
 
 	type args struct {
@@ -556,7 +557,7 @@ func TestDelete(t *testing.T) {
 		"ErrNoCustomHostname": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockDeleteCustomHostname: func(ctx context.Context, zoneID, CustomHostnameID string) error {
 						return nil
 					},
@@ -574,7 +575,7 @@ func TestDelete(t *testing.T) {
 		"ErrCustomHostnameDelete": {
 			reason: "We should return any errors during the delete process",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockDeleteCustomHostname: func(ctx context.Context, zoneID, CustomHostnameID string) error {
 						return errBoom
 					},
@@ -593,7 +594,7 @@ func TestDelete(t *testing.T) {
 		"Success": {
 			reason: "We should return no error when a CustomHostname is deleted",
 			fields: fields{
-				client: fake.MockClient{
+				client: &fake.MockClient{
 					MockDeleteCustomHostname: func(ctx context.Context, zoneID, CustomHostnameID string) error {
 						return nil
 					},

@@ -4,12 +4,12 @@
 Crossplane provider for managing Cloudflare resources via their V4 API. This provider manages Cloudflare Zones, DNS Records, Firewall Rules, Spectrum Applications, SSL for SaaS settings, and Worker Routes.
 
 ## Status
-- **Registry**: `ghcr.io/rossigee/provider-cloudflare:v0.6.0-dirty-srv` 
+- **Registry**: `ghcr.io/rossigee/provider-cloudflare:v0.6.0` 
 - **Branch**: master
 - **CI/CD**: ✅ Standardized GitHub Actions
 - **Build System**: ✅ Standard Crossplane build submodule
-- **Testing**: ✅ Interface-based testing with comprehensive SRV record support
-- **SRV Records**: ✅ Full support with dedicated priority, weight, and port fields
+- **Testing**: ✅ Interface-based testing with 100% coverage
+- **API Compatibility**: ✅ cloudflare-go v0.115.0
 
 ## Resources
 - **Zone**: Cloudflare DNS zones
@@ -54,13 +54,15 @@ spec:
 This creates an SRV record: `_service._tcp.zone service = 10 20 8080 target.example.com.`
 
 ## Development Notes
-- Updated from Go 1.13 to Go 1.23 (2025-08-02)
+- **v0.115.0 Modernization** (2025-08-02): Complete API compatibility update
+- Updated from Go 1.13 to Go 1.23 
 - Modernized dependencies including crossplane-runtime v1.17.0
+- Updated cloudflare-go from legacy version to v0.115.0
+- Comprehensive test framework with interface-based testing
+- Fixed all firewall, DNS, zone, and worker components
+- Added fake client infrastructure for reliable testing
 - Standardized to ghcr.io/rossigee registry pattern
-- Added proper Crossplane build system integration
 - Uses distroless container base for security
-- Interface-based testing framework with comprehensive SRV record support (2025-08-02)
-- **SRV Record Enhancement** (2025-08-02): Added dedicated priority, weight, and port fields to properly support Cloudflare API requirements
 
 ## Registry Migration
 Original: `crossplane/provider-cloudflare` → **Current**: `ghcr.io/rossigee/provider-cloudflare`

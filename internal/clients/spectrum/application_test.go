@@ -32,7 +32,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	ptr "k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -120,7 +120,7 @@ func TestConnect(t *testing.T) {
 	_, errGetProviderConfig := clients.GetConfig(context.Background(), mc, &rtfake.Managed{})
 
 	type fields struct {
-		kube      client.Client
+		kube      k8sclient.Client
 		newClient func(cfg clients.Config, hc *http.Client) (applications.Client, error)
 	}
 
@@ -160,7 +160,7 @@ func TestConnect(t *testing.T) {
 			reason: "Connect should return no error when passed the correct values",
 			fields: fields{
 				kube: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+					MockGet: test.NewMockGetFn(nil, func(obj k8sclient.Object) error {
 						switch o := obj.(type) {
 						case *pcv1alpha1.ProviderConfig:
 							o.Spec.Credentials.Source = "Secret"

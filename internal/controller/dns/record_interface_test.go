@@ -38,13 +38,15 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 )
 
+// Using error constants from main record controller
+
 var (
 	testRecordName    = "test-record"
 	testZoneID        = "test-zone-id"
 	testRecordID      = "test-record-id"
 	testRecordType    = "SRV"
 	testRecordContent = "10 20 8080 target.example.com"
-	testRecordTTL     = 300
+	testRecordTTL     = int64(300)
 )
 
 // Test helper for interface-based external struct
@@ -129,7 +131,8 @@ func (e *interfaceExternal) Create(ctx context.Context, mg resource.Managed) (ma
 	}
 
 	if cr.Spec.ForProvider.Priority != nil {
-		rr.Priority = uint16(*cr.Spec.ForProvider.Priority)
+		priority := uint16(*cr.Spec.ForProvider.Priority)
+		rr.Priority = &priority
 	}
 
 	resp, err := e.client.CreateDNSRecord(ctx, getStringValue(cr.Spec.ForProvider.Zone), rr)
@@ -139,9 +142,7 @@ func (e *interfaceExternal) Create(ctx context.Context, mg resource.Managed) (ma
 
 	meta.SetExternalName(cr, resp.Result.ID)
 
-	return managed.ExternalCreation{
-		ExternalNameAssigned: true,
-	}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *interfaceExternal) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -177,7 +178,8 @@ func (e *interfaceExternal) Update(ctx context.Context, mg resource.Managed) (ma
 	}
 
 	if cr.Spec.ForProvider.Priority != nil {
-		rr.Priority = uint16(*cr.Spec.ForProvider.Priority)
+		priority := uint16(*cr.Spec.ForProvider.Priority)
+		rr.Priority = &priority
 	}
 
 	if err := e.client.UpdateDNSRecord(ctx, getStringValue(cr.Spec.ForProvider.Zone), externalName, rr); err != nil {
@@ -294,11 +296,10 @@ func TestInterfaceObserve(t *testing.T) {
 					DNSRecordFn: func(ctx context.Context, zoneID, recordID string) (cloudflare.DNSRecord, error) {
 						return cloudflare.DNSRecord{
 							ID:      testRecordID,
-							ZoneID:  testZoneID,
 							Name:    testRecordName,
 							Type:    testRecordType,
 							Content: testRecordContent,
-							TTL:     testRecordTTL,
+							TTL:     int(testRecordTTL),
 						}, nil
 					},
 				},
@@ -342,11 +343,10 @@ func TestInterfaceObserve(t *testing.T) {
 					DNSRecordFn: func(ctx context.Context, zoneID, recordID string) (cloudflare.DNSRecord, error) {
 						return cloudflare.DNSRecord{
 							ID:      testRecordID,
-							ZoneID:  testZoneID,
 							Name:    testRecordName,
 							Type:    testRecordType,
 							Content: "different-content",
-							TTL:     testRecordTTL,
+							TTL:     int(testRecordTTL),
 						}, nil
 					},
 				},
@@ -377,9 +377,9 @@ func TestInterfaceObserve(t *testing.T) {
 					withInterfaceExternalName(testRecordID),
 					withInterfaceSpec(v1alpha1.RecordSpec{
 						ForProvider: v1alpha1.RecordParameters{
-							Name:    &testRecordName,
+							Name:    testRecordName,
 							Type:    &testRecordType,
-							Content: &testRecordContent,
+							Content: testRecordContent,
 							TTL:     &testRecordTTL,
 							// Zone is nil
 						},
@@ -391,9 +391,9 @@ func TestInterfaceObserve(t *testing.T) {
 					withInterfaceExternalName(testRecordID),
 					withInterfaceSpec(v1alpha1.RecordSpec{
 						ForProvider: v1alpha1.RecordParameters{
-							Name:    &testRecordName,
+							Name:    testRecordName,
 							Type:    &testRecordType,
-							Content: &testRecordContent,
+							Content: testRecordContent,
 							TTL:     &testRecordTTL,
 						},
 					}),
@@ -451,8 +451,7 @@ func TestInterfaceCreate(t *testing.T) {
 						return &cloudflare.DNSRecordResponse{
 							Result: cloudflare.DNSRecord{
 								ID:      testRecordID,
-								ZoneID:  zoneID,
-								Name:    rr.Name,
+									Name:    rr.Name,
 								Type:    rr.Type,
 								Content: rr.Content,
 								TTL:     rr.TTL,
@@ -464,7 +463,6 @@ func TestInterfaceCreate(t *testing.T) {
 			want: want{
 				cr: interfaceRecord(withInterfaceExternalName(testRecordID)),
 				result: managed.ExternalCreation{
-					ExternalNameAssigned: true,
 				},
 			},
 		},
@@ -474,9 +472,9 @@ func TestInterfaceCreate(t *testing.T) {
 				mg: interfaceRecord(withInterfaceSpec(v1alpha1.RecordSpec{
 					ForProvider: v1alpha1.RecordParameters{
 						Zone:    &testZoneID,
-						Name:    &testRecordName,
+						Name:    testRecordName,
 						Type:    stringPtr("SRV"),
-						Content: stringPtr("invalid srv content"), // Invalid SRV format
+						Content: "invalid srv content", // Invalid SRV format
 						TTL:     &testRecordTTL,
 					},
 				})),
@@ -486,9 +484,9 @@ func TestInterfaceCreate(t *testing.T) {
 				cr: interfaceRecord(withInterfaceSpec(v1alpha1.RecordSpec{
 					ForProvider: v1alpha1.RecordParameters{
 						Zone:    &testZoneID,
-						Name:    &testRecordName,
+						Name:    testRecordName,
 						Type:    stringPtr("SRV"),
-						Content: stringPtr("invalid srv content"),
+						Content: "invalid srv content",
 						TTL:     &testRecordTTL,
 					},
 				})),
@@ -501,9 +499,9 @@ func TestInterfaceCreate(t *testing.T) {
 				mg: interfaceRecord(withInterfaceSpec(v1alpha1.RecordSpec{
 					ForProvider: v1alpha1.RecordParameters{
 						Zone:    &testZoneID,
-						Name:    &testRecordName,
+						Name:    testRecordName,
 						Type:    stringPtr("A"),
-						Content: stringPtr("192.168.1.1"),
+						Content: "192.168.1.1",
 						TTL:     &testRecordTTL,
 					},
 				})),
@@ -512,8 +510,7 @@ func TestInterfaceCreate(t *testing.T) {
 						return &cloudflare.DNSRecordResponse{
 							Result: cloudflare.DNSRecord{
 								ID:      testRecordID,
-								ZoneID:  zoneID,
-								Name:    rr.Name,
+									Name:    rr.Name,
 								Type:    rr.Type,
 								Content: rr.Content,
 								TTL:     rr.TTL,
@@ -528,15 +525,14 @@ func TestInterfaceCreate(t *testing.T) {
 					withInterfaceSpec(v1alpha1.RecordSpec{
 						ForProvider: v1alpha1.RecordParameters{
 							Zone:    &testZoneID,
-							Name:    &testRecordName,
+							Name:    testRecordName,
 							Type:    stringPtr("A"),
-							Content: stringPtr("192.168.1.1"),
+							Content: "192.168.1.1",
 							TTL:     &testRecordTTL,
 						},
 					}),
 				),
 				result: managed.ExternalCreation{
-					ExternalNameAssigned: true,
 				},
 			},
 		},
@@ -546,9 +542,9 @@ func TestInterfaceCreate(t *testing.T) {
 				mg: interfaceRecord(withInterfaceSpec(v1alpha1.RecordSpec{
 					ForProvider: v1alpha1.RecordParameters{
 						Zone:    &testZoneID,
-						Name:    &testRecordName,
+						Name:    testRecordName,
 						Type:    stringPtr("A"),
-						Content: stringPtr("256.1.1.1"), // Invalid IP
+						Content: "256.1.1.1", // Invalid IP
 						TTL:     &testRecordTTL,
 					},
 				})),
@@ -558,9 +554,9 @@ func TestInterfaceCreate(t *testing.T) {
 				cr: interfaceRecord(withInterfaceSpec(v1alpha1.RecordSpec{
 					ForProvider: v1alpha1.RecordParameters{
 						Zone:    &testZoneID,
-						Name:    &testRecordName,
+						Name:    testRecordName,
 						Type:    stringPtr("A"),
-						Content: stringPtr("256.1.1.1"),
+						Content: "256.1.1.1",
 						TTL:     &testRecordTTL,
 					},
 				})),
@@ -631,9 +627,9 @@ func TestInterfaceUpdate(t *testing.T) {
 					withInterfaceSpec(v1alpha1.RecordSpec{
 						ForProvider: v1alpha1.RecordParameters{
 							Zone:    &testZoneID,
-							Name:    &testRecordName,
+							Name:    testRecordName,
 							Type:    stringPtr("A"),
-							Content: stringPtr("256.1.1.1"), // Invalid IP
+							Content: "256.1.1.1", // Invalid IP
 							TTL:     &testRecordTTL,
 						},
 					}),
@@ -646,9 +642,9 @@ func TestInterfaceUpdate(t *testing.T) {
 					withInterfaceSpec(v1alpha1.RecordSpec{
 						ForProvider: v1alpha1.RecordParameters{
 							Zone:    &testZoneID,
-							Name:    &testRecordName,
+							Name:    testRecordName,
 							Type:    stringPtr("A"),
-							Content: stringPtr("256.1.1.1"),
+							Content: "256.1.1.1",
 							TTL:     &testRecordTTL,
 						},
 					}),
