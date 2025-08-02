@@ -30,16 +30,15 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/cloudflare/cloudflare-go"
 
-	"github.com/benagricola/provider-cloudflare/apis/dns/v1alpha1"
-	clients "github.com/benagricola/provider-cloudflare/internal/clients"
-	records "github.com/benagricola/provider-cloudflare/internal/clients/records"
-	metrics "github.com/benagricola/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/apis/dns/v1alpha1"
+	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	records "github.com/rossigee/provider-cloudflare/internal/clients/records"
+	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
 )
 
 const (
@@ -63,7 +62,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.RecordGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             ratelimiter.NewDefaultManagedRateLimiter(rl),
+		RateLimiter:             rl,
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -141,7 +140,8 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errRecordNoZone)
 	}
 
-	record, err := e.client.DNSRecord(ctx, *cr.Spec.ForProvider.Zone, rid)
+	rc := cloudflare.ZoneIdentifier(*cr.Spec.ForProvider.Zone)
+	record, err := e.client.GetDNSRecord(ctx, rc, rid)
 
 	if err != nil {
 		return managed.ExternalObservation{},
@@ -178,11 +178,18 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errRecordCreation)
 	}
 
-	// Required for MX, SRV and URI records; unused by other record types.
+	// Required for MX and URI records; unused by other record types.
 	if cr.Spec.ForProvider.Priority == nil {
 		switch *cr.Spec.ForProvider.Type {
-		case "MX", "SRV", "URI":
+		case "MX", "URI":
 			return managed.ExternalCreation{}, errors.New(errRecordCreation)
+		}
+	}
+
+	// SRV records require priority, weight, and port fields
+	if *cr.Spec.ForProvider.Type == "SRV" {
+		if cr.Spec.ForProvider.Priority == nil || cr.Spec.ForProvider.Weight == nil || cr.Spec.ForProvider.Port == nil {
+			return managed.ExternalCreation{}, errors.New("SRV records require priority, weight, and port fields")
 		}
 	}
 
@@ -195,29 +202,43 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		pri = &val
 	}
 
-	res, err := e.client.CreateDNSRecord(
-		ctx,
-		*cr.Spec.ForProvider.Zone,
-		cloudflare.DNSRecord{
-			Type:     *cr.Spec.ForProvider.Type,
-			Name:     cr.Spec.ForProvider.Name,
-			TTL:      ttl,
-			Content:  cr.Spec.ForProvider.Content,
-			Proxied:  cr.Spec.ForProvider.Proxied,
-			Priority: pri,
-		},
-	)
+	rc := cloudflare.ZoneIdentifier(*cr.Spec.ForProvider.Zone)
+	params := cloudflare.CreateDNSRecordParams{
+		Type:    *cr.Spec.ForProvider.Type,
+		Name:    cr.Spec.ForProvider.Name,
+		Content: cr.Spec.ForProvider.Content,
+		TTL:     ttl,
+		Proxied: cr.Spec.ForProvider.Proxied,
+	}
+	if pri != nil {
+		params.Priority = pri
+	}
+
+	// For SRV records, use the Data field instead of Priority/Content
+	if *cr.Spec.ForProvider.Type == "SRV" {
+		srvData := map[string]interface{}{
+			"priority": int(*cr.Spec.ForProvider.Priority),
+			"weight":   int(*cr.Spec.ForProvider.Weight),
+			"port":     int(*cr.Spec.ForProvider.Port),
+			"target":   cr.Spec.ForProvider.Content,
+		}
+		params.Data = srvData
+		params.Priority = nil
+		params.Content = ""
+	}
+	
+	res, err := e.client.CreateDNSRecord(ctx, rc, params)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errRecordCreation)
 	}
 
-	cr.Status.AtProvider = records.GenerateObservation(res.Result)
+	cr.Status.AtProvider = records.GenerateObservation(res)
 
 	// Update the external name with the ID of the new DNS Record
-	meta.SetExternalName(cr, res.Result.ID)
+	meta.SetExternalName(cr, res.ID)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -239,7 +260,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	return managed.ExternalUpdate{},
 		errors.Wrap(
-			records.UpdateRecord(ctx, e.client, rid, &cr.Spec.ForProvider),
+			records.UpdateRecord(ctx, e.client, *cr.Spec.ForProvider.Zone, rid, &cr.Spec.ForProvider),
 			errRecordUpdate,
 		)
 }
@@ -261,7 +282,8 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errRecordDeletion)
 	}
 
+	rc := cloudflare.ZoneIdentifier(*cr.Spec.ForProvider.Zone)
 	return errors.Wrap(
-		e.client.DeleteDNSRecord(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr)),
+		e.client.DeleteDNSRecord(ctx, rc, meta.GetExternalName(cr)),
 		errRecordDeletion)
 }

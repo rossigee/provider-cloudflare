@@ -27,7 +27,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 
-	"github.com/benagricola/provider-cloudflare/apis/zone/v1alpha1"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1alpha1"
 )
 
 // RecordParameters are the configurable fields of a DNS Record.
@@ -61,6 +61,18 @@ type RecordParameters struct {
 	// +kubebuilder:validation:Maximum=65535
 	// +optional
 	Priority *int32 `json:"priority,omitempty"`
+
+	// Weight for SRV records.
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Maximum=65535
+	// +optional
+	Weight *int32 `json:"weight,omitempty"`
+
+	// Port for SRV records.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=65535
+	// +optional
+	Port *int32 `json:"port,omitempty"`
 
 	// ZoneID this DNS Record is managed on.
 	// +immutable
