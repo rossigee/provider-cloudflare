@@ -1,0 +1,33 @@
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: bypass-cache-rule
+spec:
+  forProvider:
+    zone: your-zone-id-here  # Replace with your actual Cloudflare Zone ID
+    name: bypass-admin-cache
+    description: Bypass cache for admin and sensitive areas
+    expression: '(http.request.uri.path matches "^/(admin|api/auth|checkout|profile)/.*") or (http.cookie contains "admin_session")'
+    enabled: true
+    priority: 100  # Higher priority (lower number) to override other cache rules
+    
+    # Disable caching for matching requests
+    cache: false
+    
+    # Ensure no browser caching
+    browserTTL:
+      mode: override_origin
+      default: 0
+    
+    # Ensure no edge caching
+    edgeTTL:
+      mode: override_origin
+      default: 0
+    
+    # Origin cache control settings
+    originCacheControl: false
+    respectStrongETags: false
+    originErrorPagePassthru: true
+  
+  providerConfigRef:
+    name: cloudflare-provider-config

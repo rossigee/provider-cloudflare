@@ -328,19 +328,18 @@ type ZoneParameters struct {
 	// +optional
 	AccountID *string `json:"accountId,omitempty"`
 
-	// TODO: Work out what to do with this one. In Cloudflare, it causes
-	// Existing DNS Records to be imported, which means we have
-	// records in Cloudflare that would not be managed by Crossplane.
-	// Should we try to import those when creating a Zone with
-	// JumpStart enabled?
-
 	// JumpStart enables attempting to import existing DNS records
 	// when a new Zone is created.
-	// WARNING: JumpStart causes Cloudflare to automatically create
-	// DNS records without the involvement of Crossplane. This means
-	// you will have no Record instances representing records
-	// created in this manner, and you will have to import them
-	// manually if you want to manage them with Crossplane.
+	// 
+	// WARNING: When enabled, Cloudflare automatically creates DNS records
+	// by scanning your domain's existing nameservers. These auto-created
+	// records will NOT be managed by Crossplane and will exist only in
+	// Cloudflare. To manage them with Crossplane, you must:
+	// 1. Create corresponding Record resources with matching settings
+	// 2. Import the external records using crossplane.io/external-name annotation
+	// 
+	// Recommendation: Leave disabled (false) for new zones to maintain
+	// full Crossplane control over DNS records.
 	// +kubebuilder:default=false
 	// +immutable
 	// +optional

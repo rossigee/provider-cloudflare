@@ -29,7 +29,6 @@ import (
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	rtfake "github.com/crossplane/crossplane-runtime/pkg/resource/fake"
@@ -93,6 +92,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	_, err := e.client.FallbackOrigin(ctx, *cr.Spec.ForProvider.Zone)
 	if err != nil {
+		if IsFallbackOriginNotFound(err) {
+			return managed.ExternalObservation{ResourceExists: false}, nil
+		}
 		return managed.ExternalObservation{}, errors.Wrap(err, errFallbackOriginLookup)
 	}
 
@@ -127,17 +129,14 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errFallbackOriginNoZone)
 	}
 
-	// Check if external name is set
-	rid := meta.GetExternalName(cr)
-	if rid == "" {
-		return managed.ExternalUpdate{}, errors.New(errFallbackOriginUpdate)
-	}
-
 	zoneID := *cr.Spec.ForProvider.Zone
-	origin := cloudflare.CustomHostnameFallbackOrigin{}
+	origin := ParametersToFallbackOrigin(cr.Spec.ForProvider)
 	
 	_, err := e.client.UpdateFallbackOrigin(ctx, zoneID, origin)
-	return managed.ExternalUpdate{}, errors.Wrap(err, errFallbackOriginUpdate)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errFallbackOriginUpdate)
+	}
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -150,16 +149,13 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errFallbackOriginNoZone)
 	}
 
-	// Check if external name is set
-	rid := meta.GetExternalName(cr)
-	if rid == "" {
-		return errors.New(errFallbackOriginDeletion)
-	}
-
 	zoneID := *cr.Spec.ForProvider.Zone
 	
 	err := e.client.DeleteFallbackOrigin(ctx, zoneID)
-	return errors.Wrap(err, errFallbackOriginDeletion)
+	if err != nil {
+		return errors.Wrap(err, errFallbackOriginDeletion)
+	}
+	return nil
 }
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing

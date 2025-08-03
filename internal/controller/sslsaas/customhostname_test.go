@@ -67,10 +67,6 @@ func withZone(zoneID string) customHostnameModifier {
 	}
 }
 
-func withHostname(hostname string) customHostnameModifier {
-	return func(ch *v1alpha1.CustomHostname) { ch.Spec.ForProvider.Hostname = hostname }
-}
-
 func withSSLMethod(method string) customHostnameModifier {
 	return func(ch *v1alpha1.CustomHostname) { 
 		if method == "" {
@@ -81,20 +77,8 @@ func withSSLMethod(method string) customHostnameModifier {
 	}
 }
 
-func withSSLType(sslType string) customHostnameModifier {
-	return func(ch *v1alpha1.CustomHostname) { ch.Spec.ForProvider.SSL.Type = &sslType }
-}
-
 func withConditions(c ...xpv1.Condition) customHostnameModifier {
 	return func(ch *v1alpha1.CustomHostname) { ch.Status.Conditions = c }
-}
-
-func withSpec(s v1alpha1.CustomHostnameSpec) customHostnameModifier {
-	return func(ch *v1alpha1.CustomHostname) { ch.Spec = s }
-}
-
-func withStatus(s v1alpha1.CustomHostnameStatus) customHostnameModifier {
-	return func(ch *v1alpha1.CustomHostname) { ch.Status = s }
 }
 
 func withAtProvider(obs v1alpha1.CustomHostnameObservation) customHostnameModifier {

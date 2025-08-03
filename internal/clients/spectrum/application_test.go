@@ -32,7 +32,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum/fake"
 
 	corev1 "k8s.io/api/core/v1"
-	ptr "k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -94,15 +94,32 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	_, err := e.client.SpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid)
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalObservation{}, errors.New(errApplicationNoZone)
+	}
+
+	app, err := e.client.SpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid)
 	if err != nil {
+		if IsApplicationNotFound(err) {
+			return managed.ExternalObservation{ResourceExists: false}, nil
+		}
 		return managed.ExternalObservation{}, errors.Wrap(err, errApplicationLookup)
 	}
 
+	// Late initialize any missing fields from the observed application
+	lateInitialized := LateInitialize(&cr.Spec.ForProvider, app)
+	
+	// Check if the spec is up to date with the observed application
+	upToDate := UpToDate(&cr.Spec.ForProvider, app)
+
+	// Generate observation data from the application
+	cr.Status.AtProvider = GenerateObservation(app)
 	cr.SetConditions(xpv1.Available())
+	
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: true,
+		ResourceExists:          true,
+		ResourceUpToDate:        upToDate,
+		ResourceLateInitialized: lateInitialized,
 	}, nil
 }
 
@@ -110,6 +127,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1alpha1.Application)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotApplication)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalCreation{}, errors.Wrap(errors.New(errApplicationNoZone), errApplicationCreation)
 	}
 
 	app, err := e.client.CreateSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, &cr.Spec.ForProvider)
@@ -129,7 +150,11 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	rid := meta.GetExternalName(cr)
 	if rid == "" {
-		return managed.ExternalUpdate{}, nil
+		return managed.ExternalUpdate{}, errors.New(errApplicationUpdate)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalUpdate{}, errors.Wrap(errors.New(errApplicationNoZone), errApplicationUpdate)
 	}
 
 	err := e.client.UpdateSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid, &cr.Spec.ForProvider)
@@ -148,10 +173,18 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	rid := meta.GetExternalName(cr)
 	if rid == "" {
-		return nil
+		return errors.New(errApplicationDeletion)
 	}
 
-	return e.client.DeleteSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid)
+	if cr.Spec.ForProvider.Zone == nil {
+		return errors.Wrap(errors.New(errApplicationNoZone), errApplicationDeletion)
+	}
+
+	err := e.client.DeleteSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid)
+	if err != nil {
+		return errors.Wrap(err, errApplicationDeletion)
+	}
+	return nil
 }
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -724,7 +757,7 @@ func TestCreate(t *testing.T) {
 					withOriginDirect([]string{"tcp://192.0.2.1:22"}),
 					withEdgeIPs(v1alpha1.SpectrumApplicationEdgeIPs{
 						Type:         "dynamic",
-						Connectivity: ptr.StringPtr("all"),
+						Connectivity: ptr.To("all"),
 					}),
 				),
 			},

@@ -1,0 +1,71 @@
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: api-load-balancer
+spec:
+  forProvider:
+    # Zone where the load balancer will be created
+    zone: "your-zone-id-here"
+    
+    # DNS configuration
+    name: "api.example.com"
+    description: "API load balancer with geographic routing"
+    ttl: 300
+    
+    # Enable the load balancer
+    enabled: true
+    proxied: true
+    
+    # Default pool for when no geographic rules match
+    defaultPoolRef:
+      name: us-east-pool
+    
+    # Fallback pool when all default pools are unhealthy
+    fallbackPoolRef:
+      name: us-east-pool
+    
+    # Geographic steering
+    regionPools:
+      WNAM: ["us-west-pool"]     # Western North America
+      ENAM: ["us-east-pool"]     # Eastern North America
+      WEU: ["europe-pool"]       # Western Europe
+    
+    # Country-specific routing
+    countryPools:
+      US: ["us-east-pool", "us-west-pool"]
+      CA: ["us-east-pool"]
+      GB: ["europe-pool"]
+      DE: ["europe-pool"]
+    
+    # Session affinity configuration
+    sessionAffinity: "cookie"
+    sessionAffinityTtl: 3600
+    sessionAffinityAttributes:
+      sameSite: "Lax"
+      secure: "Auto"
+      drainDuration: 30
+      zeroDowntimeFailover: "sticky"
+      headers: ["CF-Connecting-IP"]
+      requireAllHeaders: false
+    
+    # Traffic steering policy
+    steeringPolicy: "geo"
+    
+    # Random steering weights when using random policy
+    randomSteering:
+      defaultWeight: 1.0
+      poolWeights:
+        us-east-pool: 0.6
+        us-west-pool: 0.4
+    
+    # Adaptive routing for intelligent failover
+    adaptiveRouting:
+      failoverAcrossPools: true
+    
+    # Location strategy for non-proxied requests  
+    locationStrategy:
+      mode: "resolver_ip"
+      preferEcs: "proximity"
+  
+  providerConfigRef:
+    name: default

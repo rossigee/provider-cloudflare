@@ -1,0 +1,28 @@
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: basic-cache-rule
+spec:
+  forProvider:
+    zone: your-zone-id-here  # Replace with your actual Cloudflare Zone ID
+    name: basic-static-assets
+    description: Cache static assets like images, CSS, and JS files
+    expression: '(http.request.uri.path matches ".*\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2)$")'
+    enabled: true
+    priority: 1000
+    
+    # Enable caching for matching requests
+    cache: true
+    
+    # Set edge TTL to 1 hour (3600 seconds)
+    edgeTTL:
+      mode: override_origin
+      default: 3600
+    
+    # Set browser TTL to 30 minutes (1800 seconds)
+    browserTTL:
+      mode: override_origin
+      default: 1800
+  
+  providerConfigRef:
+    name: cloudflare-provider-config

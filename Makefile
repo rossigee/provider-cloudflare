@@ -36,7 +36,7 @@ XPKG_REG_ORGS_NO_PROMOTE ?= ghcr.io/rossigee
 
 # Optional registries (can be enabled via environment variables)
 # To enable Harbor: export ENABLE_HARBOR_PUBLISH=true make publish XPKG_REG_ORGS=harbor.golder.lan/library
-# To enable Upbound: export ENABLE_UPBOUND_PUBLISH=true make publish XPKG_REG_ORGS=xpkg.upbound.io/crossplane-contrib
+# To enable Upbound: export ENABLE_UPBOUND_PUBLISH=true make publish XPKG_REG_ORGS=xpkg.upbound.io/rossigee
 XPKGS = provider-cloudflare
 -include build/makelib/xpkg.mk
 
@@ -105,3 +105,18 @@ install-crds: generate
 # Uninstall CRDs from a cluster
 uninstall-crds:
 	kubectl delete -f package/crds
+
+# Publish to Upbound Marketplace
+publish-upbound: xpkg.build
+	@$(INFO) Publishing to Upbound Marketplace...
+	@up xpkg push $(PROJECT_REPO)/package/provider-cloudflare-$(VERSION).xpkg xpkg.upbound.io/rossigee/provider-cloudflare:$(VERSION)
+
+# Validate package for marketplace compliance
+validate-package:
+	@$(INFO) Validating package structure...
+	@test -f package/crossplane.yaml || (echo "Missing package/crossplane.yaml" && exit 1)
+	@test -f .github/cloudflare-icon.svg || (echo "Missing icon file" && exit 1)
+	@grep -q "meta.crossplane.io/maintainer" package/crossplane.yaml || (echo "Missing maintainer annotation" && exit 1)
+	@grep -q "meta.crossplane.io/source" package/crossplane.yaml || (echo "Missing source annotation" && exit 1)
+	@grep -q "meta.crossplane.io/license" package/crossplane.yaml || (echo "Missing license annotation" && exit 1)
+	@$(INFO) Package validation passed!

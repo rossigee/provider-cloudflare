@@ -18,6 +18,7 @@ package loadbalancing
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
@@ -25,8 +26,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
@@ -37,7 +36,6 @@ import (
 	apisv1alpha1 "github.com/rossigee/provider-cloudflare/apis/v1alpha1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing"
-	"github.com/rossigee/provider-cloudflare/internal/controller/features"
 )
 
 const (
@@ -53,9 +51,6 @@ func SetupPool(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1alpha1.LoadBalancerPoolGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
-	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
-		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), apisv1alpha1.StoreConfigGroupVersionKind))
-	}
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1alpha1.LoadBalancerPoolGroupVersionKind),
@@ -82,7 +77,7 @@ func SetupPool(mgr ctrl.Manager, o controller.Options) error {
 type poolConnector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(cfg clients.Config, httpClient *clients.HTTPClient) (loadbalancing.PoolClient, error)
+	newServiceFn func(cfg clients.Config, httpClient *http.Client) (loadbalancing.PoolClient, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -105,15 +100,13 @@ func (c *poolConnector) Connect(ctx context.Context, mg resource.Managed) (manag
 		return nil, errors.Wrap(err, errGetPoolPC)
 	}
 
-	cd := pc.Spec.Credentials
-	data, err := resource.CommonCredentialExtractor(ctx, cd.Source, c.kube, cd.CommonCredentialSelectors)
+	// Get client configuration
+	config, err := clients.GetConfig(ctx, c.kube, mg)
 	if err != nil {
 		return nil, errors.Wrap(err, errGetPoolCreds)
 	}
 
-	cfg := clients.NewConfig(data)
-
-	svc, err := c.newServiceFn(cfg, clients.NewHTTPClient())
+	svc, err := c.newServiceFn(*config, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, errNewPoolClient)
 	}
@@ -152,7 +145,7 @@ func (c *poolExternal) Observe(ctx context.Context, mg resource.Managed) (manage
 				ResourceExists: false,
 			}, nil
 		}
-		return managed.ExternalObservation{}, errors.Wrap(err, "failed to get pool")
+		return managed.ExternalObservation{}, errors.Wrap(err, "failed to get load balancer pool from Cloudflare API")
 	}
 
 	cr.Status.AtProvider = loadbalancing.GeneratePoolObservation(pool)
@@ -178,7 +171,7 @@ func (c *poolExternal) Create(ctx context.Context, mg resource.Managed) (managed
 
 	pool, err := c.service.CreatePool(ctx, cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, "failed to create pool")
+		return managed.ExternalCreation{}, errors.Wrap(err, "failed to create load balancer pool in Cloudflare API")
 	}
 
 	cr.Status.AtProvider = loadbalancing.GeneratePoolObservation(pool)
@@ -201,7 +194,7 @@ func (c *poolExternal) Update(ctx context.Context, mg resource.Managed) (managed
 
 	_, err := c.service.UpdatePool(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "failed to update pool")
+		return managed.ExternalUpdate{}, errors.Wrap(err, "failed to update load balancer pool in Cloudflare API")
 	}
 
 	return managed.ExternalUpdate{
@@ -217,7 +210,7 @@ func (c *poolExternal) Delete(ctx context.Context, mg resource.Managed) error {
 
 	err := c.service.DeletePool(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil && !loadbalancing.IsPoolNotFound(err) {
-		return errors.Wrap(err, "failed to delete pool")
+		return errors.Wrap(err, "failed to delete load balancer pool from Cloudflare API")
 	}
 
 	return nil

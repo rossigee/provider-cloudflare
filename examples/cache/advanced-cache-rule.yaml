@@ -1,0 +1,86 @@
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: advanced-cache-rule
+spec:
+  forProvider:
+    zone: your-zone-id-here  # Replace with your actual Cloudflare Zone ID
+    name: advanced-api-cache
+    description: Advanced caching for API endpoints with custom cache keys
+    expression: '(http.request.uri.path matches "^/api/v1/(users|products)/.*")'
+    enabled: true
+    priority: 500
+    
+    # Enable caching
+    cache: true
+    
+    # Advanced edge TTL with status code specific settings
+    edgeTTL:
+      mode: override_origin
+      default: 300  # 5 minutes default
+      statusCodeTTL:
+        - statusCodeValue: 200
+          value: 3600     # 1 hour for successful responses
+        - statusCodeRange:
+            from: 400
+            to: 499
+          value: 60       # 1 minute for client errors
+        - statusCodeRange:
+            from: 500
+            to: 599
+          value: 0        # No caching for server errors
+    
+    # Browser TTL
+    browserTTL:
+      mode: respect_origin
+      default: 1800  # 30 minutes
+    
+    # Custom cache key configuration
+    cacheKey:
+      cacheByDeviceType: true
+      ignoreQueryStringsOrder: true
+      cacheDeceptionArmor: true
+      customKey:
+        query:
+          include:
+            - page
+            - limit
+            - sort
+          exclude:
+            - timestamp
+            - session_id
+        header:
+          include:
+            - CF-IPCountry
+            - Accept-Language
+          checkPresence:
+            - Authorization
+          excludeOrigin: true
+        user:
+          deviceType: true
+          geo: true
+          lang: false
+    
+    # Serve stale configuration
+    serveStale:
+      disableStaleWhileUpdating: false
+    
+    # Origin cache control
+    originCacheControl: true
+    respectStrongETags: true
+    
+    # Cache Reserve (Cloudflare's persistent cache)
+    cacheReserve:
+      eligible: true
+      minimumFileSize: 1024  # 1KB minimum
+    
+    # Additional cacheable ports
+    additionalCacheablePorts:
+      - 8080
+      - 8443
+    
+    # Read timeout in seconds
+    readTimeout: 30
+  
+  providerConfigRef:
+    name: cloudflare-provider-config

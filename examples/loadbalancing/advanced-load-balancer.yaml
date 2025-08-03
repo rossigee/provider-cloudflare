@@ -1,0 +1,116 @@
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: advanced-api-lb
+spec:
+  forProvider:
+    zone: "your-zone-id-here"
+    name: "api.example.com"
+    description: "Advanced load balancer with traffic steering rules"
+    ttl: 60
+    enabled: true
+    proxied: true
+    
+    # Pool configuration
+    defaultPoolRef:
+      name: us-east-pool
+    fallbackPoolRef:
+      name: us-east-pool
+    
+    # Advanced traffic steering rules
+    rules:
+      - name: "Mobile Traffic Rule"
+        condition: 'http.user_agent contains "Mobile"'
+        priority: 1
+        disabled: false
+        terminates: false
+        overrides:
+          sessionAffinity: "cookie"
+          sessionAffinityTtl: 1800
+          steeringPolicy: "proximity"
+          defaultPools: ["mobile-optimized-pool"]
+          regionPools:
+            WNAM: ["us-west-mobile-pool"]
+            ENAM: ["us-east-mobile-pool"]
+      
+      - name: "API v2 Traffic"
+        condition: 'http.request.uri.path starts_with "/v2/"'
+        priority: 2
+        disabled: false
+        terminates: false
+        overrides:
+          steeringPolicy: "least_outstanding_requests"
+          defaultPools: ["v2-api-pool"]
+          ttl: 120
+      
+      - name: "Maintenance Mode"
+        condition: 'http.request.uri.query contains "maintenance=true"'
+        priority: 3
+        disabled: true  # Enable during maintenance
+        terminates: true
+        fixedResponse:
+          statusCode: 503
+          contentType: "application/json"
+          messageBody: '{"error": "Service temporarily unavailable"}'
+    
+    # Session affinity
+    sessionAffinity: "ip_cookie"
+    sessionAffinityTtl: 7200
+    sessionAffinityAttributes:
+      sameSite: "None"
+      secure: "Always"
+      drainDuration: 60
+      zeroDowntimeFailover: "temporary"
+      headers: ["CF-Connecting-IP", "CF-IPCountry"]
+      requireAllHeaders: true
+    
+    # Advanced steering
+    steeringPolicy: "dynamic_latency"
+    
+    # Random steering with custom weights
+    randomSteering:
+      defaultWeight: 1.0
+      poolWeights:
+        us-east-pool: 0.4
+        us-west-pool: 0.3
+        europe-pool: 0.2
+        asia-pool: 0.1
+    
+    # Adaptive routing for intelligent failover
+    adaptiveRouting:
+      failoverAcrossPools: true
+    
+    # Location strategy
+    locationStrategy:
+      mode: "resolver_ip"
+      preferEcs: "always"
+    
+    # Geographic distribution
+    regionPools:
+      WNAM: ["us-west-pool", "us-east-pool"]
+      ENAM: ["us-east-pool", "us-west-pool"] 
+      WEU: ["europe-pool", "us-east-pool"]
+      EEU: ["europe-pool"]
+      APAC: ["asia-pool", "us-west-pool"]
+    
+    popPools:
+      LAX: ["us-west-pool"]      # Los Angeles
+      ORD: ["us-east-pool"]      # Chicago
+      JFK: ["us-east-pool"]      # New York
+      LHR: ["europe-pool"]       # London
+      FRA: ["europe-pool"]       # Frankfurt
+      NRT: ["asia-pool"]         # Tokyo
+    
+    countryPools:
+      US: ["us-east-pool", "us-west-pool"]
+      CA: ["us-east-pool", "us-west-pool"]
+      MX: ["us-west-pool", "us-east-pool"]
+      GB: ["europe-pool"]
+      DE: ["europe-pool"]
+      FR: ["europe-pool"]
+      JP: ["asia-pool"]
+      AU: ["asia-pool"]
+      SG: ["asia-pool"]
+  
+  providerConfigRef:
+    name: default

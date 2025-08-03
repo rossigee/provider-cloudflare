@@ -19,6 +19,7 @@ package loadbalancing
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
@@ -26,8 +27,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
@@ -48,8 +47,8 @@ const (
 	errNewClient          = "cannot create new Service"
 )
 
-// Setup adds a controller that reconciles LoadBalancer managed resources.
-func Setup(mgr ctrl.Manager, o controller.Options) error {
+// SetupLoadBalancer adds a controller that reconciles LoadBalancer managed resources.
+func SetupLoadBalancer(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1alpha1.LoadBalancerGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
@@ -79,7 +78,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(cfg clients.Config, httpClient *clients.HTTPClient) (loadbalancing.LoadBalancerClient, error)
+	newServiceFn func(cfg clients.Config, httpClient *http.Client) (loadbalancing.LoadBalancerClient, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -102,15 +101,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetPC)
 	}
 
-	cd := pc.Spec.Credentials
-	data, err := resource.CommonCredentialExtractor(ctx, cd.Source, c.kube, cd.CommonCredentialSelectors)
+	// Get client configuration
+	config, err := clients.GetConfig(ctx, c.kube, mg)
 	if err != nil {
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 
-	cfg := clients.NewConfig(data)
-
-	svc, err := c.newServiceFn(cfg, clients.NewHTTPClient())
+	svc, err := c.newServiceFn(*config, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, errNewClient)
 	}
@@ -149,7 +146,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 				ResourceExists: false,
 			}, nil
 		}
-		return managed.ExternalObservation{}, errors.Wrap(err, "failed to get load balancer")
+		return managed.ExternalObservation{}, errors.Wrap(err, "failed to get load balancer from Cloudflare API")
 	}
 
 	cr.Status.AtProvider = loadbalancing.GenerateLoadBalancerObservation(lb)
@@ -175,7 +172,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	lb, err := c.service.CreateLoadBalancer(ctx, cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, "failed to create load balancer")
+		return managed.ExternalCreation{}, errors.Wrap(err, "failed to create load balancer in Cloudflare API")
 	}
 
 	cr.Status.AtProvider = loadbalancing.GenerateLoadBalancerObservation(lb)
@@ -198,7 +195,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, err := c.service.UpdateLoadBalancer(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "failed to update load balancer")
+		return managed.ExternalUpdate{}, errors.Wrap(err, "failed to update load balancer in Cloudflare API")
 	}
 
 	return managed.ExternalUpdate{
@@ -214,7 +211,7 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	err := c.service.DeleteLoadBalancer(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil && !loadbalancing.IsLoadBalancerNotFound(err) {
-		return errors.Wrap(err, "failed to delete load balancer")
+		return errors.Wrap(err, "failed to delete load balancer from Cloudflare API")
 	}
 
 	return nil
@@ -244,17 +241,17 @@ func (c *external) lateInitialize(spec *v1alpha1.LoadBalancerParameters, lb *clo
 	}
 
 	if spec.Enabled == nil {
-		spec.Enabled = &lb.Enabled
+		spec.Enabled = lb.Enabled
 		li = true
 	}
 
-	if spec.SessionAffinity == nil && lb.SessionAffinity != "" {
-		spec.SessionAffinity = &lb.SessionAffinity
+	if spec.SessionAffinity == nil && lb.Persistence != "" {
+		spec.SessionAffinity = &lb.Persistence
 		li = true
 	}
 
-	if spec.SessionAffinityTTL == nil && lb.SessionAffinityTTL != 0 {
-		spec.SessionAffinityTTL = &lb.SessionAffinityTTL
+	if spec.SessionAffinityTTL == nil && lb.PersistenceTTL != 0 {
+		spec.SessionAffinityTTL = &lb.PersistenceTTL
 		li = true
 	}
 

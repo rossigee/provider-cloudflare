@@ -60,29 +60,14 @@ func withZone(zoneID string) ruleModifier {
 	}
 }
 
-func withPhase(phase string) ruleModifier {
-	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Phase = phase }
-}
-
 func withExpression(expression string) ruleModifier {
 	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Expression = expression }
-}
-
-func withAction(action string) ruleModifier {
-	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Action = action }
-}
-
-func withDescription(description string) ruleModifier {
-	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Description = &description }
 }
 
 func withConditions(c ...xpv1.Condition) ruleModifier {
 	return func(r *v1alpha1.Rule) { r.Status.Conditions = c }
 }
 
-func withSpec(s v1alpha1.RuleSpec) ruleModifier {
-	return func(r *v1alpha1.Rule) { r.Spec = s }
-}
 
 func withStatus(s v1alpha1.RuleStatus) ruleModifier {
 	return func(r *v1alpha1.Rule) { r.Status = s }
@@ -549,7 +534,6 @@ func TestUpdate(t *testing.T) {
 	}
 
 	type want struct {
-		cr  resource.Managed
 		o   managed.ExternalUpdate
 		err error
 	}

@@ -20,6 +20,7 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
+	cachev1alpha1 "github.com/rossigee/provider-cloudflare/apis/cache/v1alpha1"
 	dnsv1alpha1 "github.com/rossigee/provider-cloudflare/apis/dns/v1alpha1"
 	firewallv1alpha1 "github.com/rossigee/provider-cloudflare/apis/firewall/v1alpha1"
 	loadbalancingv1alpha1 "github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1alpha1"
@@ -36,6 +37,7 @@ func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		cloudflarev1alpha1.SchemeBuilder.AddToScheme,
+		cachev1alpha1.SchemeBuilder.AddToScheme,
 		dnsv1alpha1.SchemeBuilder.AddToScheme,
 		sslsaasv1alpha1.SchemeBuilder.AddToScheme,
 		spectrumv1alpha1.SchemeBuilder.AddToScheme,

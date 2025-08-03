@@ -1,0 +1,61 @@
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: geo-specific-cache
+spec:
+  forProvider:
+    zone: your-zone-id-here  # Replace with your actual Cloudflare Zone ID
+    name: geo-localized-content
+    description: Cache localized content with geographic variations
+    expression: '(http.request.uri.path matches "^/(localized|regional)/.*")'
+    enabled: true
+    priority: 200
+    
+    # Enable caching
+    cache: true
+    
+    # Cache for 2 hours
+    edgeTTL:
+      mode: override_origin
+      default: 7200
+    
+    # Browser cache for 1 hour
+    browserTTL:
+      mode: override_origin
+      default: 3600
+    
+    # Geographic cache key
+    cacheKey:
+      cacheByDeviceType: false
+      ignoreQueryStringsOrder: true
+      customKey:
+        query:
+          include:
+            - lang
+            - country
+            - region
+        header:
+          include:
+            - CF-IPCountry
+            - Accept-Language
+            - CF-IPCity
+          checkPresence:
+            - Accept-Language
+        user:
+          geo: true
+          lang: true
+          deviceType: false
+        host:
+          resolved: true
+    
+    # Serve stale for better performance
+    serveStale:
+      disableStaleWhileUpdating: false
+    
+    # Enable Cache Reserve for frequently accessed content
+    cacheReserve:
+      eligible: true
+      minimumFileSize: 512  # 512 bytes minimum
+  
+  providerConfigRef:
+    name: cloudflare-provider-config

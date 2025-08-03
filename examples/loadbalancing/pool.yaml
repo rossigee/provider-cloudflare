@@ -1,0 +1,59 @@
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancerPool
+metadata:
+  name: us-east-pool
+spec:
+  forProvider:
+    # Pool configuration
+    name: "us-east-pool"
+    description: "Pool for US East coast servers"
+    enabled: true
+    
+    # Health requirements
+    minimumOrigins: 1
+    
+    # Reference to health check monitor
+    monitorRef:
+      name: web-health-check
+    
+    # Origin servers
+    origins:
+      - name: "primary-server"
+        address: "192.0.2.1"
+        enabled: true
+        weight: 1.0
+        header:
+          Host: ["api.example.com"]
+      
+      - name: "secondary-server" 
+        address: "192.0.2.2"
+        enabled: true
+        weight: 0.8
+        header:
+          Host: ["api.example.com"]
+    
+    # Notifications
+    notificationEmail: "ops@example.com"
+    
+    # Geographic information for proximity steering
+    latitude: 40.7128    # New York City
+    longitude: -74.0060
+    
+    # Health check regions
+    checkRegions:
+      - "WNAM"  # Western North America  
+      - "ENAM"  # Eastern North America
+    
+    # Load shedding configuration
+    loadShedding:
+      defaultPercent: 80
+      defaultPolicy: "hash"
+      sessionPercent: 90
+      sessionPolicy: "cookie"
+    
+    # Origin steering policy
+    originSteering:
+      policy: "random"
+  
+  providerConfigRef:
+    name: default

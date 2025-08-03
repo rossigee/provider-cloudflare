@@ -225,7 +225,8 @@ func IsApplicationNotFound(err error) bool {
 	// Check for Cloudflare not found error or our specific error message
 	return err.Error() == errApplicationNotFound || 
 		   err.Error() == "404" ||
-		   err.Error() == "Not found"
+		   err.Error() == "Not found" ||
+		   err.Error() == "10006"
 }
 
 // GenerateObservation creates observation data from a Spectrum Application
@@ -245,8 +246,31 @@ func GenerateObservation(app cloudflare.SpectrumApplication) v1alpha1.Applicatio
 
 // LateInitialize fills in any missing fields in the spec from the observed application
 func LateInitialize(spec *v1alpha1.ApplicationParameters, app cloudflare.SpectrumApplication) bool {
-	// No late initialization needed for Spectrum applications currently
-	return false
+	lateInitialized := false
+	
+	// Late initialize EdgeIPs if not set in spec but present in observed app
+	if spec.EdgeIPs == nil && app.EdgeIPs != nil {
+		spec.EdgeIPs = &v1alpha1.SpectrumApplicationEdgeIPs{
+			Type: string(app.EdgeIPs.Type),
+		}
+		
+		if app.EdgeIPs.Connectivity != nil {
+			connectivity := string(*app.EdgeIPs.Connectivity)
+			spec.EdgeIPs.Connectivity = &connectivity
+		}
+		
+		if app.EdgeIPs.IPs != nil {
+			ips := make([]string, len(app.EdgeIPs.IPs))
+			for i, ip := range app.EdgeIPs.IPs {
+				ips[i] = ip.String()
+			}
+			spec.EdgeIPs.IPs = ips
+		}
+		
+		lateInitialized = true
+	}
+	
+	return lateInitialized
 }
 
 // UpToDate checks if the spec is up to date with the observed application
@@ -282,7 +306,7 @@ func ConvertIPs(ipStrings []string) ([]net.IP, error) {
 	for i, ipStr := range ipStrings {
 		ip := net.ParseIP(ipStr)
 		if ip == nil {
-			return nil, errors.Errorf("invalid IP address: %s", ipStr)
+			return nil, errors.New("invalid IP within Edge IPs")
 		}
 		ips[i] = ip
 	}

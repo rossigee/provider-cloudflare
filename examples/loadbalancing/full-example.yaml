@@ -1,0 +1,164 @@
+# Complete Load Balancing example with all components
+# This creates a monitor, pool, and load balancer together
+
+---
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancerMonitor
+metadata:
+  name: production-health-check
+spec:
+  forProvider:
+    type: "https"
+    description: "Production HTTPS health check"
+    method: "GET"
+    path: "/api/health"
+    header:
+      Host: ["api.example.com"]
+      Authorization: ["Bearer health-check-token"]
+    timeout: 10
+    retries: 3
+    interval: 30
+    consecutiveUp: 2
+    consecutiveDown: 2
+    port: 443
+    expectedBody: '{"status":"healthy"}'
+    expectedCodes: "200"
+    followRedirects: false
+    allowInsecure: false
+    probeZone: "US-EAST"
+  providerConfigRef:
+    name: default
+
+---
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancerPool
+metadata:
+  name: production-pool-us-east
+spec:
+  forProvider:
+    name: "production-pool-us-east"
+    description: "Production pool for US East region"
+    enabled: true
+    minimumOrigins: 2
+    monitorRef:
+      name: production-health-check
+    origins:
+      - name: "prod-api-01"
+        address: "10.0.1.10"
+        enabled: true
+        weight: 1.0
+        header:
+          X-Origin-ID: ["prod-api-01"]
+      - name: "prod-api-02"
+        address: "10.0.1.11"
+        enabled: true
+        weight: 1.0
+        header:
+          X-Origin-ID: ["prod-api-02"]
+      - name: "prod-api-03"
+        address: "10.0.1.12"
+        enabled: true
+        weight: 0.8  # Slightly lower weight for this server
+        header:
+          X-Origin-ID: ["prod-api-03"]
+    notificationEmail: "sre@example.com"
+    latitude: 40.7128
+    longitude: -74.0060
+    checkRegions: ["WNAM", "ENAM"]
+    loadShedding:
+      defaultPercent: 90
+      defaultPolicy: "random"
+      sessionPercent: 95
+      sessionPolicy: "hash"
+    originSteering:
+      policy: "least_outstanding_requests"
+  providerConfigRef:
+    name: default
+
+---
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancerPool
+metadata:
+  name: production-pool-us-west
+spec:
+  forProvider:
+    name: "production-pool-us-west"
+    description: "Production pool for US West region"
+    enabled: true
+    minimumOrigins: 1
+    monitorRef:
+      name: production-health-check
+    origins:
+      - name: "prod-api-west-01"
+        address: "10.0.2.10"
+        enabled: true
+        weight: 1.0
+        header:
+          X-Origin-ID: ["prod-api-west-01"]
+      - name: "prod-api-west-02"
+        address: "10.0.2.11"
+        enabled: true
+        weight: 1.0
+        header:
+          X-Origin-ID: ["prod-api-west-02"]
+    notificationEmail: "sre@example.com"
+    latitude: 37.7749
+    longitude: -122.4194
+    checkRegions: ["WNAM"]
+    originSteering:
+      policy: "random"
+  providerConfigRef:
+    name: default
+
+---
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: production-api-lb
+spec:
+  forProvider:
+    zone: "your-zone-id-here"
+    name: "api.example.com"
+    description: "Production API load balancer"
+    ttl: 300
+    enabled: true
+    proxied: true
+    
+    # Default and fallback pools
+    defaultPoolRef:
+      name: production-pool-us-east
+    fallbackPoolRef:
+      name: production-pool-us-west
+    
+    # Geographic routing
+    regionPools:
+      WNAM: ["production-pool-us-west", "production-pool-us-east"]
+      ENAM: ["production-pool-us-east", "production-pool-us-west"]
+    
+    countryPools:
+      US: ["production-pool-us-east", "production-pool-us-west"]
+      CA: ["production-pool-us-east", "production-pool-us-west"]
+    
+    # Session configuration
+    sessionAffinity: "cookie"
+    sessionAffinityTtl: 3600
+    sessionAffinityAttributes:
+      sameSite: "Lax"
+      secure: "Auto"
+      drainDuration: 30
+      zeroDowntimeFailover: "sticky"
+    
+    # Traffic steering
+    steeringPolicy: "geo"
+    
+    # Adaptive routing
+    adaptiveRouting:
+      failoverAcrossPools: true
+    
+    # Location strategy
+    locationStrategy:
+      mode: "resolver_ip"
+      preferEcs: "proximity"
+  
+  providerConfigRef:
+    name: default

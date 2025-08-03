@@ -41,7 +41,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	rtfake "github.com/crossplane/crossplane-runtime/pkg/resource/fake"
 	corev1 "k8s.io/api/core/v1"
-	ptr "k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	pcv1alpha1 "github.com/rossigee/provider-cloudflare/apis/v1alpha1"
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
@@ -82,7 +82,7 @@ func withExternalName(ruleID string) ruleModifer {
 }
 
 func withFilter(filter string) ruleModifer {
-	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Filter = ptr.String(filter) }
+	return func(r *v1alpha1.Rule) { r.Spec.ForProvider.Filter = ptr.To(filter) }
 }
 
 func ruleBuild(m ...ruleModifer) *v1alpha1.Rule {

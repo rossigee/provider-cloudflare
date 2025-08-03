@@ -22,6 +22,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
+	"github.com/rossigee/provider-cloudflare/internal/controller/cache"
 	"github.com/rossigee/provider-cloudflare/internal/controller/config"
 	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
 	loadbalancing "github.com/rossigee/provider-cloudflare/internal/controller/loadbalancing"
@@ -46,6 +47,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 		transform.Setup,
 		rulesets.Setup,
 		loadbalancing.Setup,
+		cache.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

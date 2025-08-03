@@ -49,9 +49,6 @@ const (
 	errFallbackOriginNoZone   = "cannot create fallback origin no zone found"
 )
 
-const (
-	fallbackOriginStatusActive = "active"
-)
 
 // SetupFallbackOrigin adds a controller that reconciles FallbackOrigin managed resources.
 func SetupFallbackOrigin(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
@@ -191,7 +188,10 @@ func (e *fallbackOriginExternal) Update(ctx context.Context, mg resource.Managed
 	origin := fallbackorigin.ParametersToFallbackOrigin(cr.Spec.ForProvider)
 
 	_, err := e.client.UpdateFallbackOrigin(ctx, zoneID, origin)
-	return managed.ExternalUpdate{}, errors.Wrap(err, errFallbackOriginUpdate)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errFallbackOriginUpdate)
+	}
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *fallbackOriginExternal) Delete(ctx context.Context, mg resource.Managed) error {
@@ -208,5 +208,8 @@ func (e *fallbackOriginExternal) Delete(ctx context.Context, mg resource.Managed
 
 	// Delete by calling the delete API
 	err := e.client.DeleteFallbackOrigin(ctx, zoneID)
-	return errors.Wrap(err, errFallbackOriginDeletion)
+	if err != nil {
+		return errors.Wrap(err, errFallbackOriginDeletion)
+	}
+	return nil
 }

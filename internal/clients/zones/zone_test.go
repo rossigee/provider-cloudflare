@@ -25,7 +25,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	ptr "k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
@@ -61,8 +61,8 @@ func TestLateInitialize(t *testing.T) {
 			reason: "LateInit should update fields from a Zone",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					AccountID:         ptr.StringPtr("beef"),
-					PlanID:            ptr.StringPtr("dead"),
+					AccountID:         ptr.To("beef"),
+					PlanID:            ptr.To("dead"),
 					VanityNameServers: []string{},
 					Settings:          v1alpha1.ZoneSettings{},
 				},
@@ -83,9 +83,9 @@ func TestLateInitialize(t *testing.T) {
 			want: want{
 				o: true,
 				zp: &v1alpha1.ZoneParameters{
-					Paused:            ptr.BoolPtr(false),
-					AccountID:         ptr.StringPtr("beef"),
-					PlanID:            ptr.StringPtr("dead"),
+					Paused:            ptr.To(false),
+					AccountID:         ptr.To("beef"),
+					PlanID:            ptr.To("dead"),
 					VanityNameServers: []string{"ns1.lele.com", "ns2.woowoo.org"},
 					Settings:          v1alpha1.ZoneSettings{},
 				},
@@ -95,9 +95,9 @@ func TestLateInitialize(t *testing.T) {
 			reason: "LateInit should update settings from a Zone",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					AccountID:         ptr.StringPtr("beef"),
-					Paused:            ptr.BoolPtr(false),
-					PlanID:            ptr.StringPtr("dead"),
+					AccountID:         ptr.To("beef"),
+					Paused:            ptr.To(false),
+					PlanID:            ptr.To("dead"),
 					VanityNameServers: []string{"ns1.lele.com", "ns2.woowoo.org"},
 					Settings: v1alpha1.ZoneSettings{
 						// These settings will be lateInited
@@ -107,7 +107,7 @@ func TestLateInitialize(t *testing.T) {
 						SecurityHeader: nil,
 						Ciphers:        nil,
 						// This setting will not be overwritten
-						BrowserCacheTTL: ptr.Int64Ptr(900),
+						BrowserCacheTTL: ptr.To[int64](900),
 					},
 				},
 				z: cloudflare.Zone{
@@ -128,64 +128,64 @@ func TestLateInitialize(t *testing.T) {
 				// from the API.
 				// AdvancedDDOS, Minify and SecurityHeader should be late-inited here.
 				czs: &v1alpha1.ZoneSettings{
-					AdvancedDDOS: ptr.StringPtr("yes"),
+					AdvancedDDOS: ptr.To("yes"),
 					Minify: &v1alpha1.MinifySettings{
-						CSS:  ptr.StringPtr("on"),
-						HTML: ptr.StringPtr("on"),
-						JS:   ptr.StringPtr("on"),
+						CSS:  ptr.To("on"),
+						HTML: ptr.To("on"),
+						JS:   ptr.To("on"),
 					},
 					MobileRedirect: &v1alpha1.MobileRedirectSettings{
-						Status:    ptr.StringPtr("on"),
-						Subdomain: ptr.StringPtr("m"),
-						StripURI:  ptr.BoolPtr(false),
+						Status:    ptr.To("on"),
+						Subdomain: ptr.To("m"),
+						StripURI:  ptr.To(false),
 					},
 					SecurityHeader: &v1alpha1.SecurityHeaderSettings{
 						StrictTransportSecurity: &v1alpha1.StrictTransportSecuritySettings{
-							Enabled:           ptr.BoolPtr(true),
-							MaxAge:            ptr.Int64(86400),
-							IncludeSubdomains: ptr.BoolPtr(true),
-							NoSniff:           ptr.BoolPtr(true),
+							Enabled:           ptr.To(true),
+							MaxAge:            ptr.To[int64](86400),
+							IncludeSubdomains: ptr.To(true),
+							NoSniff:           ptr.To(true),
 						},
 					},
 					Ciphers: []string{
 						"ECDHE-RSA-AES128-GCM-SHA256",
 						"AES128-SHA",
 					},
-					BrowserCacheTTL: ptr.Int64Ptr(3600),
+					BrowserCacheTTL: ptr.To[int64](3600),
 				},
 			},
 			want: want{
 				o: true,
 				zp: &v1alpha1.ZoneParameters{
-					Paused:            ptr.BoolPtr(false),
-					AccountID:         ptr.StringPtr("beef"),
-					PlanID:            ptr.StringPtr("dead"),
+					Paused:            ptr.To(false),
+					AccountID:         ptr.To("beef"),
+					PlanID:            ptr.To("dead"),
 					VanityNameServers: []string{"ns1.lele.com", "ns2.woowoo.org"},
 					Settings: v1alpha1.ZoneSettings{
-						AdvancedDDOS: ptr.StringPtr("yes"),
+						AdvancedDDOS: ptr.To("yes"),
 						Minify: &v1alpha1.MinifySettings{
-							CSS:  ptr.StringPtr("on"),
-							HTML: ptr.StringPtr("on"),
-							JS:   ptr.StringPtr("on"),
+							CSS:  ptr.To("on"),
+							HTML: ptr.To("on"),
+							JS:   ptr.To("on"),
 						},
 						MobileRedirect: &v1alpha1.MobileRedirectSettings{
-							Status:    ptr.StringPtr("on"),
-							Subdomain: ptr.StringPtr("m"),
-							StripURI:  ptr.BoolPtr(false),
+							Status:    ptr.To("on"),
+							Subdomain: ptr.To("m"),
+							StripURI:  ptr.To(false),
 						},
 						SecurityHeader: &v1alpha1.SecurityHeaderSettings{
 							StrictTransportSecurity: &v1alpha1.StrictTransportSecuritySettings{
-								Enabled:           ptr.BoolPtr(true),
-								MaxAge:            ptr.Int64(86400),
-								IncludeSubdomains: ptr.BoolPtr(true),
-								NoSniff:           ptr.BoolPtr(true),
+								Enabled:           ptr.To(true),
+								MaxAge:            ptr.To[int64](86400),
+								IncludeSubdomains: ptr.To(true),
+								NoSniff:           ptr.To(true),
 							},
 						},
 						Ciphers: []string{
 							"ECDHE-RSA-AES128-GCM-SHA256",
 							"AES128-SHA",
 						},
-						BrowserCacheTTL: ptr.Int64Ptr(900),
+						BrowserCacheTTL: ptr.To[int64](900),
 					},
 				},
 			},
@@ -194,26 +194,26 @@ func TestLateInitialize(t *testing.T) {
 			reason: "LateInit should update partially set settings from a Zone",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					AccountID:         ptr.StringPtr("beef"),
-					Paused:            ptr.BoolPtr(false),
-					PlanID:            ptr.StringPtr("dead"),
+					AccountID:         ptr.To("beef"),
+					Paused:            ptr.To(false),
+					PlanID:            ptr.To("dead"),
 					VanityNameServers: []string{"ns1.lele.com", "ns2.woowoo.org"},
 					Settings: v1alpha1.ZoneSettings{
 						// nil settings under the top-level setting will be lateInited
 						Minify: &v1alpha1.MinifySettings{
 							CSS:  nil,
 							HTML: nil,
-							JS:   ptr.StringPtr("off"),
+							JS:   ptr.To("off"),
 						},
 						MobileRedirect: &v1alpha1.MobileRedirectSettings{
-							Status:    ptr.StringPtr("on"),
+							Status:    ptr.To("on"),
 							Subdomain: nil,
-							StripURI:  ptr.BoolPtr(true),
+							StripURI:  ptr.To(true),
 						},
 						SecurityHeader: &v1alpha1.SecurityHeaderSettings{
 							StrictTransportSecurity: &v1alpha1.StrictTransportSecuritySettings{
-								Enabled:           ptr.BoolPtr(true),
-								MaxAge:            ptr.Int64Ptr(86400),
+								Enabled:           ptr.To(true),
+								MaxAge:            ptr.To[int64](86400),
 								NoSniff:           nil,
 								IncludeSubdomains: nil,
 							},
@@ -239,21 +239,21 @@ func TestLateInitialize(t *testing.T) {
 				// CSS and HTML under Minify should be late-inited here.
 				czs: &v1alpha1.ZoneSettings{
 					Minify: &v1alpha1.MinifySettings{
-						CSS:  ptr.StringPtr("on"),
-						HTML: ptr.StringPtr("off"),
-						JS:   ptr.StringPtr("on"),
+						CSS:  ptr.To("on"),
+						HTML: ptr.To("off"),
+						JS:   ptr.To("on"),
 					},
 					MobileRedirect: &v1alpha1.MobileRedirectSettings{
-						Status:    ptr.StringPtr("on"),
-						Subdomain: ptr.StringPtr("m"),
-						StripURI:  ptr.BoolPtr(false),
+						Status:    ptr.To("on"),
+						Subdomain: ptr.To("m"),
+						StripURI:  ptr.To(false),
 					},
 					SecurityHeader: &v1alpha1.SecurityHeaderSettings{
 						StrictTransportSecurity: &v1alpha1.StrictTransportSecuritySettings{
-							Enabled:           ptr.BoolPtr(false),
-							MaxAge:            ptr.Int64Ptr(66700),
-							NoSniff:           ptr.BoolPtr(true),
-							IncludeSubdomains: ptr.BoolPtr(true),
+							Enabled:           ptr.To(false),
+							MaxAge:            ptr.To[int64](66700),
+							NoSniff:           ptr.To(true),
+							IncludeSubdomains: ptr.To(true),
 						},
 					},
 				},
@@ -261,27 +261,27 @@ func TestLateInitialize(t *testing.T) {
 			want: want{
 				o: true,
 				zp: &v1alpha1.ZoneParameters{
-					Paused:            ptr.BoolPtr(false),
-					AccountID:         ptr.StringPtr("beef"),
-					PlanID:            ptr.StringPtr("dead"),
+					Paused:            ptr.To(false),
+					AccountID:         ptr.To("beef"),
+					PlanID:            ptr.To("dead"),
 					VanityNameServers: []string{"ns1.lele.com", "ns2.woowoo.org"},
 					Settings: v1alpha1.ZoneSettings{
 						Minify: &v1alpha1.MinifySettings{
-							CSS:  ptr.StringPtr("on"),
-							HTML: ptr.StringPtr("off"),
-							JS:   ptr.StringPtr("off"),
+							CSS:  ptr.To("on"),
+							HTML: ptr.To("off"),
+							JS:   ptr.To("off"),
 						},
 						MobileRedirect: &v1alpha1.MobileRedirectSettings{
-							Status:    ptr.StringPtr("on"),
-							Subdomain: ptr.StringPtr("m"),
-							StripURI:  ptr.BoolPtr(true),
+							Status:    ptr.To("on"),
+							Subdomain: ptr.To("m"),
+							StripURI:  ptr.To(true),
 						},
 						SecurityHeader: &v1alpha1.SecurityHeaderSettings{
 							StrictTransportSecurity: &v1alpha1.StrictTransportSecuritySettings{
-								Enabled:           ptr.BoolPtr(true),
-								MaxAge:            ptr.Int64Ptr(86400),
-								NoSniff:           ptr.BoolPtr(true),
-								IncludeSubdomains: ptr.BoolPtr(true),
+								Enabled:           ptr.To(true),
+								MaxAge:            ptr.To[int64](86400),
+								NoSniff:           ptr.To(true),
+								IncludeSubdomains: ptr.To(true),
 							},
 						},
 					},
@@ -353,7 +353,7 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return false if Paused is not up to date",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					Paused: ptr.BoolPtr(false),
+					Paused: ptr.To(false),
 				},
 				z: cloudflare.Zone{
 					Paused: true,
@@ -368,7 +368,7 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return false if PlanID is not one of Plan or PlanPending IDs",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					PlanID: ptr.StringPtr("moo"),
+					PlanID: ptr.To("moo"),
 				},
 				z: cloudflare.Zone{
 					Plan: cloudflare.ZonePlan{
@@ -392,7 +392,7 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return true if PlanID is current Plan ID",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					PlanID: ptr.StringPtr("beef"),
+					PlanID: ptr.To("beef"),
 				},
 				z: cloudflare.Zone{
 					Plan: cloudflare.ZonePlan{
@@ -411,7 +411,7 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return true if PlanID is pending Plan ID",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					PlanID:   ptr.StringPtr("cake"),
+					PlanID:   ptr.To("cake"),
 					Settings: v1alpha1.ZoneSettings{},
 				},
 				z: cloudflare.Zone{
@@ -431,9 +431,9 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return false if settings are different",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					PlanID: ptr.StringPtr("cake"),
+					PlanID: ptr.To("cake"),
 					Settings: v1alpha1.ZoneSettings{
-						ZeroRTT: ptr.StringPtr("no"),
+						ZeroRTT: ptr.To("no"),
 					},
 				},
 				z: cloudflare.Zone{
@@ -444,7 +444,7 @@ func TestUpToDate(t *testing.T) {
 					},
 				},
 				ozs: &v1alpha1.ZoneSettings{
-					ZeroRTT: ptr.StringPtr("yes"),
+					ZeroRTT: ptr.To("yes"),
 				},
 			},
 			want: want{
@@ -455,7 +455,7 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return true if VanityNS field matches in any order",
 			args: args{
 				zp: &v1alpha1.ZoneParameters{
-					PlanID:            ptr.StringPtr("cake"),
+					PlanID:            ptr.To("cake"),
 					Settings:          v1alpha1.ZoneSettings{},
 					VanityNameServers: []string{"ns2.woowoo.org", "ns1.lele.com"},
 				},
@@ -492,9 +492,9 @@ func TestUpdateZone(t *testing.T) {
 	nsKey := cfsMinify
 
 	nsInputValue := v1alpha1.MinifySettings{
-		CSS:  ptr.StringPtr("on"),
-		HTML: ptr.StringPtr("off"),
-		JS:   ptr.StringPtr("bar"),
+		CSS:  ptr.To("on"),
+		HTML: ptr.To("off"),
+		JS:   ptr.To("bar"),
 	}
 
 	type fields struct {
@@ -574,7 +574,7 @@ func TestUpdateZone(t *testing.T) {
 			args: args{
 				id: inputZoneID,
 				zp: v1alpha1.ZoneParameters{
-					Paused:            ptr.BoolPtr(false),
+					Paused:            ptr.To(false),
 					VanityNameServers: []string{"ns1.lele.com", "ns2.woowoo.org"},
 				},
 			},
@@ -653,7 +653,7 @@ func TestUpdateZone(t *testing.T) {
 			args: args{
 				id: inputZoneID,
 				zp: v1alpha1.ZoneParameters{
-					Paused:            ptr.BoolPtr(false),
+					Paused:            ptr.To(false),
 					VanityNameServers: []string{"ns1.lele.com", "ns2.woowoo.org"},
 					Settings: v1alpha1.ZoneSettings{
 						Minify: &nsInputValue,
@@ -664,7 +664,145 @@ func TestUpdateZone(t *testing.T) {
 				err: nil,
 			},
 		},
-		// TODO: Test SetPlan
+		"UpdateZonePlan": {
+			reason: "UpdateZone should call ZoneSetPlan when plan ID needs to be updated",
+			fields: fields{
+				client: fake.MockClient{
+					MockZoneDetails: func(ctx context.Context, zoneID string) (cloudflare.Zone, error) {
+						return cloudflare.Zone{
+							ID:     zoneID,
+							Name:   "testzone.com",
+							Paused: false,
+							Plan: cloudflare.ZonePlan{
+								ZonePlanCommon: cloudflare.ZonePlanCommon{
+									ID: "current-plan-id",
+								},
+							},
+							PlanPending: cloudflare.ZonePlan{
+								ZonePlanCommon: cloudflare.ZonePlanCommon{
+									ID: "other-plan-id",
+								},
+							},
+							VanityNS: []string{},
+						}, nil
+					},
+					MockEditZone: func(ctx context.Context, zoneID string, zoneOpts cloudflare.ZoneOptions) (cloudflare.Zone, error) {
+						// No zone options should need updating in this test
+						return cloudflare.Zone{}, nil
+					},
+					MockZoneSetPlan: func(ctx context.Context, zoneID string, planType string) error {
+						if zoneID != inputZoneID {
+							return errors.New("zoneID value incorrect")
+						}
+						if planType != "new-plan-id" {
+							return errors.New("planType value incorrect")
+						}
+						return nil
+					},
+					MockZoneSettings: func(ctx context.Context, zoneID string) (*cloudflare.ZoneSettingResponse, error) {
+						return &cloudflare.ZoneSettingResponse{}, nil
+					},
+				},
+			},
+			args: args{
+				id: inputZoneID,
+				zp: v1alpha1.ZoneParameters{
+					PlanID: ptr.To("new-plan-id"),
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		"UpdateZonePlanError": {
+			reason: "UpdateZone should return wrapped error when ZoneSetPlan fails",
+			fields: fields{
+				client: fake.MockClient{
+					MockZoneDetails: func(ctx context.Context, zoneID string) (cloudflare.Zone, error) {
+						return cloudflare.Zone{
+							ID:     zoneID,
+							Name:   "testzone.com",
+							Paused: false,
+							Plan: cloudflare.ZonePlan{
+								ZonePlanCommon: cloudflare.ZonePlanCommon{
+									ID: "current-plan-id",
+								},
+							},
+							PlanPending: cloudflare.ZonePlan{
+								ZonePlanCommon: cloudflare.ZonePlanCommon{
+									ID: "other-plan-id",
+								},
+							},
+							VanityNS: []string{},
+						}, nil
+					},
+					MockEditZone: func(ctx context.Context, zoneID string, zoneOpts cloudflare.ZoneOptions) (cloudflare.Zone, error) {
+						// No zone options should need updating in this test
+						return cloudflare.Zone{}, nil
+					},
+					MockZoneSetPlan: func(ctx context.Context, zoneID string, planType string) error {
+						return errBoom
+					},
+					MockZoneSettings: func(ctx context.Context, zoneID string) (*cloudflare.ZoneSettingResponse, error) {
+						return &cloudflare.ZoneSettingResponse{}, nil
+					},
+				},
+			},
+			args: args{
+				id: inputZoneID,
+				zp: v1alpha1.ZoneParameters{
+					PlanID: ptr.To("new-plan-id"),
+				},
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errSetPlan),
+			},
+		},
+		"UpdateZonePlanNoChange": {
+			reason: "UpdateZone should not call ZoneSetPlan when plan ID matches current or pending plan",
+			fields: fields{
+				client: fake.MockClient{
+					MockZoneDetails: func(ctx context.Context, zoneID string) (cloudflare.Zone, error) {
+						return cloudflare.Zone{
+							ID:     zoneID,
+							Name:   "testzone.com",
+							Paused: false,
+							Plan: cloudflare.ZonePlan{
+								ZonePlanCommon: cloudflare.ZonePlanCommon{
+									ID: "current-plan-id",
+								},
+							},
+							PlanPending: cloudflare.ZonePlan{
+								ZonePlanCommon: cloudflare.ZonePlanCommon{
+									ID: "pending-plan-id",
+								},
+							},
+							VanityNS: []string{},
+						}, nil
+					},
+					MockEditZone: func(ctx context.Context, zoneID string, zoneOpts cloudflare.ZoneOptions) (cloudflare.Zone, error) {
+						// No zone options should need updating in this test
+						return cloudflare.Zone{}, nil
+					},
+					MockZoneSetPlan: func(ctx context.Context, zoneID string, planType string) error {
+						// This should not be called
+						return errors.New("ZoneSetPlan should not be called when plan matches")
+					},
+					MockZoneSettings: func(ctx context.Context, zoneID string) (*cloudflare.ZoneSettingResponse, error) {
+						return &cloudflare.ZoneSettingResponse{}, nil
+					},
+				},
+			},
+			args: args{
+				id: inputZoneID,
+				zp: v1alpha1.ZoneParameters{
+					PlanID: ptr.To("current-plan-id"), // Matches current plan
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for name, tc := range cases {
@@ -711,11 +849,11 @@ func TestLoadSettingsForZone(t *testing.T) {
 			},
 			args: args{
 				id: "abcd",
-				zs: v1alpha1.ZoneSettings{ZeroRTT: ptr.StringPtr("yes")},
+				zs: v1alpha1.ZoneSettings{ZeroRTT: ptr.To("yes")},
 			},
 			want: want{
 				err: errors.Wrap(errBoom, errLoadSettings),
-				o:   v1alpha1.ZoneSettings{ZeroRTT: ptr.StringPtr("yes")},
+				o:   v1alpha1.ZoneSettings{ZeroRTT: ptr.To("yes")},
 			},
 		},
 		"LoadUnknownSetting": {
@@ -738,13 +876,13 @@ func TestLoadSettingsForZone(t *testing.T) {
 			args: args{
 				id: "abcd",
 				zs: v1alpha1.ZoneSettings{
-					AdvancedDDOS: ptr.StringPtr("yes"),
+					AdvancedDDOS: ptr.To("yes"),
 				},
 			},
 			want: want{
 				err: nil,
 				o: v1alpha1.ZoneSettings{
-					AdvancedDDOS: ptr.StringPtr("yes"),
+					AdvancedDDOS: ptr.To("yes"),
 				},
 			},
 		},
@@ -784,10 +922,10 @@ func TestSecurityHeaderSettingsToMap(t *testing.T) {
 			args: args{
 				settings: &v1alpha1.SecurityHeaderSettings{
 					StrictTransportSecurity: &v1alpha1.StrictTransportSecuritySettings{
-						Enabled:           ptr.BoolPtr(true),
-						MaxAge:            ptr.Int64Ptr(86400),
-						IncludeSubdomains: ptr.BoolPtr(true),
-						NoSniff:           ptr.BoolPtr(true),
+						Enabled:           ptr.To(true),
+						MaxAge:            ptr.To[int64](86400),
+						IncludeSubdomains: ptr.To(true),
+						NoSniff:           ptr.To(true),
 					},
 				},
 			},
@@ -841,9 +979,9 @@ func TestMobileRedirectSettingsToMap(t *testing.T) {
 			reason: "mobileRedirectSettingsToMap should return a valid map type",
 			args: args{
 				settings: &v1alpha1.MobileRedirectSettings{
-					Status:    ptr.StringPtr("on"),
-					Subdomain: ptr.StringPtr("m"),
-					StripURI:  ptr.BoolPtr(false),
+					Status:    ptr.To("on"),
+					Subdomain: ptr.To("m"),
+					StripURI:  ptr.To(false),
 				},
 			},
 			want: want{
@@ -893,9 +1031,9 @@ func TestMinifySettingsToMap(t *testing.T) {
 			reason: "minifySettingsToMap should return a valid map type",
 			args: args{
 				settings: &v1alpha1.MinifySettings{
-					CSS:  ptr.StringPtr("on"),
-					HTML: ptr.StringPtr("on"),
-					JS:   ptr.StringPtr("on"),
+					CSS:  ptr.To("on"),
+					HTML: ptr.To("on"),
+					JS:   ptr.To("on"),
 				},
 			},
 			want: want{

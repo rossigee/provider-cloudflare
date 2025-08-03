@@ -19,7 +19,6 @@ package loadbalancing
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
@@ -58,68 +57,72 @@ type monitorClient struct {
 
 // CreateMonitor creates a new Cloudflare load balancer monitor
 func (c *monitorClient) CreateMonitor(ctx context.Context, params v1alpha1.LoadBalancerMonitorParameters) (*cloudflare.LoadBalancerMonitor, error) {
-	createParams := cloudflare.CreateLoadBalancerMonitorParams{
+	monitor := cloudflare.LoadBalancerMonitor{
 		Type: params.Type,
 	}
 
 	if params.Description != nil {
-		createParams.Description = *params.Description
+		monitor.Description = *params.Description
 	}
 
 	if params.Method != nil {
-		createParams.Method = *params.Method
+		monitor.Method = *params.Method
 	}
 
 	if params.Path != nil {
-		createParams.Path = *params.Path
+		monitor.Path = *params.Path
 	}
 
 	if params.Header != nil {
-		createParams.Header = params.Header
+		monitor.Header = params.Header
 	}
 
 	if params.Timeout != nil {
-		createParams.Timeout = *params.Timeout
+		monitor.Timeout = *params.Timeout
 	}
 
 	if params.Retries != nil {
-		createParams.Retries = *params.Retries
+		monitor.Retries = *params.Retries
 	}
 
 	if params.Interval != nil {
-		createParams.Interval = *params.Interval
+		monitor.Interval = *params.Interval
 	}
 
 	if params.ConsecutiveUp != nil {
-		createParams.ConsecutiveUp = *params.ConsecutiveUp
+		monitor.ConsecutiveUp = *params.ConsecutiveUp
 	}
 
 	if params.ConsecutiveDown != nil {
-		createParams.ConsecutiveDown = *params.ConsecutiveDown
+		monitor.ConsecutiveDown = *params.ConsecutiveDown
 	}
 
 	if params.Port != nil {
-		createParams.Port = uint16(*params.Port)
+		monitor.Port = uint16(*params.Port)
 	}
 
 	if params.ExpectedBody != nil {
-		createParams.ExpectedBody = *params.ExpectedBody
+		monitor.ExpectedBody = *params.ExpectedBody
 	}
 
 	if params.ExpectedCodes != nil {
-		createParams.ExpectedCodes = *params.ExpectedCodes
+		monitor.ExpectedCodes = *params.ExpectedCodes
 	}
 
 	if params.FollowRedirects != nil {
-		createParams.FollowRedirects = *params.FollowRedirects
+		monitor.FollowRedirects = *params.FollowRedirects
 	}
 
 	if params.AllowInsecure != nil {
-		createParams.AllowInsecure = *params.AllowInsecure
+		monitor.AllowInsecure = *params.AllowInsecure
 	}
 
 	if params.ProbeZone != nil {
-		createParams.ProbeZone = *params.ProbeZone
+		monitor.ProbeZone = *params.ProbeZone
+	}
+
+	createParams := cloudflare.CreateLoadBalancerMonitorParams{
+		LoadBalancerMonitor: monitor,
 	}
 
 	var rc *cloudflare.ResourceContainer
@@ -131,12 +134,12 @@ func (c *monitorClient) CreateMonitor(ctx context.Context, params v1alpha1.LoadB
 		return nil, errors.New("either zone or account must be specified")
 	}
 
-	monitor, err := c.api.CreateLoadBalancerMonitor(ctx, rc, createParams)
+	result, err := c.api.CreateLoadBalancerMonitor(ctx, rc, createParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateMonitor)
 	}
 
-	return &monitor, nil
+	return &result, nil
 }
 
 // GetMonitor retrieves a Cloudflare load balancer monitor
@@ -160,69 +163,73 @@ func (c *monitorClient) GetMonitor(ctx context.Context, monitorID string, params
 
 // UpdateMonitor updates a Cloudflare load balancer monitor
 func (c *monitorClient) UpdateMonitor(ctx context.Context, monitorID string, params v1alpha1.LoadBalancerMonitorParameters) (*cloudflare.LoadBalancerMonitor, error) {
-	updateParams := cloudflare.UpdateLoadBalancerMonitorParams{
+	monitor := cloudflare.LoadBalancerMonitor{
 		ID:   monitorID,
 		Type: params.Type,
 	}
 
 	if params.Description != nil {
-		updateParams.Description = *params.Description
+		monitor.Description = *params.Description
 	}
 
 	if params.Method != nil {
-		updateParams.Method = *params.Method
+		monitor.Method = *params.Method
 	}
 
 	if params.Path != nil {
-		updateParams.Path = *params.Path
+		monitor.Path = *params.Path
 	}
 
 	if params.Header != nil {
-		updateParams.Header = params.Header
+		monitor.Header = params.Header
 	}
 
 	if params.Timeout != nil {
-		updateParams.Timeout = *params.Timeout
+		monitor.Timeout = *params.Timeout
 	}
 
 	if params.Retries != nil {
-		updateParams.Retries = *params.Retries
+		monitor.Retries = *params.Retries
 	}
 
 	if params.Interval != nil {
-		updateParams.Interval = *params.Interval
+		monitor.Interval = *params.Interval
 	}
 
 	if params.ConsecutiveUp != nil {
-		updateParams.ConsecutiveUp = *params.ConsecutiveUp
+		monitor.ConsecutiveUp = *params.ConsecutiveUp
 	}
 
 	if params.ConsecutiveDown != nil {
-		updateParams.ConsecutiveDown = *params.ConsecutiveDown
+		monitor.ConsecutiveDown = *params.ConsecutiveDown
 	}
 
 	if params.Port != nil {
-		updateParams.Port = uint16(*params.Port)
+		monitor.Port = uint16(*params.Port)
 	}
 
 	if params.ExpectedBody != nil {
-		updateParams.ExpectedBody = *params.ExpectedBody
+		monitor.ExpectedBody = *params.ExpectedBody
 	}
 
 	if params.ExpectedCodes != nil {
-		updateParams.ExpectedCodes = *params.ExpectedCodes
+		monitor.ExpectedCodes = *params.ExpectedCodes
 	}
 
 	if params.FollowRedirects != nil {
-		updateParams.FollowRedirects = *params.FollowRedirects
+		monitor.FollowRedirects = *params.FollowRedirects
 	}
 
 	if params.AllowInsecure != nil {
-		updateParams.AllowInsecure = *params.AllowInsecure
+		monitor.AllowInsecure = *params.AllowInsecure
 	}
 
 	if params.ProbeZone != nil {
-		updateParams.ProbeZone = *params.ProbeZone
+		monitor.ProbeZone = *params.ProbeZone
+	}
+
+	updateParams := cloudflare.UpdateLoadBalancerMonitorParams{
+		LoadBalancerMonitor: monitor,
 	}
 
 	var rc *cloudflare.ResourceContainer
@@ -234,12 +241,12 @@ func (c *monitorClient) UpdateMonitor(ctx context.Context, monitorID string, par
 		return nil, errors.New("either zone or account must be specified")
 	}
 
-	monitor, err := c.api.UpdateLoadBalancerMonitor(ctx, rc, updateParams)
+	result, err := c.api.UpdateLoadBalancerMonitor(ctx, rc, updateParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errUpdateMonitor)
 	}
 
-	return &monitor, nil
+	return &result, nil
 }
 
 // DeleteMonitor deletes a Cloudflare load balancer monitor

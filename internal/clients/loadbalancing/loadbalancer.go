@@ -58,86 +58,90 @@ type loadBalancerClient struct {
 
 // CreateLoadBalancer creates a new Cloudflare load balancer
 func (c *loadBalancerClient) CreateLoadBalancer(ctx context.Context, params v1alpha1.LoadBalancerParameters) (*cloudflare.LoadBalancer, error) {
-	createParams := cloudflare.CreateLoadBalancerParams{
+	lb := cloudflare.LoadBalancer{
 		DefaultPools: params.DefaultPools,
 	}
 
 	if params.Name != nil {
-		createParams.Name = *params.Name
+		lb.Name = *params.Name
 	}
 
 	if params.Description != nil {
-		createParams.Description = *params.Description
+		lb.Description = *params.Description
 	}
 
 	if params.TTL != nil {
-		createParams.TTL = *params.TTL
+		lb.TTL = *params.TTL
 	}
 
 	if params.FallbackPool != nil {
-		createParams.FallbackPool = *params.FallbackPool
+		lb.FallbackPool = *params.FallbackPool
 	}
 
 	if params.RegionPools != nil {
-		createParams.RegionPools = params.RegionPools
+		lb.RegionPools = params.RegionPools
 	}
 
 	if params.PopPools != nil {
-		createParams.PopPools = params.PopPools
+		lb.PopPools = params.PopPools
 	}
 
 	if params.CountryPools != nil {
-		createParams.CountryPools = params.CountryPools
+		lb.CountryPools = params.CountryPools
 	}
 
 	if params.Proxied != nil {
-		createParams.Proxied = *params.Proxied
+		lb.Proxied = *params.Proxied
 	}
 
 	if params.Enabled != nil {
-		createParams.Enabled = *params.Enabled
+		lb.Enabled = params.Enabled
 	}
 
 	if params.SessionAffinity != nil {
-		createParams.SessionAffinity = *params.SessionAffinity
+		lb.Persistence = *params.SessionAffinity
 	}
 
 	if params.SessionAffinityTTL != nil {
-		createParams.SessionAffinityTTL = *params.SessionAffinityTTL
+		lb.PersistenceTTL = *params.SessionAffinityTTL
 	}
 
 	if params.SessionAffinityAttributes != nil {
-		createParams.SessionAffinityAttributes = convertSessionAffinityAttributesToCloudflare(*params.SessionAffinityAttributes)
+		lb.SessionAffinityAttributes = convertSessionAffinityAttributesToCloudflare(*params.SessionAffinityAttributes)
 	}
 
 	if params.SteeringPolicy != nil {
-		createParams.SteeringPolicy = *params.SteeringPolicy
+		lb.SteeringPolicy = *params.SteeringPolicy
 	}
 
 	if len(params.Rules) > 0 {
-		createParams.Rules = convertRulesToCloudflare(params.Rules)
+		lb.Rules = convertRulesToCloudflare(params.Rules)
 	}
 
 	if params.RandomSteering != nil {
-		createParams.RandomSteering = convertRandomSteeringToCloudflare(*params.RandomSteering)
+		lb.RandomSteering = convertRandomSteeringToCloudflare(*params.RandomSteering)
 	}
 
 	if params.AdaptiveRouting != nil {
-		createParams.AdaptiveRouting = convertAdaptiveRoutingToCloudflare(*params.AdaptiveRouting)
+		lb.AdaptiveRouting = convertAdaptiveRoutingToCloudflare(*params.AdaptiveRouting)
 	}
 
 	if params.LocationStrategy != nil {
-		createParams.LocationStrategy = convertLocationStrategyToCloudflare(*params.LocationStrategy)
+		lb.LocationStrategy = convertLocationStrategyToCloudflare(*params.LocationStrategy)
+	}
+
+	createParams := cloudflare.CreateLoadBalancerParams{
+		LoadBalancer: lb,
 	}
 
 	rc := cloudflare.ZoneIdentifier(params.Zone)
 
-	lb, err := c.api.CreateLoadBalancer(ctx, rc, createParams)
+	result, err := c.api.CreateLoadBalancer(ctx, rc, createParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateLoadBalancer)
 	}
 
-	return &lb, nil
+	return &result, nil
 }
 
 // GetLoadBalancer retrieves a Cloudflare load balancer
@@ -154,87 +158,91 @@ func (c *loadBalancerClient) GetLoadBalancer(ctx context.Context, lbID string, p
 
 // UpdateLoadBalancer updates a Cloudflare load balancer
 func (c *loadBalancerClient) UpdateLoadBalancer(ctx context.Context, lbID string, params v1alpha1.LoadBalancerParameters) (*cloudflare.LoadBalancer, error) {
-	updateParams := cloudflare.UpdateLoadBalancerParams{
+	lb := cloudflare.LoadBalancer{
 		ID:           lbID,
 		DefaultPools: params.DefaultPools,
 	}
 
 	if params.Name != nil {
-		updateParams.Name = *params.Name
+		lb.Name = *params.Name
 	}
 
 	if params.Description != nil {
-		updateParams.Description = *params.Description
+		lb.Description = *params.Description
 	}
 
 	if params.TTL != nil {
-		updateParams.TTL = *params.TTL
+		lb.TTL = *params.TTL
 	}
 
 	if params.FallbackPool != nil {
-		updateParams.FallbackPool = *params.FallbackPool
+		lb.FallbackPool = *params.FallbackPool
 	}
 
 	if params.RegionPools != nil {
-		updateParams.RegionPools = params.RegionPools
+		lb.RegionPools = params.RegionPools
 	}
 
 	if params.PopPools != nil {
-		updateParams.PopPools = params.PopPools
+		lb.PopPools = params.PopPools
 	}
 
 	if params.CountryPools != nil {
-		updateParams.CountryPools = params.CountryPools
+		lb.CountryPools = params.CountryPools
 	}
 
 	if params.Proxied != nil {
-		updateParams.Proxied = *params.Proxied
+		lb.Proxied = *params.Proxied
 	}
 
 	if params.Enabled != nil {
-		updateParams.Enabled = *params.Enabled
+		lb.Enabled = params.Enabled
 	}
 
 	if params.SessionAffinity != nil {
-		updateParams.SessionAffinity = *params.SessionAffinity
+		lb.Persistence = *params.SessionAffinity
 	}
 
 	if params.SessionAffinityTTL != nil {
-		updateParams.SessionAffinityTTL = *params.SessionAffinityTTL
+		lb.PersistenceTTL = *params.SessionAffinityTTL
 	}
 
 	if params.SessionAffinityAttributes != nil {
-		updateParams.SessionAffinityAttributes = convertSessionAffinityAttributesToCloudflare(*params.SessionAffinityAttributes)
+		lb.SessionAffinityAttributes = convertSessionAffinityAttributesToCloudflare(*params.SessionAffinityAttributes)
 	}
 
 	if params.SteeringPolicy != nil {
-		updateParams.SteeringPolicy = *params.SteeringPolicy
+		lb.SteeringPolicy = *params.SteeringPolicy
 	}
 
 	if len(params.Rules) > 0 {
-		updateParams.Rules = convertRulesToCloudflare(params.Rules)
+		lb.Rules = convertRulesToCloudflare(params.Rules)
 	}
 
 	if params.RandomSteering != nil {
-		updateParams.RandomSteering = convertRandomSteeringToCloudflare(*params.RandomSteering)
+		lb.RandomSteering = convertRandomSteeringToCloudflare(*params.RandomSteering)
 	}
 
 	if params.AdaptiveRouting != nil {
-		updateParams.AdaptiveRouting = convertAdaptiveRoutingToCloudflare(*params.AdaptiveRouting)
+		lb.AdaptiveRouting = convertAdaptiveRoutingToCloudflare(*params.AdaptiveRouting)
 	}
 
 	if params.LocationStrategy != nil {
-		updateParams.LocationStrategy = convertLocationStrategyToCloudflare(*params.LocationStrategy)
+		lb.LocationStrategy = convertLocationStrategyToCloudflare(*params.LocationStrategy)
+	}
+
+	updateParams := cloudflare.UpdateLoadBalancerParams{
+		LoadBalancer: lb,
 	}
 
 	rc := cloudflare.ZoneIdentifier(params.Zone)
 
-	lb, err := c.api.UpdateLoadBalancer(ctx, rc, updateParams)
+	result, err := c.api.UpdateLoadBalancer(ctx, rc, updateParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errUpdateLoadBalancer)
 	}
 
-	return &lb, nil
+	return &result, nil
 }
 
 // DeleteLoadBalancer deletes a Cloudflare load balancer
@@ -292,12 +300,41 @@ func convertSessionAffinityAttributesToCloudflare(attrs v1alpha1.SessionAffinity
 	return cfAttrs
 }
 
+// convertSessionAffinityAttributesForRuleOverrides converts session affinity attributes for rule overrides to Cloudflare format
+func convertSessionAffinityAttributesForRuleOverrides(attrs v1alpha1.SessionAffinityAttributes) *cloudflare.LoadBalancerRuleOverridesSessionAffinityAttrs {
+	cfAttrs := &cloudflare.LoadBalancerRuleOverridesSessionAffinityAttrs{}
+
+	if attrs.SameSite != nil {
+		cfAttrs.SameSite = *attrs.SameSite
+	}
+
+	if attrs.Secure != nil {
+		cfAttrs.Secure = *attrs.Secure
+	}
+
+	if attrs.ZeroDowntimeFailover != nil {
+		cfAttrs.ZeroDowntimeFailover = *attrs.ZeroDowntimeFailover
+	}
+
+	if len(attrs.Headers) > 0 {
+		cfAttrs.Headers = attrs.Headers
+	}
+
+	if attrs.RequireAllHeaders != nil {
+		cfAttrs.RequireAllHeaders = attrs.RequireAllHeaders
+	}
+
+	// Note: DrainDuration is not included as it's not supported in rule overrides
+
+	return cfAttrs
+}
+
 // convertRulesToCloudflare converts load balancer rules to Cloudflare format
-func convertRulesToCloudflare(rules []v1alpha1.LoadBalancerRule) []cloudflare.LoadBalancerRule {
-	var cfRules []cloudflare.LoadBalancerRule
+func convertRulesToCloudflare(rules []v1alpha1.LoadBalancerRule) []*cloudflare.LoadBalancerRule {
+	var cfRules []*cloudflare.LoadBalancerRule
 
 	for _, rule := range rules {
-		cfRule := cloudflare.LoadBalancerRule{
+		cfRule := &cloudflare.LoadBalancerRule{
 			Name:      rule.Name,
 			Condition: rule.Condition,
 			Priority:  rule.Priority,
@@ -316,7 +353,7 @@ func convertRulesToCloudflare(rules []v1alpha1.LoadBalancerRule) []cloudflare.Lo
 		}
 
 		if rule.Overrides != nil {
-			cfRule.Overrides = convertRuleOverridesToCloudflare(*rule.Overrides)
+			cfRule.Overrides = *convertRuleOverridesToCloudflare(*rule.Overrides)
 		}
 
 		cfRules = append(cfRules, cfRule)
@@ -326,8 +363,8 @@ func convertRulesToCloudflare(rules []v1alpha1.LoadBalancerRule) []cloudflare.Lo
 }
 
 // convertFixedResponseToCloudflare converts fixed response to Cloudflare format
-func convertFixedResponseToCloudflare(fixedResponse v1alpha1.LoadBalancerFixedResponse) *cloudflare.LoadBalancerFixedResponse {
-	cfFixedResponse := &cloudflare.LoadBalancerFixedResponse{}
+func convertFixedResponseToCloudflare(fixedResponse v1alpha1.LoadBalancerFixedResponse) *cloudflare.LoadBalancerFixedResponseData {
+	cfFixedResponse := &cloudflare.LoadBalancerFixedResponseData{}
 
 	if fixedResponse.MessageBody != nil {
 		cfFixedResponse.MessageBody = *fixedResponse.MessageBody
@@ -353,19 +390,20 @@ func convertRuleOverridesToCloudflare(overrides v1alpha1.LoadBalancerRuleOverrid
 	cfOverrides := &cloudflare.LoadBalancerRuleOverrides{}
 
 	if overrides.SessionAffinity != nil {
-		cfOverrides.SessionAffinity = *overrides.SessionAffinity
+		cfOverrides.Persistence = *overrides.SessionAffinity
 	}
 
 	if overrides.SessionAffinityTTL != nil {
-		cfOverrides.SessionAffinityTTL = *overrides.SessionAffinityTTL
+		ttl := uint(*overrides.SessionAffinityTTL)
+		cfOverrides.PersistenceTTL = &ttl
 	}
 
 	if overrides.SessionAffinityAttributes != nil {
-		cfOverrides.SessionAffinityAttributes = convertSessionAffinityAttributesToCloudflare(*overrides.SessionAffinityAttributes)
+		cfOverrides.SessionAffinityAttrs = convertSessionAffinityAttributesForRuleOverrides(*overrides.SessionAffinityAttributes)
 	}
 
 	if overrides.TTL != nil {
-		cfOverrides.TTL = *overrides.TTL
+		cfOverrides.TTL = uint(*overrides.TTL)
 	}
 
 	if overrides.SteeringPolicy != nil {
@@ -381,7 +419,7 @@ func convertRuleOverridesToCloudflare(overrides v1alpha1.LoadBalancerRuleOverrid
 	}
 
 	if overrides.PopPools != nil {
-		cfOverrides.PopPools = overrides.PopPools
+		cfOverrides.PoPPools = overrides.PopPools
 	}
 
 	if overrides.RegionPools != nil {
@@ -434,7 +472,7 @@ func convertAdaptiveRoutingToCloudflare(routing v1alpha1.AdaptiveRouting) *cloud
 	cfRouting := &cloudflare.AdaptiveRouting{}
 
 	if routing.FailoverAcrossPools != nil {
-		cfRouting.FailoverAcrossPools = *routing.FailoverAcrossPools
+		cfRouting.FailoverAcrossPools = routing.FailoverAcrossPools
 	}
 
 	return cfRouting
@@ -449,7 +487,7 @@ func convertLocationStrategyToCloudflare(strategy v1alpha1.LocationStrategy) *cl
 	}
 
 	if strategy.PreferECSRegion != nil {
-		cfStrategy.PreferECSRegion = *strategy.PreferECSRegion
+		cfStrategy.PreferECS = *strategy.PreferECSRegion
 	}
 
 	return cfStrategy
@@ -500,15 +538,15 @@ func IsLoadBalancerUpToDate(params *v1alpha1.LoadBalancerParameters, lb *cloudfl
 		return false
 	}
 
-	if params.Enabled != nil && *params.Enabled != lb.Enabled {
+	if params.Enabled != nil && lb.Enabled != nil && *params.Enabled != *lb.Enabled {
 		return false
 	}
 
-	if params.SessionAffinity != nil && *params.SessionAffinity != lb.SessionAffinity {
+	if params.SessionAffinity != nil && *params.SessionAffinity != lb.Persistence {
 		return false
 	}
 
-	if params.SessionAffinityTTL != nil && *params.SessionAffinityTTL != lb.SessionAffinityTTL {
+	if params.SessionAffinityTTL != nil && *params.SessionAffinityTTL != lb.PersistenceTTL {
 		return false
 	}
 

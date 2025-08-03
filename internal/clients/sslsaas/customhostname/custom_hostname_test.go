@@ -26,7 +26,7 @@ import (
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
-	ptr "k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -94,15 +94,15 @@ const (
 )
 
 var sslSettings = &v1alpha1.CustomHostnameSSL{
-	Method:            ptr.StringPtr("txt"),
-	Type:              ptr.StringPtr("dv"),
-	Wildcard:          ptr.BoolPtr(true),
-	CustomCertificate: ptr.StringPtr("invalid cert"),
-	CustomKey:         ptr.StringPtr("invalid key"),
+	Method:            ptr.To("txt"),
+	Type:              ptr.To("dv"),
+	Wildcard:          ptr.To(true),
+	CustomCertificate: ptr.To("invalid cert"),
+	CustomKey:         ptr.To("invalid key"),
 	Settings: v1alpha1.CustomHostnameSSLSettings{
-		HTTP2:         ptr.StringPtr("on"),
-		TLS13:         ptr.StringPtr("on"),
-		MinTLSVersion: ptr.StringPtr("1.2"),
+		HTTP2:         ptr.To("on"),
+		TLS13:         ptr.To("on"),
+		MinTLSVersion: ptr.To("1.2"),
 		Ciphers: []string{
 			"ECDHE-ECDSA-AES128-GCM-SHA256",
 			"AEAD-CHACHA20-POLY1305-SHA256",
@@ -182,6 +182,26 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*v1alpha1.CustomHostname)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errNotCustomHostname)
+	}
+
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return managed.ExternalUpdate{}, errors.New(errCustomHostnameUpdate)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalUpdate{}, errors.New(errCustomHostnameUpdate)
+	}
+
+	hostname := ParametersToCustomHostname(cr.Spec.ForProvider)
+	_, err := e.client.UpdateCustomHostname(ctx, *cr.Spec.ForProvider.Zone, rid, hostname)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errCustomHostnameUpdate)
+	}
+
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -193,10 +213,18 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	rid := meta.GetExternalName(cr)
 	if rid == "" {
-		return nil
+		return errors.New(errCustomHostnameDeletion)
 	}
 
-	return e.client.DeleteCustomHostname(ctx, *cr.Spec.ForProvider.Zone, rid)
+	if cr.Spec.ForProvider.Zone == nil {
+		return errors.New(errCustomHostnameDeletion)
+	}
+
+	err := e.client.DeleteCustomHostname(ctx, *cr.Spec.ForProvider.Zone, rid)
+	if err != nil {
+		return errors.Wrap(err, errCustomHostnameDeletion)
+	}
+	return nil
 }
 
 func TestConnect(t *testing.T) {

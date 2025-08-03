@@ -18,6 +18,7 @@ package loadbalancing
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
@@ -25,8 +26,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
@@ -78,7 +77,7 @@ func SetupMonitor(mgr ctrl.Manager, o controller.Options) error {
 type monitorConnector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(cfg clients.Config, httpClient *clients.HTTPClient) (loadbalancing.MonitorClient, error)
+	newServiceFn func(cfg clients.Config, httpClient *http.Client) (loadbalancing.MonitorClient, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -101,15 +100,13 @@ func (c *monitorConnector) Connect(ctx context.Context, mg resource.Managed) (ma
 		return nil, errors.Wrap(err, errGetMonitorPC)
 	}
 
-	cd := pc.Spec.Credentials
-	data, err := resource.CommonCredentialExtractor(ctx, cd.Source, c.kube, cd.CommonCredentialSelectors)
+	// Get client configuration
+	config, err := clients.GetConfig(ctx, c.kube, mg)
 	if err != nil {
 		return nil, errors.Wrap(err, errGetMonitorCreds)
 	}
 
-	cfg := clients.NewConfig(data)
-
-	svc, err := c.newServiceFn(cfg, clients.NewHTTPClient())
+	svc, err := c.newServiceFn(*config, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, errNewMonitorClient)
 	}
@@ -142,7 +139,7 @@ func (c *monitorExternal) Observe(ctx context.Context, mg resource.Managed) (man
 				ResourceExists: false,
 			}, nil
 		}
-		return managed.ExternalObservation{}, errors.Wrap(err, "failed to get monitor")
+		return managed.ExternalObservation{}, errors.Wrap(err, "failed to get load balancer monitor from Cloudflare API")
 	}
 
 	cr.Status.AtProvider = loadbalancing.GenerateMonitorObservation(monitor)
@@ -163,7 +160,7 @@ func (c *monitorExternal) Create(ctx context.Context, mg resource.Managed) (mana
 
 	monitor, err := c.service.CreateMonitor(ctx, cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, "failed to create monitor")
+		return managed.ExternalCreation{}, errors.Wrap(err, "failed to create load balancer monitor in Cloudflare API")
 	}
 
 	cr.Status.AtProvider = loadbalancing.GenerateMonitorObservation(monitor)
@@ -181,7 +178,7 @@ func (c *monitorExternal) Update(ctx context.Context, mg resource.Managed) (mana
 
 	_, err := c.service.UpdateMonitor(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "failed to update monitor")
+		return managed.ExternalUpdate{}, errors.Wrap(err, "failed to update load balancer monitor in Cloudflare API")
 	}
 
 	return managed.ExternalUpdate{
@@ -197,7 +194,7 @@ func (c *monitorExternal) Delete(ctx context.Context, mg resource.Managed) error
 
 	err := c.service.DeleteMonitor(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil && !loadbalancing.IsMonitorNotFound(err) {
-		return errors.Wrap(err, "failed to delete monitor")
+		return errors.Wrap(err, "failed to delete load balancer monitor from Cloudflare API")
 	}
 
 	return nil

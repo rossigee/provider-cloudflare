@@ -83,6 +83,7 @@ func IsFallbackOriginNotFound(err error) bool {
 		return false
 	}
 	return err.Error() == errFallbackOriginNotFound ||
+		err.Error() == "fallback origin not found" ||
 		err.Error() == "404" ||
 		err.Error() == "Not found"
 }

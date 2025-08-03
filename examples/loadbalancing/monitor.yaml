@@ -1,0 +1,38 @@
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancerMonitor
+metadata:
+  name: web-health-check
+spec:
+  forProvider:
+    # Health check configuration
+    type: "http"
+    description: "HTTP health check for web servers"
+    method: "GET"
+    path: "/health"
+    
+    # Headers for health check requests
+    header:
+      Host: ["example.com"]
+      User-Agent: ["Cloudflare-LoadBalancer-Monitor"]
+    
+    # Timing configuration
+    timeout: 5        # Timeout in seconds
+    retries: 2        # Number of retries on timeout
+    interval: 60      # Interval between checks in seconds
+    
+    # Health thresholds
+    consecutiveUp: 2     # Consecutive successful checks to mark healthy
+    consecutiveDown: 3   # Consecutive failed checks to mark unhealthy
+    
+    # HTTP-specific settings
+    port: 80
+    expectedBody: "OK"
+    expectedCodes: "200"
+    followRedirects: true
+    allowInsecure: false
+    
+    # Probe zone (closest datacenter to origins)
+    probeZone: "US-EAST"
+  
+  providerConfigRef:
+    name: default

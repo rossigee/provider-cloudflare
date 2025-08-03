@@ -67,12 +67,12 @@ func NewClient(c Config, hc *http.Client) (*cloudflare.API, error) {
 	}
 	ohc := cloudflare.HTTPClient(hc)
 
-	if c.AuthByAPIKey != nil && c.AuthByAPIKey.Key != nil &&
-		c.AuthByAPIKey.Email != nil {
-		return cloudflare.New(*c.AuthByAPIKey.Key, *c.AuthByAPIKey.Email, ohc)
+	if c.AuthByAPIKey != nil && c.Key != nil &&
+		c.Email != nil {
+		return cloudflare.New(*c.Key, *c.Email, ohc)
 	}
-	if c.AuthByAPIToken != nil && c.AuthByAPIToken.Token != nil {
-		return cloudflare.NewWithAPIToken(*c.AuthByAPIToken.Token, ohc)
+	if c.AuthByAPIToken != nil && c.Token != nil {
+		return cloudflare.NewWithAPIToken(*c.Token, ohc)
 	}
 	return nil, errors.New(errNoAuth)
 }

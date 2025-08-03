@@ -67,25 +67,10 @@ func withZone(zoneID string) routeModifier {
 	}
 }
 
-func withPattern(pattern string) routeModifier {
-	return func(r *v1alpha1.Route) { r.Spec.ForProvider.Pattern = pattern }
-}
-
-func withScript(script string) routeModifier {
-	return func(r *v1alpha1.Route) { r.Spec.ForProvider.Script = &script }
-}
-
 func withConditions(c ...xpv1.Condition) routeModifier {
 	return func(r *v1alpha1.Route) { r.Status.Conditions = c }
 }
 
-func withSpec(s v1alpha1.RouteSpec) routeModifier {
-	return func(r *v1alpha1.Route) { r.Spec = s }
-}
-
-func withStatus(s v1alpha1.RouteStatus) routeModifier {
-	return func(r *v1alpha1.Route) { r.Status = s }
-}
 
 func route(m ...routeModifier) *v1alpha1.Route {
 	cr := &v1alpha1.Route{

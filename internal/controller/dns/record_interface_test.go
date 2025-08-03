@@ -82,20 +82,21 @@ func (e *interfaceExternal) Observe(ctx context.Context, mg resource.Managed) (m
 		FQDN:       record.Name,
 		Zone:       "", // Zone name not available in new API response
 		Locked:     false, // Locked field not available in new API response
-		CreatedOn:  &metav1.Time{Time: record.CreatedOn},
-		ModifiedOn: &metav1.Time{Time: record.ModifiedOn},
+	}
+	
+	// Only set timestamps if they are not zero
+	if !record.CreatedOn.IsZero() {
+		cr.Status.AtProvider.CreatedOn = &metav1.Time{Time: record.CreatedOn}
+	}
+	if !record.ModifiedOn.IsZero() {
+		cr.Status.AtProvider.ModifiedOn = &metav1.Time{Time: record.ModifiedOn}
 	}
 
 	cr.Status.SetConditions(xpv1.Available())
 
 	// Check if resource is up to date
-	upToDate := true
-	if cr.Spec.ForProvider.Content != record.Content {
-		upToDate = false
-	}
-	if cr.Spec.ForProvider.TTL != nil && *cr.Spec.ForProvider.TTL != int64(record.TTL) {
-		upToDate = false
-	}
+	upToDate := cr.Spec.ForProvider.Content == record.Content &&
+		(cr.Spec.ForProvider.TTL == nil || *cr.Spec.ForProvider.TTL == int64(record.TTL))
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
@@ -214,12 +215,6 @@ func getStringValue(s *string) string {
 	return *s
 }
 
-func getIntValue(i *int) int {
-	if i == nil {
-		return 0
-	}
-	return *i
-}
 
 func getInt64Value(i *int64) int64 {
 	if i == nil {
@@ -245,7 +240,13 @@ func withInterfaceSpec(s v1alpha1.RecordSpec) interfaceRecordModifier {
 }
 
 func withInterfaceStatus(s v1alpha1.RecordStatus) interfaceRecordModifier {
-	return func(r *v1alpha1.Record) { r.Status = s }
+	return func(r *v1alpha1.Record) { 
+		// Preserve existing conditions and only update AtProvider
+		r.Status.AtProvider = s.AtProvider
+		if len(s.Conditions) > 0 {
+			r.Status.Conditions = s.Conditions
+		}
+	}
 }
 
 func interfaceRecord(m ...interfaceRecordModifier) *v1alpha1.Record {
@@ -816,6 +817,3 @@ func stringPtr(s string) *string {
 	return &s
 }
 
-func intPtr(i int) *int {
-	return &i
-}

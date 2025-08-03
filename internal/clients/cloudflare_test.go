@@ -29,7 +29,7 @@ import (
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
-	ptr "k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -207,11 +207,11 @@ func TestUseProviderSecret(t *testing.T) {
 			want: want{
 				o: &Config{
 					AuthByAPIKey: &AuthByAPIKey{
-						Key:   ptr.StringPtr("foo"),
-						Email: ptr.StringPtr("foo@bar.com"),
+						Key:   ptr.To("foo"),
+						Email: ptr.To("foo@bar.com"),
 					},
 					AuthByAPIToken: &AuthByAPIToken{
-						Token: ptr.StringPtr("A7E0BA00E5E44574BFEC828D3F895973"),
+						Token: ptr.To("A7E0BA00E5E44574BFEC828D3F895973"),
 					},
 				},
 			},
@@ -262,7 +262,7 @@ func TestNewClient(t *testing.T) {
 			args: args{
 				config: Config{
 					AuthByAPIKey: &AuthByAPIKey{
-						Email: ptr.StringPtr("foo@bar.com"),
+						Email: ptr.To("foo@bar.com"),
 					},
 				},
 			},
@@ -275,8 +275,8 @@ func TestNewClient(t *testing.T) {
 			args: args{
 				config: Config{
 					AuthByAPIKey: &AuthByAPIKey{
-						Key:   ptr.StringPtr("abcd"),
-						Email: ptr.StringPtr("foo@bar.com"),
+						Key:   ptr.To("abcd"),
+						Email: ptr.To("foo@bar.com"),
 					},
 				},
 			},
@@ -293,7 +293,7 @@ func TestNewClient(t *testing.T) {
 			args: args{
 				config: Config{
 					AuthByAPIToken: &AuthByAPIToken{
-						Token: ptr.StringPtr("beef"),
+						Token: ptr.To("beef"),
 					},
 				},
 			},
@@ -310,11 +310,11 @@ func TestNewClient(t *testing.T) {
 			args: args{
 				config: Config{
 					AuthByAPIKey: &AuthByAPIKey{
-						Key:   ptr.StringPtr("abcd"),
-						Email: ptr.StringPtr("foo@bar.com"),
+						Key:   ptr.To("abcd"),
+						Email: ptr.To("foo@bar.com"),
 					},
 					AuthByAPIToken: &AuthByAPIToken{
-						Token: ptr.StringPtr("beef"),
+						Token: ptr.To("beef"),
 					},
 				},
 			},

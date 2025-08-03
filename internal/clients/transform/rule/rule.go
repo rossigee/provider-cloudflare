@@ -82,7 +82,7 @@ func (c *clientImpl) CreateTransformRule(ctx context.Context, zoneID string, spe
 	}
 
 	rc := cloudflare.ZoneIdentifier(zoneID)
-	updatedRuleset, err := c.API.UpdateRuleset(ctx, rc, updateParams)
+	updatedRuleset, err := c.UpdateRuleset(ctx, rc, updateParams)
 	if err != nil {
 		return cloudflare.RulesetRule{}, errors.Wrap(err, "failed to update ruleset with new rule")
 	}
@@ -132,7 +132,7 @@ func (c *clientImpl) UpdateTransformRule(ctx context.Context, zoneID string, rul
 	}
 
 	rc := cloudflare.ZoneIdentifier(zoneID)
-	_, err = c.API.UpdateRuleset(ctx, rc, updateParams)
+	_, err = c.UpdateRuleset(ctx, rc, updateParams)
 	if err != nil {
 		return cloudflare.RulesetRule{}, errors.Wrap(err, "failed to update ruleset")
 	}
@@ -189,7 +189,7 @@ func (c *clientImpl) DeleteTransformRule(ctx context.Context, zoneID string, rul
 	}
 
 	rc := cloudflare.ZoneIdentifier(zoneID)
-	_, err = c.API.UpdateRuleset(ctx, rc, updateParams)
+	_, err = c.UpdateRuleset(ctx, rc, updateParams)
 	if err != nil {
 		return errors.Wrap(err, "failed to update ruleset after deleting rule")
 	}
@@ -219,7 +219,7 @@ func (c *clientImpl) getPhaseRuleset(ctx context.Context, zoneID string, phase s
 	rc := cloudflare.ZoneIdentifier(zoneID)
 	
 	// Try to get the entrypoint ruleset for this phase
-	ruleset, err := c.API.GetEntrypointRuleset(ctx, rc, phase)
+	ruleset, err := c.GetEntrypointRuleset(ctx, rc, phase)
 	if err != nil {
 		return cloudflare.Ruleset{}, err
 	}
@@ -246,7 +246,7 @@ func (c *clientImpl) getOrCreatePhaseRuleset(ctx context.Context, zoneID string,
 		}
 
 		rc := cloudflare.ZoneIdentifier(zoneID)
-		newRuleset, err := c.API.CreateRuleset(ctx, rc, createParams)
+		newRuleset, err := c.CreateRuleset(ctx, rc, createParams)
 		if err != nil {
 			return cloudflare.Ruleset{}, errors.Wrap(err, "failed to create new ruleset")
 		}
@@ -310,7 +310,7 @@ func (c *clientImpl) specToRulesetRule(spec *v1alpha1.RuleParameters) cloudflare
 		}
 
 		// Header transformations
-		if spec.ActionParameters.Headers != nil && len(spec.ActionParameters.Headers) > 0 {
+		if len(spec.ActionParameters.Headers) > 0 {
 			headers := make(map[string]cloudflare.RulesetRuleActionParametersHTTPHeader)
 			for name, header := range spec.ActionParameters.Headers {
 				cfHeader := cloudflare.RulesetRuleActionParametersHTTPHeader{

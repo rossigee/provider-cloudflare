@@ -25,7 +25,7 @@ import (
 
 	"github.com/rossigee/provider-cloudflare/apis/dns/v1alpha1"
 
-	ptr "k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 func uint16Ptr(v uint16) *uint16 {
@@ -59,19 +59,19 @@ func TestLateInitialize(t *testing.T) {
 			reason: "LateInit should not update already-set spec fields from a Record",
 			args: args{
 				rp: &v1alpha1.RecordParameters{
-					Proxied:  ptr.BoolPtr(false),
-					Priority: ptr.Int32Ptr(4),
+					Proxied:  ptr.To(false),
+					Priority: ptr.To[int32](4),
 				},
 				r: cloudflare.DNSRecord{
-					Proxied:  ptr.BoolPtr(true),
+					Proxied:  ptr.To(true),
 					Priority: uint16Ptr(1),
 				},
 			},
 			want: want{
 				o: false,
 				rp: &v1alpha1.RecordParameters{
-					Proxied:  ptr.BoolPtr(false),
-					Priority: ptr.Int32Ptr(4),
+					Proxied:  ptr.To(false),
+					Priority: ptr.To[int32](4),
 				},
 			},
 		},
@@ -80,15 +80,15 @@ func TestLateInitialize(t *testing.T) {
 			args: args{
 				rp: &v1alpha1.RecordParameters{},
 				r: cloudflare.DNSRecord{
-					Proxied:  ptr.BoolPtr(true),
+					Proxied:  ptr.To(true),
 					Priority: uint16Ptr(1),
 				},
 			},
 			want: want{
 				o: true,
 				rp: &v1alpha1.RecordParameters{
-					Proxied:  ptr.BoolPtr(true),
-					Priority: ptr.Int32Ptr(1),
+					Proxied:  ptr.To(true),
+					Priority: ptr.To[int32](1),
 				},
 			},
 		},
@@ -143,18 +143,18 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return false if the spec does not match the record",
 			args: args{
 				rp: &v1alpha1.RecordParameters{
-					Type:    ptr.StringPtr("A"),
+					Type:    ptr.To("A"),
 					Name:    "foo",
 					Content: "127.0.0.1",
-					TTL:     ptr.Int64Ptr(600),
-					Proxied: ptr.BoolPtr(false),
+					TTL:     ptr.To[int64](600),
+					Proxied: ptr.To(false),
 				},
 				r: cloudflare.DNSRecord{
 					Type:    "A",
 					Name:    "foo",
 					Content: "127.0.0.2",
 					TTL:     600,
-					Proxied: ptr.BoolPtr(false),
+					Proxied: ptr.To(false),
 				},
 			},
 			want: want{
@@ -165,18 +165,18 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return true if the spec matches the record",
 			args: args{
 				rp: &v1alpha1.RecordParameters{
-					Type:    ptr.StringPtr("A"),
+					Type:    ptr.To("A"),
 					Name:    "foo",
 					Content: "127.0.0.1",
-					TTL:     ptr.Int64Ptr(600),
-					Proxied: ptr.BoolPtr(false),
+					TTL:     ptr.To[int64](600),
+					Proxied: ptr.To(false),
 				},
 				r: cloudflare.DNSRecord{
 					Type:    "A",
 					Name:    "foo",
 					Content: "127.0.0.1",
 					TTL:     600,
-					Proxied: ptr.BoolPtr(false),
+					Proxied: ptr.To(false),
 				},
 			},
 			want: want{

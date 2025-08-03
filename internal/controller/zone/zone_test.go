@@ -27,7 +27,7 @@ import (
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
-	ptr "k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -272,10 +272,10 @@ func TestObserve(t *testing.T) {
 					withExternalName("1234beef"),
 					// Paused is different than input params, this will trigger
 					// ResourceUpToDate: false
-					withPaused(ptr.BoolPtr(false)),
-					withEdgeCacheTTL(ptr.Int64(7200)),
-					withAccount(ptr.StringPtr("a1234")),
-					withPlan(ptr.StringPtr("a1235")),
+					withPaused(ptr.To(false)),
+					withEdgeCacheTTL(ptr.To[int64](7200)),
+					withAccount(ptr.To("a1234")),
+					withPlan(ptr.To("a1235")),
 					withNS([]string{"ns1.lele.com", "ns2.woowoo.org"}),
 				),
 			},
@@ -308,9 +308,9 @@ func TestObserve(t *testing.T) {
 			args: args{
 				mg: zone(
 					withExternalName("1234beef"),
-					withPaused(ptr.BoolPtr(false)),
-					withAccount(ptr.StringPtr("a1234")),
-					withPlan(ptr.StringPtr("a1235")),
+					withPaused(ptr.To(false)),
+					withAccount(ptr.To("a1234")),
+					withPlan(ptr.To("a1235")),
 					withNS([]string{"ns1.lele.com", "ns2.woowoo.org"}),
 				),
 			},
@@ -343,11 +343,11 @@ func TestObserve(t *testing.T) {
 			args: args{
 				mg: zone(
 					withExternalName("1234beef"),
-					withPaused(ptr.BoolPtr(true)),
-					withEdgeCacheTTL(ptr.Int64Ptr(7200)),
-					withZeroRTT(ptr.StringPtr("off")),
-					withAccount(ptr.StringPtr("a1234")),
-					withPlan(ptr.StringPtr("a1235")),
+					withPaused(ptr.To(true)),
+					withEdgeCacheTTL(ptr.To[int64](7200)),
+					withZeroRTT(ptr.To("off")),
+					withAccount(ptr.To("a1234")),
+					withPlan(ptr.To("a1235")),
 					withNS([]string{"ns1.lele.com", "ns2.woowoo.org"}),
 				),
 			},
@@ -418,7 +418,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{
-				mg: zone(withExternalName("1234beef"), withType(ptr.StringPtr("full"))),
+				mg: zone(withExternalName("1234beef"), withType(ptr.To("full"))),
 			},
 			want: want{
 				o:   managed.ExternalCreation{},
@@ -441,7 +441,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			args: args{
-				mg: zone(withPaused(ptr.BoolPtr(false)), withType(ptr.StringPtr("full"))),
+				mg: zone(withPaused(ptr.To(false)), withType(ptr.To("full"))),
 			},
 			want: want{
 				o: managed.ExternalCreation{},
@@ -535,8 +535,8 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				mg: zone(
 					withExternalName("1234beef"),
-					withType(ptr.StringPtr("full")),
-					withPaused(ptr.BoolPtr(true)),
+					withType(ptr.To("full")),
+					withPaused(ptr.To(true)),
 				),
 			},
 			want: want{
@@ -576,9 +576,9 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				mg: zone(
 					withExternalName("1234beef"),
-					withPaused(ptr.BoolPtr(true)),
-					withType(ptr.StringPtr("full")),
-					withEdgeCacheTTL(ptr.Int64Ptr(900)),
+					withPaused(ptr.To(true)),
+					withType(ptr.To("full")),
+					withEdgeCacheTTL(ptr.To[int64](900)),
 				),
 			},
 			want: want{
@@ -675,9 +675,9 @@ func TestDelete(t *testing.T) {
 			args: args{
 				mg: zone(
 					withExternalName("1234beef"),
-					withPaused(ptr.BoolPtr(true)),
-					withType(ptr.StringPtr("full")),
-					withEdgeCacheTTL(ptr.Int64Ptr(900)),
+					withPaused(ptr.To(true)),
+					withType(ptr.To("full")),
+					withEdgeCacheTTL(ptr.To[int64](900)),
 				),
 			},
 			want: want{

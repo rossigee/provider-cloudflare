@@ -58,55 +58,59 @@ type poolClient struct {
 
 // CreatePool creates a new Cloudflare load balancer pool
 func (c *poolClient) CreatePool(ctx context.Context, params v1alpha1.LoadBalancerPoolParameters) (*cloudflare.LoadBalancerPool, error) {
-	createParams := cloudflare.CreateLoadBalancerPoolParams{
+	pool := cloudflare.LoadBalancerPool{
 		Name:    params.Name,
 		Origins: convertOriginsToCloudflare(params.Origins),
 	}
 
 	if params.Description != nil {
-		createParams.Description = *params.Description
+		pool.Description = *params.Description
 	}
 
 	if params.Enabled != nil {
-		createParams.Enabled = *params.Enabled
+		pool.Enabled = *params.Enabled
 	}
 
 	if params.MinimumOrigins != nil {
-		createParams.MinimumOrigins = params.MinimumOrigins
+		pool.MinimumOrigins = params.MinimumOrigins
 	}
 
 	if params.Monitor != nil {
-		createParams.Monitor = *params.Monitor
+		pool.Monitor = *params.Monitor
 	}
 
 	if params.NotificationEmail != nil {
-		createParams.NotificationEmail = *params.NotificationEmail
+		pool.NotificationEmail = *params.NotificationEmail
 	}
 
 	if params.Latitude != nil {
 		if lat, err := strconv.ParseFloat(*params.Latitude, 32); err == nil {
 			latFloat := float32(lat)
-			createParams.Latitude = &latFloat
+			pool.Latitude = &latFloat
 		}
 	}
 
 	if params.Longitude != nil {
 		if lng, err := strconv.ParseFloat(*params.Longitude, 32); err == nil {
 			lngFloat := float32(lng)
-			createParams.Longitude = &lngFloat
+			pool.Longitude = &lngFloat
 		}
 	}
 
 	if params.LoadShedding != nil {
-		createParams.LoadShedding = convertLoadSheddingToCloudflare(*params.LoadShedding)
+		pool.LoadShedding = convertLoadSheddingToCloudflare(*params.LoadShedding)
 	}
 
 	if params.OriginSteering != nil {
-		createParams.OriginSteering = convertOriginSteeringToCloudflare(*params.OriginSteering)
+		pool.OriginSteering = convertOriginSteeringToCloudflare(*params.OriginSteering)
 	}
 
 	if len(params.CheckRegions) > 0 {
-		createParams.CheckRegions = params.CheckRegions
+		pool.CheckRegions = params.CheckRegions
+	}
+
+	createParams := cloudflare.CreateLoadBalancerPoolParams{
+		LoadBalancerPool: pool,
 	}
 
 	var rc *cloudflare.ResourceContainer
@@ -118,12 +122,12 @@ func (c *poolClient) CreatePool(ctx context.Context, params v1alpha1.LoadBalance
 		return nil, errors.New("either zone or account must be specified")
 	}
 
-	pool, err := c.api.CreateLoadBalancerPool(ctx, rc, createParams)
+	result, err := c.api.CreateLoadBalancerPool(ctx, rc, createParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreatePool)
 	}
 
-	return &pool, nil
+	return &result, nil
 }
 
 // GetPool retrieves a Cloudflare load balancer pool
@@ -147,56 +151,56 @@ func (c *poolClient) GetPool(ctx context.Context, poolID string, params v1alpha1
 
 // UpdatePool updates a Cloudflare load balancer pool
 func (c *poolClient) UpdatePool(ctx context.Context, poolID string, params v1alpha1.LoadBalancerPoolParameters) (*cloudflare.LoadBalancerPool, error) {
-	updateParams := cloudflare.UpdateLoadBalancerPoolParams{
+	pool := cloudflare.LoadBalancerPool{
 		ID:      poolID,
 		Name:    params.Name,
 		Origins: convertOriginsToCloudflare(params.Origins),
 	}
 
 	if params.Description != nil {
-		updateParams.Description = *params.Description
+		pool.Description = *params.Description
 	}
 
 	if params.Enabled != nil {
-		updateParams.Enabled = *params.Enabled
+		pool.Enabled = *params.Enabled
 	}
 
 	if params.MinimumOrigins != nil {
-		updateParams.MinimumOrigins = params.MinimumOrigins
+		pool.MinimumOrigins = params.MinimumOrigins
 	}
 
 	if params.Monitor != nil {
-		updateParams.Monitor = *params.Monitor
+		pool.Monitor = *params.Monitor
 	}
 
 	if params.NotificationEmail != nil {
-		updateParams.NotificationEmail = *params.NotificationEmail
+		pool.NotificationEmail = *params.NotificationEmail
 	}
 
 	if params.Latitude != nil {
 		if lat, err := strconv.ParseFloat(*params.Latitude, 32); err == nil {
 			latFloat := float32(lat)
-			updateParams.Latitude = &latFloat
+			pool.Latitude = &latFloat
 		}
 	}
 
 	if params.Longitude != nil {
 		if lng, err := strconv.ParseFloat(*params.Longitude, 32); err == nil {
 			lngFloat := float32(lng)
-			updateParams.Longitude = &lngFloat
+			pool.Longitude = &lngFloat
 		}
 	}
 
 	if params.LoadShedding != nil {
-		updateParams.LoadShedding = convertLoadSheddingToCloudflare(*params.LoadShedding)
+		pool.LoadShedding = convertLoadSheddingToCloudflare(*params.LoadShedding)
 	}
 
 	if params.OriginSteering != nil {
-		updateParams.OriginSteering = convertOriginSteeringToCloudflare(*params.OriginSteering)
+		pool.OriginSteering = convertOriginSteeringToCloudflare(*params.OriginSteering)
 	}
 
 	if len(params.CheckRegions) > 0 {
-		updateParams.CheckRegions = params.CheckRegions
+		pool.CheckRegions = params.CheckRegions
 	}
 
 	var rc *cloudflare.ResourceContainer
@@ -208,12 +212,16 @@ func (c *poolClient) UpdatePool(ctx context.Context, poolID string, params v1alp
 		return nil, errors.New("either zone or account must be specified")
 	}
 
-	pool, err := c.api.UpdateLoadBalancerPool(ctx, rc, updateParams)
+	updateParams := cloudflare.UpdateLoadBalancerPoolParams{
+		LoadBalancer: pool,
+	}
+
+	result, err := c.api.UpdateLoadBalancerPool(ctx, rc, updateParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errUpdatePool)
 	}
 
-	return &pool, nil
+	return &result, nil
 }
 
 // DeletePool deletes a Cloudflare load balancer pool

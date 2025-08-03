@@ -230,9 +230,37 @@ func convertActionParametersToCloudflare(params v1alpha1.RulesetRuleActionParame
 		cfParams.Rules = params.Rules
 	}
 
-	// TODO: Implement URI transformation parameters
-	// Complex conversion needed due to API field type mismatches
-	_ = params.URI
+	// Handle URI transformation parameters
+	if params.URI != nil {
+		cfParams.URI = &cloudflare.RulesetRuleActionParametersURI{
+			Origin: params.URI.Origin,
+		}
+		
+		// Handle path transformation
+		if params.URI.Path != nil {
+			cfParams.URI.Path = &cloudflare.RulesetRuleActionParametersURIPath{}
+			
+			// SDK expects string for Path.Value, our API uses *string
+			if params.URI.Path.Value != nil {
+				cfParams.URI.Path.Value = *params.URI.Path.Value
+			}
+			
+			if params.URI.Path.Expression != nil {
+				cfParams.URI.Path.Expression = *params.URI.Path.Expression
+			}
+		}
+		
+		// Handle query transformation
+		if params.URI.Query != nil {
+			cfParams.URI.Query = &cloudflare.RulesetRuleActionParametersURIQuery{
+				Value: params.URI.Query.Value, // Both use *string
+			}
+			
+			if params.URI.Query.Expression != nil {
+				cfParams.URI.Query.Expression = *params.URI.Query.Expression
+			}
+		}
+	}
 
 	if len(params.Headers) > 0 {
 		cfParams.Headers = make(map[string]cloudflare.RulesetRuleActionParametersHTTPHeader)
