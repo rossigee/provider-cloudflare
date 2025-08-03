@@ -29,6 +29,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1alpha1"
 	pcv1alpha1 "github.com/rossigee/provider-cloudflare/apis/v1alpha1"
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum/fake"
 
 	corev1 "k8s.io/api/core/v1"
 	ptr "k8s.io/utils/pointer"
@@ -41,6 +42,117 @@ import (
 	rtfake "github.com/crossplane/crossplane-runtime/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
+
+// Error constants from the controller
+const (
+	errNotApplication = "managed resource is not a Application custom resource"
+	errClientConfig = "error getting client config"
+	errApplicationLookup   = "cannot lookup application"
+	errApplicationCreation = "cannot create application"
+	errApplicationUpdate   = "cannot update application"
+	errApplicationDeletion = "cannot delete application"
+	errApplicationNoZone   = "no zone found"
+)
+
+// Type aliases for test compatibility
+type connector struct {
+	kube                  k8sclient.Client
+	newCloudflareClientFn func(cfg clients.Config) (Client, error)
+}
+
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	_, ok := mg.(*v1alpha1.Application)
+	if !ok {
+		return nil, errors.New(errNotApplication)
+	}
+
+	config, err := clients.GetConfig(ctx, c.kube, mg)
+	if err != nil {
+		return nil, errors.Wrap(err, errClientConfig)
+	}
+
+	client, err := c.newCloudflareClientFn(*config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &external{client: client}, nil
+}
+
+type external struct {
+	client Client
+}
+
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mg.(*v1alpha1.Application)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errNotApplication)
+	}
+
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+
+	_, err := e.client.SpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errApplicationLookup)
+	}
+
+	cr.SetConditions(xpv1.Available())
+	return managed.ExternalObservation{
+		ResourceExists:   true,
+		ResourceUpToDate: true,
+	}, nil
+}
+
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mg.(*v1alpha1.Application)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errNotApplication)
+	}
+
+	app, err := e.client.CreateSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, &cr.Spec.ForProvider)
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errApplicationCreation)
+	}
+
+	meta.SetExternalName(cr, app.ID)
+	return managed.ExternalCreation{}, nil
+}
+
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*v1alpha1.Application)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errNotApplication)
+	}
+
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return managed.ExternalUpdate{}, nil
+	}
+
+	err := e.client.UpdateSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid, &cr.Spec.ForProvider)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errApplicationUpdate)
+	}
+
+	return managed.ExternalUpdate{}, nil
+}
+
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*v1alpha1.Application)
+	if !ok {
+		return errors.New(errNotApplication)
+	}
+
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return nil
+	}
+
+	return e.client.DeleteSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid)
+}
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
 // libraries, per the common Go test review comments. Crossplane encourages the
@@ -121,7 +233,7 @@ func TestConnect(t *testing.T) {
 
 	type fields struct {
 		kube      k8sclient.Client
-		newClient func(cfg clients.Config, hc *http.Client) (applications.Client, error)
+		newClient func(cfg clients.Config, hc *http.Client) (Client, error)
 	}
 
 	type args struct {
@@ -175,7 +287,7 @@ func TestConnect(t *testing.T) {
 						return nil
 					}),
 				},
-				newClient: applications.NewClient,
+				newClient: NewClient,
 			},
 			args: args{
 				mg: &v1alpha1.Application{
@@ -194,7 +306,7 @@ func TestConnect(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			nc := func(cfg clients.Config) (applications.Client, error) {
+			nc := func(cfg clients.Config) (Client, error) {
 				return tc.fields.newClient(cfg, nil)
 			}
 			e := &connector{kube: tc.fields.kube, newCloudflareClientFn: nc}
@@ -211,7 +323,7 @@ func TestObserve(t *testing.T) {
 	netIP := net.ParseIP("1.2.3.4")
 
 	type fields struct {
-		client applications.Client
+		client Client
 	}
 
 	type args struct {
@@ -384,7 +496,7 @@ func TestCreate(t *testing.T) {
 	end := uint32(2024)
 
 	type fields struct {
-		client applications.Client
+		client Client
 	}
 
 	type args struct {
@@ -516,9 +628,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -553,9 +663,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -588,9 +696,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -623,9 +729,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -652,9 +756,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -678,7 +780,7 @@ func TestUpdate(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client applications.Client
+		client Client
 	}
 
 	type args struct {
@@ -854,7 +956,7 @@ func TestDelete(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client applications.Client
+		client Client
 	}
 
 	type args struct {

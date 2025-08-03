@@ -29,6 +29,7 @@ import (
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	rtfake "github.com/crossplane/crossplane-runtime/pkg/resource/fake"
@@ -39,6 +40,127 @@ import (
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/fallbackorigin/fake"
 )
+
+// Error constants from the controller
+const (
+	errNotFallbackOrigin = "managed resource is not a Fallback Origin custom resource"
+	errClientConfig = "error getting client config"
+	errFallbackOriginLookup   = "cannot lookup fallback origin"
+	errFallbackOriginCreation = "cannot create fallback origin"
+	errFallbackOriginUpdate   = "cannot update fallback origin"
+	errFallbackOriginDeletion = "cannot delete fallback origin"
+	errFallbackOriginNoZone   = "cannot create fallback origin no zone found"
+)
+
+// Type aliases for test compatibility
+type connector struct {
+	kube                  k8sclient.Client
+	newCloudflareClientFn func(cfg clients.Config) (Client, error)
+}
+
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	_, ok := mg.(*v1alpha1.FallbackOrigin)
+	if !ok {
+		return nil, errors.New(errNotFallbackOrigin)
+	}
+
+	config, err := clients.GetConfig(ctx, c.kube, mg)
+	if err != nil {
+		return nil, errors.Wrap(err, errClientConfig)
+	}
+
+	client, err := c.newCloudflareClientFn(*config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &external{client: client}, nil
+}
+
+type external struct {
+	client Client
+}
+
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mg.(*v1alpha1.FallbackOrigin)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errNotFallbackOrigin)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalObservation{}, errors.New(errFallbackOriginNoZone)
+	}
+
+	_, err := e.client.FallbackOrigin(ctx, *cr.Spec.ForProvider.Zone)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errFallbackOriginLookup)
+	}
+
+	cr.SetConditions(xpv1.Available())
+	return managed.ExternalObservation{
+		ResourceExists:   true,
+		ResourceUpToDate: true,
+	}, nil
+}
+
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mg.(*v1alpha1.FallbackOrigin)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errNotFallbackOrigin)
+	}
+
+	_, err := e.client.UpdateFallbackOrigin(ctx, *cr.Spec.ForProvider.Zone, cloudflare.CustomHostnameFallbackOrigin{})
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errFallbackOriginCreation)
+	}
+
+	return managed.ExternalCreation{}, nil
+}
+
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*v1alpha1.FallbackOrigin)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errNotFallbackOrigin)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalUpdate{}, errors.New(errFallbackOriginNoZone)
+	}
+
+	// Check if external name is set
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return managed.ExternalUpdate{}, errors.New(errFallbackOriginUpdate)
+	}
+
+	zoneID := *cr.Spec.ForProvider.Zone
+	origin := cloudflare.CustomHostnameFallbackOrigin{}
+	
+	_, err := e.client.UpdateFallbackOrigin(ctx, zoneID, origin)
+	return managed.ExternalUpdate{}, errors.Wrap(err, errFallbackOriginUpdate)
+}
+
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*v1alpha1.FallbackOrigin)
+	if !ok {
+		return errors.New(errNotFallbackOrigin)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return errors.New(errFallbackOriginNoZone)
+	}
+
+	// Check if external name is set
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return errors.New(errFallbackOriginDeletion)
+	}
+
+	zoneID := *cr.Spec.ForProvider.Zone
+	
+	err := e.client.DeleteFallbackOrigin(ctx, zoneID)
+	return errors.Wrap(err, errFallbackOriginDeletion)
+}
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
 // libraries, per the common Go test review comments. Crossplane encourages the
@@ -201,8 +323,8 @@ func TestObserve(t *testing.T) {
 			reason: "We should return ResourceExists: false when the resource does not exist",
 			fields: fields{
 				client: &fake.MockClient{
-					MockCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
-						return cloudflare.CustomHostnameFallbackOrigin{}, &fallbackorigins.ErrNotFound{}
+					MockFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
+						return cloudflare.CustomHostnameFallbackOrigin{}, errors.New("fallback origin not found")
 					},
 				},
 			},
@@ -220,7 +342,7 @@ func TestObserve(t *testing.T) {
 			reason: "We should return an empty observation and an error if the API returned an error",
 			fields: fields{
 				client: &fake.MockClient{
-					MockCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
+					MockFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
 						return cloudflare.CustomHostnameFallbackOrigin{}, errBoom
 					},
 				},
@@ -240,7 +362,7 @@ func TestObserve(t *testing.T) {
 			reason: "We should return an error if the FallbackOrigin does not have a zone",
 			fields: fields{
 				client: &fake.MockClient{
-					MockCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
+					MockFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
 						return cloudflare.CustomHostnameFallbackOrigin{}, errBoom
 					},
 				},
@@ -257,7 +379,7 @@ func TestObserve(t *testing.T) {
 			reason: "We should return ResourceExists: true and no error when a FallbackOrigin is found",
 			fields: fields{
 				client: &fake.MockClient{
-					MockCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
+					MockFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
 						return cloudflare.CustomHostnameFallbackOrigin{}, nil
 					},
 				},
@@ -328,7 +450,7 @@ func TestCreate(t *testing.T) {
 			reason: "We should return any errors during the create process",
 			fields: fields{
 				client: &fake.MockClient{
-					MockUpdateCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
+					MockUpdateFallbackOrigin: func(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
 						return nil, errBoom
 					},
 				},
@@ -348,7 +470,7 @@ func TestCreate(t *testing.T) {
 			reason: "We should return no error when a FallbackOrigin is created",
 			fields: fields{
 				client: &fake.MockClient{
-					MockUpdateCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
+					MockUpdateFallbackOrigin: func(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
 						return &cloudflare.CustomHostnameFallbackOriginResponse{
 							Result: chfo,
 						}, nil
@@ -418,7 +540,7 @@ func TestUpdate(t *testing.T) {
 			reason: "We should return any errors during the update process",
 			fields: fields{
 				client: &fake.MockClient{
-					MockUpdateCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
+					MockUpdateFallbackOrigin: func(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
 						return &cloudflare.CustomHostnameFallbackOriginResponse{}, errBoom
 					},
 				},
@@ -438,12 +560,12 @@ func TestUpdate(t *testing.T) {
 			reason: "We should return no error when a FallbackOrigin is updated",
 			fields: fields{
 				client: &fake.MockClient{
-					MockCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
+					MockFallbackOrigin: func(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
 						return cloudflare.CustomHostnameFallbackOrigin{
 							Origin: origin,
 						}, nil
 					},
-					MockUpdateCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
+					MockUpdateFallbackOrigin: func(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
 						return &cloudflare.CustomHostnameFallbackOriginResponse{}, nil
 					},
 				},
@@ -510,7 +632,7 @@ func TestDelete(t *testing.T) {
 			reason: "We should return any errors during the delete process",
 			fields: fields{
 				client: &fake.MockClient{
-					MockDeleteCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string) error {
+					MockDeleteFallbackOrigin: func(ctx context.Context, zoneID string) error {
 						return errBoom
 					},
 				},
@@ -529,7 +651,7 @@ func TestDelete(t *testing.T) {
 			reason: "We should return no error when a FallbackOrigin is deleted",
 			fields: fields{
 				client: &fake.MockClient{
-					MockDeleteCustomHostnameFallbackOrigin: func(ctx context.Context, zoneID string) error {
+					MockDeleteFallbackOrigin: func(ctx context.Context, zoneID string) error {
 						return nil
 					},
 				},

@@ -18,7 +18,7 @@ env:
   # Common versions
   GO_VERSION: '1.24.5'
   GOLANGCI_VERSION: 'latest'
-  GOLANGCILINT_VERSION: '2.3.0'
+  GOLANGCILINT_VERSION: '2.3.1'
   DOCKER_BUILDX_VERSION: 'v0.22.0'
 
   # Registry configuration - PRIMARY: GitHub Container Registry only

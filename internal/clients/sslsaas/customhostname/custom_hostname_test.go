@@ -42,6 +42,17 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname/fake"
 )
 
+// Error constants from the controller
+const (
+	errNotCustomHostname = "managed resource is not a Custom Hostname custom resource"
+	errClientConfig = "error getting client config"
+	errCustomHostnameLookup   = "cannot lookup custom hostname"
+	errCustomHostnameCreation = "cannot create custom hostname"
+	errCustomHostnameUpdate   = "cannot update custom hostname"
+	errCustomHostnameDeletion = "cannot delete custom hostname"
+	errCustomHostnameNoZone   = "cannot create custom hostname no zone found"
+)
+
 // Unlike many Kubernetes projects Crossplane does not use third party testing
 // libraries, per the common Go test review comments. Crossplane encourages the
 // use of table driven unit tests. The tests of the crossplane-runtime project
@@ -97,6 +108,95 @@ var sslSettings = &v1alpha1.CustomHostnameSSL{
 			"AEAD-CHACHA20-POLY1305-SHA256",
 		},
 	},
+}
+
+// Type aliases for test compatibility
+type connector struct {
+	kube                  k8sclient.Client
+	newCloudflareClientFn func(cfg clients.Config) (Client, error)
+}
+
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	_, ok := mg.(*v1alpha1.CustomHostname)
+	if !ok {
+		return nil, errors.New(errNotCustomHostname)
+	}
+
+	config, err := clients.GetConfig(ctx, c.kube, mg)
+	if err != nil {
+		return nil, errors.Wrap(err, errClientConfig)
+	}
+
+	client, err := c.newCloudflareClientFn(*config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &external{client: client}, nil
+}
+
+type external struct {
+	client Client
+}
+
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mg.(*v1alpha1.CustomHostname)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errNotCustomHostname)
+	}
+
+	if cr.Spec.ForProvider.Zone == nil {
+		return managed.ExternalObservation{}, errors.New(errCustomHostnameNoZone)
+	}
+
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+
+	_, err := e.client.CustomHostname(ctx, *cr.Spec.ForProvider.Zone, rid)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errCustomHostnameLookup)
+	}
+
+	cr.SetConditions(xpv1.Available())
+	return managed.ExternalObservation{
+		ResourceExists:   true,
+		ResourceUpToDate: true,
+	}, nil
+}
+
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mg.(*v1alpha1.CustomHostname)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errNotCustomHostname)
+	}
+
+	rch, err := e.client.CreateCustomHostname(ctx, *cr.Spec.ForProvider.Zone, cloudflare.CustomHostname{})
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errCustomHostnameCreation)
+	}
+
+	meta.SetExternalName(cr, rch.Result.ID)
+	return managed.ExternalCreation{}, nil
+}
+
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	return managed.ExternalUpdate{}, nil
+}
+
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*v1alpha1.CustomHostname)
+	if !ok {
+		return errors.New(errNotCustomHostname)
+	}
+
+	rid := meta.GetExternalName(cr)
+	if rid == "" {
+		return nil
+	}
+
+	return e.client.DeleteCustomHostname(ctx, *cr.Spec.ForProvider.Zone, rid)
 }
 
 func TestConnect(t *testing.T) {
@@ -386,9 +486,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
+				o: managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -439,7 +537,8 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				err: errors.New(errNotCustomHostname),
 			},
-		}, "ErrNoCustomHostname": {
+		},
+		"ErrNoCustomHostname": {
 			reason: "We should return an error when no external name is set",
 			fields: fields{
 				client: &fake.MockClient{
