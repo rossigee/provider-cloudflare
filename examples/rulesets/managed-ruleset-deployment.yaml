@@ -1,0 +1,48 @@
+apiVersion: rulesets.cloudflare.crossplane.io/v1alpha1
+kind: Ruleset
+metadata:
+  name: cloudflare-managed-rules
+spec:
+  forProvider:
+    zone: "example.com"  # Replace with your zone ID
+    name: "Cloudflare Managed Rules Deployment"
+    description: "Deploy Cloudflare's managed security rules with custom overrides"
+    kind: "zone"
+    phase: "http_request_firewall_managed"
+    rules:
+      - action: "execute"
+        expression: "true"
+        description: "Deploy Cloudflare Managed Ruleset"
+        enabled: true
+        actionParameters:
+          id: "efb7b8c949ac4650a09736fc376e9aee"  # Cloudflare Managed Ruleset ID
+          overrides:
+            enabled: true
+            sensitivityLevel: "medium"
+            categories:
+              - category: "wordpress"
+                action: "block"
+                enabled: true
+              - category: "joomla"
+                action: "log"
+                enabled: true
+            rules:
+              - id: "5de7edfa648c4d6891dc3e7f84534ffa"
+                action: "block"
+                enabled: true
+              - id: "e3a567afc347477d9702d9047e97d760"
+                action: "challenge"
+                enabled: true
+                scoreThreshold: 60
+      - action: "execute"
+        expression: "true"
+        description: "Deploy OWASP Core Rule Set"
+        enabled: true
+        actionParameters:
+          id: "4814384a9e5d4991b9815dcfc25d2f1f"  # OWASP Core Rule Set ID
+          overrides:
+            enabled: true
+            action: "challenge"
+            sensitivityLevel: "low"
+  providerConfigRef:
+    name: cloudflare-provider-config

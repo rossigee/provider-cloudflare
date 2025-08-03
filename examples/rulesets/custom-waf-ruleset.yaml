@@ -1,0 +1,43 @@
+apiVersion: rulesets.cloudflare.crossplane.io/v1alpha1
+kind: Ruleset
+metadata:
+  name: custom-waf-rules
+spec:
+  forProvider:
+    zone: "example.com"  # Replace with your zone ID
+    name: "Custom WAF Rules"
+    description: "Custom Web Application Firewall rules for enhanced security"
+    kind: "custom"
+    phase: "http_request_firewall_custom"
+    rules:
+      - action: "block"
+        expression: "(http.request.uri.path contains \"/admin\") and (not ip.src in $trusted_ips)"
+        description: "Block access to admin paths from untrusted IPs"
+        enabled: true
+        actionParameters:
+          response:
+            statusCode: 403
+            contentType: "text/plain"
+            content: "Access denied: Admin area restricted"
+      - action: "challenge"
+        expression: "(cf.threat_score gt 14) and (not http.request.uri.path contains \"/api\")"
+        description: "Challenge high threat score requests except API endpoints"
+        enabled: true
+      - action: "js_challenge"
+        expression: "(http.user_agent contains \"bot\") and (not http.user_agent contains \"Googlebot\")"
+        description: "JS challenge for bots except legitimate crawlers"
+        enabled: true
+      - action: "rate_limit"
+        expression: "true"
+        description: "Rate limiting for all requests"
+        enabled: true
+        rateLimit:
+          characteristics:
+            - "cf.colo.id"
+            - "ip.src"
+          requestsPerPeriod: 100
+          period: 60
+          mitigationTimeout: 300
+          countingExpression: "true"
+  providerConfigRef:
+    name: cloudflare-provider-config

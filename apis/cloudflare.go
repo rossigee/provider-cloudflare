@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Crossplane Authors.
+Copyright 2025 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import (
 
 	dnsv1alpha1 "github.com/rossigee/provider-cloudflare/apis/dns/v1alpha1"
 	firewallv1alpha1 "github.com/rossigee/provider-cloudflare/apis/firewall/v1alpha1"
+	loadbalancingv1alpha1 "github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1alpha1"
+	rulesetsv1alpha1 "github.com/rossigee/provider-cloudflare/apis/rulesets/v1alpha1"
 	spectrumv1alpha1 "github.com/rossigee/provider-cloudflare/apis/spectrum/v1alpha1"
 	sslsaasv1alpha1 "github.com/rossigee/provider-cloudflare/apis/sslsaas/v1alpha1"
 	transformv1alpha1 "github.com/rossigee/provider-cloudflare/apis/transform/v1alpha1"
@@ -41,6 +43,8 @@ func init() {
 		firewallv1alpha1.SchemeBuilder.AddToScheme,
 		workersv1alpha1.SchemeBuilder.AddToScheme,
 		transformv1alpha1.SchemeBuilder.AddToScheme,
+		rulesetsv1alpha1.SchemeBuilder.AddToScheme,
+		loadbalancingv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

@@ -1,0 +1,33 @@
+apiVersion: rulesets.cloudflare.crossplane.io/v1alpha1
+kind: Ruleset
+metadata:
+  name: account-security-rules
+spec:
+  forProvider:
+    account: "your-account-id"  # Replace with your account ID
+    name: "Account-Level Security Rules"
+    description: "Enterprise security rules applied across all zones in the account"
+    kind: "custom"
+    phase: "http_request_firewall_custom"
+    rules:
+      - action: "block"
+        expression: "(cf.threat_score gt 50) or (http.request.uri.path contains \"../\")"
+        description: "Block high threat requests and directory traversal attempts"
+        enabled: true
+        actionParameters:
+          response:
+            statusCode: 403
+            contentType: "application/json"
+            content: "{\"error\": \"Request blocked by security policy\"}"
+      - action: "managed_challenge"
+        expression: "(http.request.method eq \"POST\") and (http.request.uri.path contains \"/login\")"
+        description: "Challenge login attempts"
+        enabled: true
+      - action: "log"
+        expression: "(http.request.headers[\"user-agent\"][0] contains \"sqlmap\") or (http.request.headers[\"user-agent\"][0] contains \"nikto\")"
+        description: "Log security scanning tools"
+        enabled: true
+        logging:
+          enabled: true
+  providerConfigRef:
+    name: cloudflare-provider-config

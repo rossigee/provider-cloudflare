@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Crossplane Authors.
+Copyright 2025 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import (
 
 	"github.com/rossigee/provider-cloudflare/internal/controller/config"
 	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
+	loadbalancing "github.com/rossigee/provider-cloudflare/internal/controller/loadbalancing"
+	rulesets "github.com/rossigee/provider-cloudflare/internal/controller/rulesets"
 	application "github.com/rossigee/provider-cloudflare/internal/controller/spectrum"
 	sslsaas "github.com/rossigee/provider-cloudflare/internal/controller/sslsaas"
 	transform "github.com/rossigee/provider-cloudflare/internal/controller/transform"
@@ -42,6 +44,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 		workers.Setup,
 		sslsaas.Setup,
 		transform.Setup,
+		rulesets.Setup,
+		loadbalancing.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err
