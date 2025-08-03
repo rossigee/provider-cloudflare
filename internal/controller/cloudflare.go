@@ -24,8 +24,9 @@ import (
 
 	"github.com/rossigee/provider-cloudflare/internal/controller/config"
 	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
-	spectrum "github.com/rossigee/provider-cloudflare/internal/controller/spectrum"
+	application "github.com/rossigee/provider-cloudflare/internal/controller/spectrum"
 	sslsaas "github.com/rossigee/provider-cloudflare/internal/controller/sslsaas"
+	transform "github.com/rossigee/provider-cloudflare/internal/controller/transform"
 	workers "github.com/rossigee/provider-cloudflare/internal/controller/workers"
 	zone "github.com/rossigee/provider-cloudflare/internal/controller/zone"
 )
@@ -37,9 +38,10 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 		config.Setup,
 		zone.Setup,
 		record.Setup,
-		spectrum.Setup,
+		application.Setup,
 		workers.Setup,
 		sslsaas.Setup,
+		transform.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

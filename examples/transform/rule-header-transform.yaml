@@ -1,0 +1,46 @@
+apiVersion: transform.cloudflare.crossplane.io/v1alpha1
+kind: Rule
+metadata:
+  name: example-header-transform
+  annotations:
+    meta.upbound.io/example-id: transform/v1alpha1/rule-headers
+spec:
+  forProvider:
+    # Zone ID where the transform rule should be created
+    zone: "your-zone-id"
+    
+    # Response header phase for modifying outgoing headers
+    phase: "http_response_headers_transform"
+    
+    # Apply to all API requests
+    expression: 'http.request.uri.path matches "^/api/"'
+    
+    # Rewrite action for header modifications
+    action: "rewrite"
+    
+    description: "Add security headers to API responses"
+    
+    # Header transformation parameters
+    actionParameters:
+      headers:
+        # Set a custom header
+        X-API-Version:
+          operation: "set"
+          value: "v2.1"
+        
+        # Set header using dynamic expression
+        X-Request-ID:
+          operation: "set"
+          expression: "cf.random_seed"
+        
+        # Add CORS header
+        Access-Control-Allow-Origin:
+          operation: "add"
+          value: "*"
+        
+        # Remove unwanted header
+        Server:
+          operation: "remove"
+  
+  providerConfigRef:
+    name: default

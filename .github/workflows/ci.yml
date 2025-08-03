@@ -9,14 +9,22 @@ on:
   pull_request: {}
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 env:
   # Common versions
-  GO_VERSION: '1.23'
-  GOLANGCI_VERSION: 'v1.61'
+  GO_VERSION: '1.24.5'
+  GOLANGCI_VERSION: 'latest'
+  GOLANGCILINT_VERSION: '2.3.0'
   DOCKER_BUILDX_VERSION: 'v0.22.0'
 
   # Registry configuration - PRIMARY: GitHub Container Registry only
   REGISTRY_ORG: 'ghcr.io/rossigee'
+  ENABLE_HARBOR_PUBLISH: false
+  ENABLE_UPBOUND_PUBLISH: false
 
 jobs:
   detect-noop:
@@ -60,10 +68,14 @@ jobs:
       - name: Vendor Dependencies
         run: make vendor vendor.check
 
+      - name: Install Crossplane CLI
+        run: |
+          mkdir -p .cache/tools/linux_x86_64
+          curl -fsSLo .cache/tools/linux_x86_64/crossplane-cli-v1.20.0 --create-dirs https://releases.crossplane.io/stable/v1.20.0/bin/linux_amd64/crank?source=build
+          chmod +x .cache/tools/linux_x86_64/crossplane-cli-v1.20.0
+
       - name: Lint
-        uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8 # v6
-        with:
-          version: ${{ env.GOLANGCI_VERSION }}
+        run: make lint
 
   check-diff:
     runs-on: ubuntu-24.04
@@ -190,9 +202,18 @@ jobs:
       - name: Vendor Dependencies
         run: make vendor vendor.check
 
+      - name: Install Crossplane CLI
+        run: |
+          mkdir -p .cache/tools/linux_x86_64
+          curl -fsSLo .cache/tools/linux_x86_64/crossplane-cli-v1.20.0 --create-dirs https://releases.crossplane.io/stable/v1.20.0/bin/linux_amd64/crank?source=build
+          chmod +x .cache/tools/linux_x86_64/crossplane-cli-v1.20.0
+
       - name: Build and Publish Artifacts
         run: |
+          # Build and push to GitHub Container Registry (primary)
+          echo "Repository: ${{ github.repository }}"
+          echo "Repository owner: ${{ github.repository_owner }}"
           make build
-          make publish REGISTRY_ORGS="${{ env.REGISTRY_ORG }}"
+          make publish REGISTRY_ORGS="ghcr.io/${{ github.repository_owner }}"
         env:
           BUILD_ARGS: "--load"

@@ -1,0 +1,46 @@
+apiVersion: transform.cloudflare.crossplane.io/v1alpha1
+kind: Rule
+metadata:
+  name: example-zone-reference
+  annotations:
+    meta.upbound.io/example-id: transform/v1alpha1/rule-zone-ref
+spec:
+  forProvider:
+    # Reference to a Zone resource instead of hardcoded ID
+    zoneRef:
+      name: example-zone
+    
+    phase: "http_request_transform"
+    
+    # Advanced expression with multiple conditions
+    expression: '(http.request.uri.path eq "/api/legacy") and (http.request.method eq "GET")'
+    
+    action: "rewrite"
+    
+    description: "Modernize legacy API endpoint"
+    enabled: true
+    priority: 10
+    
+    actionParameters:
+      uri:
+        path:
+          value: "/api/v3/legacy-compat"
+        query:
+          # Preserve existing query params and add new ones
+          expression: 'concat(http.request.uri.query, "&legacy=true&migrated=", to_string(now()))'
+  
+  providerConfigRef:
+    name: default
+
+---
+# Example Zone resource that the Transform Rule references
+apiVersion: zone.cloudflare.crossplane.io/v1alpha1
+kind: Zone
+metadata:
+  name: example-zone
+spec:
+  forProvider:
+    zone: "example.com"
+    plan: "free"
+  providerConfigRef:
+    name: default

@@ -1,0 +1,35 @@
+apiVersion: transform.cloudflare.crossplane.io/v1alpha1
+kind: Rule
+metadata:
+  name: example-redirect
+  annotations:
+    meta.upbound.io/example-id: transform/v1alpha1/rule-redirect
+spec:
+  forProvider:
+    # Zone ID where the transform rule should be created  
+    zone: "your-zone-id"
+    
+    # Request transform phase for redirects
+    phase: "http_request_transform"
+    
+    # Match old documentation path
+    expression: 'http.request.uri.path matches "^/docs/v1/"'
+    
+    # Redirect action
+    action: "redirect"
+    
+    description: "Redirect old docs to new documentation site"
+    priority: 1
+    
+    # Redirect parameters
+    actionParameters:
+      uri:
+        path:
+          # Use expression to preserve the path structure
+          expression: 'regex_replace(http.request.uri.path, "^/docs/v1/", "/documentation/v2/")'
+      
+      # Permanent redirect (301)
+      statusCode: 301
+  
+  providerConfigRef:
+    name: default

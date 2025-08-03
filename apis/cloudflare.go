@@ -24,6 +24,7 @@ import (
 	firewallv1alpha1 "github.com/rossigee/provider-cloudflare/apis/firewall/v1alpha1"
 	spectrumv1alpha1 "github.com/rossigee/provider-cloudflare/apis/spectrum/v1alpha1"
 	sslsaasv1alpha1 "github.com/rossigee/provider-cloudflare/apis/sslsaas/v1alpha1"
+	transformv1alpha1 "github.com/rossigee/provider-cloudflare/apis/transform/v1alpha1"
 	cloudflarev1alpha1 "github.com/rossigee/provider-cloudflare/apis/v1alpha1"
 	workersv1alpha1 "github.com/rossigee/provider-cloudflare/apis/workers/v1alpha1"
 	zonev1alpha1 "github.com/rossigee/provider-cloudflare/apis/zone/v1alpha1"
@@ -39,6 +40,7 @@ func init() {
 		zonev1alpha1.SchemeBuilder.AddToScheme,
 		firewallv1alpha1.SchemeBuilder.AddToScheme,
 		workersv1alpha1.SchemeBuilder.AddToScheme,
+		transformv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
