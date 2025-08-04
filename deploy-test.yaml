@@ -1,7 +1,0 @@
-apiVersion: pkg.crossplane.io/v1
-kind: Provider
-metadata:
-  name: provider-cloudflare-test
-spec:
-  package: ghcr.io/rossigee/provider-cloudflare:v0.6.0-dirty-srv
-  packagePullPolicy: Always
