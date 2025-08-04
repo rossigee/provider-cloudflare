@@ -1,0 +1,159 @@
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: website-static-assets-cache
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    description: "Cache static assets for optimal performance"
+    expression: 'http.request.uri.path matches "\\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$"'
+    enabled: true
+    action: "set_cache_settings"
+    actionParameters:
+      cache: true
+      cacheKey:
+        customKey:
+          queryString:
+            include: ["v", "version"]
+          header:
+            include: ["Accept-Encoding"]
+            checkPresence: ["Accept-Encoding"]
+        ignoreQueryStringsOrder: true
+      edgeTtl:
+        mode: "override_origin"
+        default: 86400  # 24 hours
+        statusCodeTtl:
+          - statusCode: 200
+            value: 86400
+          - statusCode: 404
+            value: 300
+      browserTtl:
+        mode: "override_origin" 
+        default: 14400  # 4 hours
+      serveStale:
+        disableStaleWhileUpdating: false
+      respectOrigin: false
+      cacheByDeviceType: false
+  providerConfigRef:
+    name: default
+---
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: website-api-cache
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    description: "Cache API responses with custom TTL"
+    expression: 'http.request.uri.path matches "^/api/public/" and http.request.method eq "GET"'
+    enabled: true
+    action: "set_cache_settings"
+    actionParameters:
+      cache: true
+      cacheKey:
+        customKey:
+          queryString:
+            include: ["page", "limit", "sort"]
+          header:
+            include: ["Authorization"]
+        ignoreQueryStringsOrder: false
+      edgeTtl:
+        mode: "override_origin"
+        default: 300  # 5 minutes
+      browserTtl:
+        mode: "respect_origin"
+      respectOrigin: false
+      cacheByDeviceType: false
+  providerConfigRef:
+    name: default
+---
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: website-bypass-admin
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    description: "Bypass cache for admin and authenticated areas"
+    expression: 'http.request.uri.path matches "^/(admin|dashboard|user)/" or http.request.headers["Authorization"][0] ne ""'
+    enabled: true
+    action: "bypass_cache"
+  providerConfigRef:
+    name: default
+---
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: website-html-cache
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    description: "Cache HTML pages with shorter TTL"
+    expression: 'http.request.uri.path matches "\\.(html|htm)$" or (not http.request.uri.path contains "." and not http.request.uri.path matches "^/api/")'
+    enabled: true
+    action: "set_cache_settings"
+    actionParameters:
+      cache: true
+      cacheKey:
+        customKey:
+          queryString:
+            exclude: ["utm_source", "utm_medium", "utm_campaign", "fbclid", "gclid"]
+          header:
+            include: ["Accept-Encoding", "Accept-Language"]
+            checkPresence: ["Accept-Encoding"]
+        ignoreQueryStringsOrder: true
+      edgeTtl:
+        mode: "override_origin"
+        default: 1800  # 30 minutes
+        statusCodeTtl:
+          - statusCode: 200
+            value: 1800
+          - statusCode: 404
+            value: 60
+          - statusCode: 500
+            value: 0
+      browserTtl:
+        mode: "override_origin"
+        default: 900  # 15 minutes
+      serveStale:
+        disableStaleWhileUpdating: false
+      respectOrigin: false
+      cacheByDeviceType: true  # Different cache for mobile/desktop
+  providerConfigRef:
+    name: default
+---
+apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+kind: CacheRule
+metadata:
+  name: website-dynamic-content
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    description: "Cache dynamic content with very short TTL"
+    expression: 'http.request.uri.path matches "^/api/data/" and http.request.method eq "GET"'
+    enabled: true
+    action: "set_cache_settings"
+    actionParameters:
+      cache: true
+      cacheKey:
+        customKey:
+          queryString:
+            include: "*"
+          header:
+            include: ["User-Agent", "Accept-Language"]
+        ignoreQueryStringsOrder: false
+      edgeTtl:
+        mode: "override_origin"
+        default: 60  # 1 minute
+      browserTtl:
+        mode: "respect_origin"
+      serveStale:
+        disableStaleWhileUpdating: true
+      respectOrigin: false
+  providerConfigRef:
+    name: default

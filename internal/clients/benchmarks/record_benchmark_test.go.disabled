@@ -1,0 +1,255 @@
+package benchmarks
+
+import (
+	"context"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go"
+	
+	"github.com/rossigee/provider-cloudflare/internal/clients/records/fake"
+)
+
+// BenchmarkRecordCreate measures DNS record creation performance
+func BenchmarkRecordCreate(b *testing.B) {
+	client := &fake.MockClient{
+		MockCreateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+			return cloudflare.DNSRecord{
+				ID:      "test-record-id",
+				Name:    params.Name,
+				Type:    params.Type,
+				Content: params.Content,
+				TTL:     params.TTL,
+				ZoneID:  rc.Identifier,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	params := cloudflare.CreateDNSRecordParams{
+		Name:    "test.example.com",
+		Type:    "A",
+		Content: "192.0.2.1",
+		TTL:     300,
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.CreateDNSRecord(context.Background(), rc, params)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkRecordGet measures DNS record retrieval performance
+func BenchmarkRecordGet(b *testing.B) {
+	client := &fake.MockClient{
+		MockGetDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error) {
+			return cloudflare.DNSRecord{
+				ID:      recordID,
+				Name:    "test.example.com",
+				Type:    "A",
+				Content: "192.0.2.1",
+				TTL:     300,
+				ZoneID:  rc.Identifier,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.GetDNSRecord(context.Background(), rc, "test-record-id")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkRecordUpdate measures DNS record update performance
+func BenchmarkRecordUpdate(b *testing.B) {
+	client := &fake.MockClient{
+		MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+			return cloudflare.DNSRecord{
+				ID:      params.ID,
+				Name:    params.Name,
+				Type:    params.Type,
+				Content: params.Content,
+				TTL:     params.TTL,
+				ZoneID:  rc.Identifier,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	params := cloudflare.UpdateDNSRecordParams{
+		ID:      "test-record-id",
+		Name:    "test.example.com",
+		Type:    "A",
+		Content: "192.0.2.2",
+		TTL:     600,
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.UpdateDNSRecord(context.Background(), rc, params)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkRecordDelete measures DNS record deletion performance
+func BenchmarkRecordDelete(b *testing.B) {
+	client := &fake.MockClient{
+		MockDeleteDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error {
+			return nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		err := client.DeleteDNSRecord(context.Background(), rc, "test-record-id")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkRecordList measures DNS record listing performance
+func BenchmarkRecordList(b *testing.B) {
+	client := &fake.MockClient{
+		MockListDNSRecords: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListDNSRecordsParams) ([]cloudflare.DNSRecord, *cloudflare.ResultInfo, error) {
+			records := make([]cloudflare.DNSRecord, 10)
+			for i := 0; i < 10; i++ {
+				records[i] = cloudflare.DNSRecord{
+					ID:      "test-record-" + string(rune('0'+i)),
+					Name:    "test.example.com",
+					Type:    "A",
+					Content: "192.0.2.1",
+					TTL:     300,
+					ZoneID:  rc.Identifier,
+				}
+			}
+			return records, &cloudflare.ResultInfo{Total: 10}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	params := cloudflare.ListDNSRecordsParams{}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, _, err := client.ListDNSRecords(context.Background(), rc, params)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkRecordBulkOperations measures bulk DNS record operations
+func BenchmarkRecordBulkOperations(b *testing.B) {
+	client := &fake.MockClient{
+		MockCreateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+			return cloudflare.DNSRecord{
+				ID:      "test-record-id",
+				Name:    params.Name,
+				Type:    params.Type,
+				Content: params.Content,
+				TTL:     params.TTL,
+				ZoneID:  rc.Identifier,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	recordsToCreate := []cloudflare.CreateDNSRecordParams{
+		{Name: "www.example.com", Type: "A", Content: "192.0.2.1", TTL: 300},
+		{Name: "api.example.com", Type: "A", Content: "192.0.2.2", TTL: 300},
+		{Name: "cdn.example.com", Type: "A", Content: "192.0.2.3", TTL: 300},
+		{Name: "mail.example.com", Type: "A", Content: "192.0.2.4", TTL: 300},
+		{Name: "ftp.example.com", Type: "A", Content: "192.0.2.5", TTL: 300},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		for _, params := range recordsToCreate {
+			_, err := client.CreateDNSRecord(context.Background(), rc, params)
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	}
+}
+
+// BenchmarkRecordConcurrentOperations measures concurrent DNS record operations
+func BenchmarkRecordConcurrentOperations(b *testing.B) {
+	client := &fake.MockClient{
+		MockGetDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error) {
+			return cloudflare.DNSRecord{
+				ID:      recordID,
+				Name:    "test.example.com",
+				Type:    "A",
+				Content: "192.0.2.1",
+				TTL:     300,
+				ZoneID:  rc.Identifier,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.GetDNSRecord(context.Background(), rc, "test-record-id")
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
+
+

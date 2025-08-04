@@ -22,10 +22,15 @@ import (
 
 	cachev1alpha1 "github.com/rossigee/provider-cloudflare/apis/cache/v1alpha1"
 	dnsv1alpha1 "github.com/rossigee/provider-cloudflare/apis/dns/v1alpha1"
+	emailroutingv1alpha1 "github.com/rossigee/provider-cloudflare/apis/emailrouting/v1alpha1"
 	firewallv1alpha1 "github.com/rossigee/provider-cloudflare/apis/firewall/v1alpha1"
 	loadbalancingv1alpha1 "github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1alpha1"
+	originsslv1alpha1 "github.com/rossigee/provider-cloudflare/apis/originssl/v1alpha1"
+	r2v1alpha1 "github.com/rossigee/provider-cloudflare/apis/r2/v1alpha1"
 	rulesetsv1alpha1 "github.com/rossigee/provider-cloudflare/apis/rulesets/v1alpha1"
+	securityv1alpha1 "github.com/rossigee/provider-cloudflare/apis/security/v1alpha1"
 	spectrumv1alpha1 "github.com/rossigee/provider-cloudflare/apis/spectrum/v1alpha1"
+	sslv1alpha1 "github.com/rossigee/provider-cloudflare/apis/ssl/v1alpha1"
 	sslsaasv1alpha1 "github.com/rossigee/provider-cloudflare/apis/sslsaas/v1alpha1"
 	transformv1alpha1 "github.com/rossigee/provider-cloudflare/apis/transform/v1alpha1"
 	cloudflarev1alpha1 "github.com/rossigee/provider-cloudflare/apis/v1alpha1"
@@ -39,14 +44,19 @@ func init() {
 		cloudflarev1alpha1.SchemeBuilder.AddToScheme,
 		cachev1alpha1.SchemeBuilder.AddToScheme,
 		dnsv1alpha1.SchemeBuilder.AddToScheme,
+		emailroutingv1alpha1.SchemeBuilder.AddToScheme,
 		sslsaasv1alpha1.SchemeBuilder.AddToScheme,
+		originsslv1alpha1.SchemeBuilder.AddToScheme,
 		spectrumv1alpha1.SchemeBuilder.AddToScheme,
 		zonev1alpha1.SchemeBuilder.AddToScheme,
 		firewallv1alpha1.SchemeBuilder.AddToScheme,
 		workersv1alpha1.SchemeBuilder.AddToScheme,
 		transformv1alpha1.SchemeBuilder.AddToScheme,
 		rulesetsv1alpha1.SchemeBuilder.AddToScheme,
+		securityv1alpha1.SchemeBuilder.AddToScheme,
+		sslv1alpha1.SchemeBuilder.AddToScheme,
 		loadbalancingv1alpha1.SchemeBuilder.AddToScheme,
+		r2v1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

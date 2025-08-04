@@ -1,0 +1,145 @@
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-root-a
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "example.com"
+    type: "A"
+    content: "192.0.2.1"  # Replace with your server IP
+    ttl: 300
+    proxied: true  # Enable Cloudflare proxy for performance and security
+  providerConfigRef:
+    name: default
+---
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-root-aaaa
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "example.com"
+    type: "AAAA"
+    content: "2001:db8::1"  # Replace with your IPv6 address
+    ttl: 300
+    proxied: true
+  providerConfigRef:
+    name: default
+---
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-www
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "www.example.com"
+    type: "CNAME"
+    content: "example.com"
+    ttl: 300
+    proxied: true
+  providerConfigRef:
+    name: default
+---
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-api
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "api.example.com"
+    type: "A"
+    content: "192.0.2.2"  # Replace with your API server IP
+    ttl: 300
+    proxied: true
+  providerConfigRef:
+    name: default
+---
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-mail-mx
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "example.com"
+    type: "MX"
+    content: "mail.example.com"
+    priority: 10
+    ttl: 300
+    proxied: false  # MX records cannot be proxied
+  providerConfigRef:
+    name: default
+---
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-mail-server
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "mail.example.com"
+    type: "A"
+    content: "192.0.2.3"  # Replace with your mail server IP
+    ttl: 300
+    proxied: false
+  providerConfigRef:
+    name: default
+---
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-txt-spf
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "example.com"
+    type: "TXT"
+    content: "v=spf1 mx a include:_spf.google.com ~all"
+    ttl: 300
+  providerConfigRef:
+    name: default
+---
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-txt-dmarc
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "_dmarc.example.com"
+    type: "TXT"
+    content: "v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com"
+    ttl: 300
+  providerConfigRef:
+    name: default
+---
+apiVersion: dns.cloudflare.crossplane.io/v1alpha1
+kind: Record
+metadata:
+  name: website-srv-sip
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "_sip._tcp.example.com"
+    type: "SRV"
+    data:
+      priority: 10
+      weight: 100
+      port: 5060
+      target: "sip.example.com"
+    ttl: 300
+  providerConfigRef:
+    name: default

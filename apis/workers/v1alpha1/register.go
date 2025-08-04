@@ -45,6 +45,51 @@ var (
 	RouteGroupVersionKind = SchemeGroupVersion.WithKind(RouteKind)
 )
 
+// Script type metadata.
+var (
+	ScriptKind             = reflect.TypeOf(Script{}).Name()
+	ScriptGroupKind        = schema.GroupKind{Group: Group, Kind: ScriptKind}.String()
+	ScriptKindAPIVersion   = ScriptKind + "." + SchemeGroupVersion.String()
+	ScriptGroupVersionKind = SchemeGroupVersion.WithKind(ScriptKind)
+)
+
+// KVNamespace type metadata.
+var (
+	KVNamespaceKind             = reflect.TypeOf(KVNamespace{}).Name()
+	KVNamespaceGroupKind        = schema.GroupKind{Group: Group, Kind: KVNamespaceKind}.String()
+	KVNamespaceKindAPIVersion   = KVNamespaceKind + "." + SchemeGroupVersion.String()
+	KVNamespaceGroupVersionKind = SchemeGroupVersion.WithKind(KVNamespaceKind)
+)
+
+// CronTrigger type metadata.
+var (
+	CronTriggerKind             = reflect.TypeOf(CronTrigger{}).Name()
+	CronTriggerGroupKind        = schema.GroupKind{Group: Group, Kind: CronTriggerKind}.String()
+	CronTriggerKindAPIVersion   = CronTriggerKind + "." + SchemeGroupVersion.String()
+	CronTriggerGroupVersionKind = SchemeGroupVersion.WithKind(CronTriggerKind)
+)
+
+// Domain type metadata.
+var (
+	DomainKind             = reflect.TypeOf(Domain{}).Name()
+	DomainGroupKind        = schema.GroupKind{Group: Group, Kind: DomainKind}.String()
+	DomainKindAPIVersion   = DomainKind + "." + SchemeGroupVersion.String()
+	DomainGroupVersionKind = SchemeGroupVersion.WithKind(DomainKind)
+)
+
+// Subdomain type metadata.
+var (
+	SubdomainKind             = reflect.TypeOf(Subdomain{}).Name()
+	SubdomainGroupKind        = schema.GroupKind{Group: Group, Kind: SubdomainKind}.String()
+	SubdomainKindAPIVersion   = SubdomainKind + "." + SchemeGroupVersion.String()
+	SubdomainGroupVersionKind = SchemeGroupVersion.WithKind(SubdomainKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&Route{}, &RouteList{})
+	SchemeBuilder.Register(&Script{}, &ScriptList{})
+	SchemeBuilder.Register(&KVNamespace{}, &KVNamespaceList{})
+	SchemeBuilder.Register(&CronTrigger{}, &CronTriggerList{})
+	SchemeBuilder.Register(&Domain{}, &DomainList{})
+	SchemeBuilder.Register(&Subdomain{}, &SubdomainList{})
 }

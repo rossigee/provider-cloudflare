@@ -1,0 +1,346 @@
+package benchmarks
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"runtime"
+	"testing"
+	"time"
+)
+
+// BenchmarkResult represents the result of a benchmark run
+type BenchmarkResult struct {
+	Name           string
+	Operations     int64
+	NanoSecPerOp   int64
+	AllocsPerOp    int64
+	BytesPerOp     int64
+	Duration       time.Duration
+	MemoryUsage    int64
+	CPUUsage       float64
+}
+
+// BenchmarkSuite represents a collection of benchmark results
+type BenchmarkSuite struct {
+	Name      string
+	Results   []BenchmarkResult
+	Timestamp time.Time
+	GoVersion string
+	GOOS      string
+	GOARCH    string
+}
+
+// RunAllBenchmarks executes all client benchmarks and returns aggregated results
+func RunAllBenchmarks() (*BenchmarkSuite, error) {
+	suite := &BenchmarkSuite{
+		Name:      "Cloudflare Provider Client Benchmarks",
+		Timestamp: time.Now(),
+		GoVersion: runtime.Version(),
+		GOOS:      runtime.GOOS,
+		GOARCH:    runtime.GOARCH,
+		Results:   make([]BenchmarkResult, 0),
+	}
+
+	// Zone benchmarks
+	zoneBenchmarks := []testing.InternalBenchmark{
+		{"BenchmarkZoneCreate", BenchmarkZoneCreate},
+		{"BenchmarkZoneDetails", BenchmarkZoneDetails},
+		{"BenchmarkZoneUpdate", BenchmarkZoneUpdate},
+		{"BenchmarkZoneDelete", BenchmarkZoneDelete},
+		{"BenchmarkZoneSettings", BenchmarkZoneSettings},
+		{"BenchmarkZoneSettingsUpdate", BenchmarkZoneSettingsUpdate},
+		{"BenchmarkZoneConcurrentOperations", BenchmarkZoneConcurrentOperations},
+		{"BenchmarkZoneClientCreation", BenchmarkZoneClientCreation},
+	}
+
+	// Record benchmarks  
+	recordBenchmarks := []testing.InternalBenchmark{
+		{"BenchmarkRecordCreate", BenchmarkRecordCreate},
+		{"BenchmarkRecordGet", BenchmarkRecordGet},
+		{"BenchmarkRecordUpdate", BenchmarkRecordUpdate},
+		{"BenchmarkRecordDelete", BenchmarkRecordDelete},
+		{"BenchmarkRecordList", BenchmarkRecordList},
+		{"BenchmarkRecordBulkOperations", BenchmarkRecordBulkOperations},
+		{"BenchmarkRecordConcurrentOperations", BenchmarkRecordConcurrentOperations},
+	}
+
+	// Load balancing benchmarks
+	loadBalancingBenchmarks := []testing.InternalBenchmark{
+		{"BenchmarkLoadBalancerCreate", BenchmarkLoadBalancerCreate},
+		{"BenchmarkLoadBalancerGet", BenchmarkLoadBalancerGet},
+		{"BenchmarkLoadBalancerUpdate", BenchmarkLoadBalancerUpdate},
+		{"BenchmarkLoadBalancerDelete", BenchmarkLoadBalancerDelete},
+		{"BenchmarkLoadBalancerPoolCreate", BenchmarkLoadBalancerPoolCreate},
+		{"BenchmarkLoadBalancerMonitorCreate", BenchmarkLoadBalancerMonitorCreate},
+		{"BenchmarkLoadBalancerConcurrentOperations", BenchmarkLoadBalancerConcurrentOperations},
+	}
+
+	// Cache rule benchmarks
+	cacheBenchmarks := []testing.InternalBenchmark{
+		{"BenchmarkCacheRuleCreate", BenchmarkCacheRuleCreate},
+		{"BenchmarkCacheRuleGet", BenchmarkCacheRuleGet},
+		{"BenchmarkCacheRuleUpdate", BenchmarkCacheRuleUpdate},
+		{"BenchmarkCacheRuleDelete", BenchmarkCacheRuleDelete},
+		{"BenchmarkCacheRuleList", BenchmarkCacheRuleList},
+		{"BenchmarkCacheRuleBulkOperations", BenchmarkCacheRuleBulkOperations},
+		{"BenchmarkCacheRuleConcurrentOperations", BenchmarkCacheRuleConcurrentOperations},
+		{"BenchmarkCacheRuleComplexRules", BenchmarkCacheRuleComplexRules},
+	}
+
+	// Security rule benchmarks
+	securityBenchmarks := []testing.InternalBenchmark{
+		{"BenchmarkSecurityRulesetCreate", BenchmarkSecurityRulesetCreate},
+		{"BenchmarkSecurityRulesetGet", BenchmarkSecurityRulesetGet},
+		{"BenchmarkSecurityRulesetUpdate", BenchmarkSecurityRulesetUpdate},
+		{"BenchmarkSecurityRulesetDelete", BenchmarkSecurityRulesetDelete},
+		{"BenchmarkSecurityRuleComplexConditions", BenchmarkSecurityRuleComplexConditions},
+		{"BenchmarkSecurityRulesetConcurrentOperations", BenchmarkSecurityRulesetConcurrentOperations},
+		{"BenchmarkSecurityRuleBulkOperations", BenchmarkSecurityRuleBulkOperations},
+	}
+
+	// Run all benchmark categories
+	allBenchmarks := []struct {
+		category   string
+		benchmarks []testing.InternalBenchmark
+	}{
+		{"Zone", zoneBenchmarks},
+		{"Record", recordBenchmarks},
+		{"LoadBalancing", loadBalancingBenchmarks},
+		{"Cache", cacheBenchmarks},
+		{"Security", securityBenchmarks},
+	}
+
+	for _, category := range allBenchmarks {
+		fmt.Printf("Running %s benchmarks...\n", category.category)
+		for _, benchmark := range category.benchmarks {
+			result := testing.Benchmark(benchmark.F)
+			
+			benchResult := BenchmarkResult{
+				Name:         benchmark.Name,
+				Operations:   int64(result.N),
+				NanoSecPerOp: result.NsPerOp(),
+				AllocsPerOp:  int64(result.AllocsPerOp()),
+				BytesPerOp:   int64(result.AllocedBytesPerOp()),
+				Duration:     result.T,
+			}
+			
+			suite.Results = append(suite.Results, benchResult)
+			
+			// Print individual result
+			fmt.Printf("  %-50s %8d ops %10.2f ns/op %8d allocs/op %8d B/op\n",
+				benchResult.Name,
+				benchResult.Operations,
+				float64(benchResult.NanoSecPerOp),
+				benchResult.AllocsPerOp,
+				benchResult.BytesPerOp,
+			)
+		}
+	}
+
+	return suite, nil
+}
+
+// PrintSummary prints a summary of benchmark results
+func (s *BenchmarkSuite) PrintSummary() {
+	fmt.Printf("\n=== Benchmark Summary ===\n")
+	fmt.Printf("Suite: %s\n", s.Name)
+	fmt.Printf("Timestamp: %s\n", s.Timestamp.Format(time.RFC3339))
+	fmt.Printf("Go Version: %s\n", s.GoVersion)
+	fmt.Printf("Platform: %s/%s\n", s.GOOS, s.GOARCH)
+	fmt.Printf("Total Benchmarks: %d\n", len(s.Results))
+
+	// Performance categories
+	var fastOps, mediumOps, slowOps int
+	var lowMemOps, mediumMemOps, highMemOps int
+
+	for _, result := range s.Results {
+		// Categorize by speed (nanoseconds per operation)
+		if result.NanoSecPerOp < 1000 { // < 1µs
+			fastOps++
+		} else if result.NanoSecPerOp < 100000 { // < 100µs
+			mediumOps++
+		} else {
+			slowOps++
+		}
+
+		// Categorize by memory usage
+		if result.BytesPerOp < 1024 { // < 1KB
+			lowMemOps++
+		} else if result.BytesPerOp < 10240 { // < 10KB
+			mediumMemOps++
+		} else {
+			highMemOps++
+		}
+	}
+
+	fmt.Printf("\nPerformance Distribution:\n")
+	fmt.Printf("  Fast operations (< 1µs):     %d\n", fastOps)
+	fmt.Printf("  Medium operations (< 100µs): %d\n", mediumOps)
+	fmt.Printf("  Slow operations (≥ 100µs):   %d\n", slowOps)
+
+	fmt.Printf("\nMemory Usage Distribution:\n")
+	fmt.Printf("  Low memory (< 1KB):    %d\n", lowMemOps)
+	fmt.Printf("  Medium memory (< 10KB): %d\n", mediumMemOps)
+	fmt.Printf("  High memory (≥ 10KB):   %d\n", highMemOps)
+}
+
+// SaveResults saves benchmark results to a file
+func (s *BenchmarkSuite) SaveResults(filename string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write header
+	fmt.Fprintf(file, "# Cloudflare Provider Benchmark Results\n")
+	fmt.Fprintf(file, "# Generated: %s\n", s.Timestamp.Format(time.RFC3339))
+	fmt.Fprintf(file, "# Go Version: %s\n", s.GoVersion)
+	fmt.Fprintf(file, "# Platform: %s/%s\n\n", s.GOOS, s.GOARCH)
+
+	// Write CSV header
+	fmt.Fprintf(file, "Name,Operations,NsPerOp,AllocsPerOp,BytesPerOp,Duration\n")
+
+	// Write results
+	for _, result := range s.Results {
+		fmt.Fprintf(file, "%s,%d,%d,%d,%d,%s\n",
+			result.Name,
+			result.Operations,
+			result.NanoSecPerOp,
+			result.AllocsPerOp,
+			result.BytesPerOp,
+			result.Duration.String(),
+		)
+	}
+
+	return nil
+}
+
+// CompareResults compares two benchmark suites and identifies regressions/improvements
+func CompareResults(baseline, current *BenchmarkSuite) {
+	fmt.Printf("\n=== Benchmark Comparison ===\n")
+	fmt.Printf("Baseline: %s\n", baseline.Timestamp.Format(time.RFC3339))
+	fmt.Printf("Current:  %s\n", current.Timestamp.Format(time.RFC3339))
+
+	// Create maps for easy lookup
+	baselineMap := make(map[string]BenchmarkResult)
+	for _, result := range baseline.Results {
+		baselineMap[result.Name] = result
+	}
+
+	var improvements, regressions, newBenchmarks int
+	
+	fmt.Printf("\nPerformance Changes:\n")
+	for _, currentResult := range current.Results {
+		baselineResult, exists := baselineMap[currentResult.Name]
+		if !exists {
+			fmt.Printf("  NEW: %s\n", currentResult.Name)
+			newBenchmarks++
+			continue
+		}
+
+		// Calculate percentage change in performance
+		perfChange := float64(currentResult.NanoSecPerOp-baselineResult.NanoSecPerOp) / float64(baselineResult.NanoSecPerOp) * 100
+		memChange := float64(currentResult.BytesPerOp-baselineResult.BytesPerOp) / float64(baselineResult.BytesPerOp) * 100
+
+		if perfChange < -5.0 { // 5% improvement
+			fmt.Printf("  IMPROVED: %-40s %+6.1f%% performance, %+6.1f%% memory\n", 
+				currentResult.Name, perfChange, memChange)
+			improvements++
+		} else if perfChange > 5.0 { // 5% regression
+			fmt.Printf("  REGRESSED: %-40s %+6.1f%% performance, %+6.1f%% memory\n", 
+				currentResult.Name, perfChange, memChange)
+			regressions++
+		}
+	}
+
+	fmt.Printf("\nSummary:\n")
+	fmt.Printf("  Improvements: %d\n", improvements)
+	fmt.Printf("  Regressions:  %d\n", regressions)
+	fmt.Printf("  New benchmarks: %d\n", newBenchmarks)
+}
+
+// ValidatePerformanceTargets checks if benchmark results meet performance targets
+func (s *BenchmarkSuite) ValidatePerformanceTargets() bool {
+	fmt.Printf("\n=== Performance Target Validation ===\n")
+	
+	targets := map[string]struct {
+		maxNsPerOp int64
+		maxBytesPerOp int64
+		category string
+	}{
+		// Zone operations - 500ms target
+		"BenchmarkZoneCreate":    {500000000, 10240, "Zone"},
+		"BenchmarkZoneDetails":   {500000000, 5120, "Zone"},
+		"BenchmarkZoneUpdate":    {500000000, 10240, "Zone"},
+		"BenchmarkZoneDelete":    {500000000, 5120, "Zone"},
+		
+		// DNS record operations - 200ms target
+		"BenchmarkRecordCreate":  {200000000, 5120, "Record"},
+		"BenchmarkRecordGet":     {200000000, 2048, "Record"},
+		"BenchmarkRecordUpdate":  {200000000, 5120, "Record"},
+		"BenchmarkRecordDelete":  {200000000, 2048, "Record"},
+		
+		// Load balancer operations - 300ms target
+		"BenchmarkLoadBalancerCreate": {300000000, 15360, "LoadBalancer"},
+		"BenchmarkLoadBalancerGet":    {300000000, 10240, "LoadBalancer"},
+		"BenchmarkLoadBalancerUpdate": {300000000, 15360, "LoadBalancer"},
+		
+		// Cache rules - 250ms target
+		"BenchmarkCacheRuleCreate": {250000000, 10240, "Cache"},
+		"BenchmarkCacheRuleGet":    {250000000, 5120, "Cache"},
+		
+		// Security rules - 400ms target
+		"BenchmarkSecurityRulesetCreate": {400000000, 15360, "Security"},
+		"BenchmarkSecurityRulesetGet":    {400000000, 10240, "Security"},
+	}
+
+	allPassed := true
+	passedCount := 0
+	totalTargets := len(targets)
+
+	for _, result := range s.Results {
+		target, hasTarget := targets[result.Name]
+		if !hasTarget {
+			continue
+		}
+
+		passed := true
+		status := "PASS"
+		
+		if result.NanoSecPerOp > target.maxNsPerOp {
+			passed = false
+			status = "FAIL (latency)"
+			allPassed = false
+		} else if result.BytesPerOp > target.maxBytesPerOp {
+			passed = false
+			status = "FAIL (memory)"
+			allPassed = false
+		}
+
+		if passed {
+			passedCount++
+		}
+
+		fmt.Printf("  %-40s [%s] %s - %7.2fms, %6dB\n",
+			result.Name,
+			target.category,
+			status,
+			float64(result.NanoSecPerOp)/1000000.0,
+			result.BytesPerOp,
+		)
+	}
+
+	fmt.Printf("\nTarget Validation Summary:\n")
+	fmt.Printf("  Targets met: %d/%d (%.1f%%)\n", 
+		passedCount, totalTargets, float64(passedCount)/float64(totalTargets)*100)
+	
+	if allPassed {
+		fmt.Printf("  All performance targets met! ✅\n")
+	} else {
+		fmt.Printf("  Some targets not met. Consider optimization. ⚠️\n")
+	}
+
+	return allPassed
+}

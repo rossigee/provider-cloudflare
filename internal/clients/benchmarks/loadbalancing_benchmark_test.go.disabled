@@ -1,0 +1,394 @@
+package benchmarks
+
+import (
+	"context"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go"
+	
+	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing/fake"
+)
+
+// BenchmarkLoadBalancerCreate measures load balancer creation performance
+func BenchmarkLoadBalancerCreate(b *testing.B) {
+	client := &fake.MockClient{
+		MockCreateLoadBalancer: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateLoadBalancerParams) (cloudflare.LoadBalancer, error) {
+			return cloudflare.LoadBalancer{
+				ID:               "test-lb-id",
+				Name:             params.Name,
+				FallbackPool:     params.FallbackPool,
+				DefaultPools:     params.DefaultPools,
+				Description:      params.Description,
+				TTL:              params.TTL,
+				SteeringPolicy:   params.SteeringPolicy,
+				Proxied:          params.Proxied,
+				Enabled:          params.Enabled,
+				SessionAffinity:  params.SessionAffinity,
+				SessionAffinityTTL: params.SessionAffinityTTL,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	params := cloudflare.CreateLoadBalancerParams{
+		Name:         "test-lb",
+		FallbackPool: "fallback-pool-id",
+		DefaultPools: []string{"default-pool-id"},
+		Description:  "Test load balancer",
+		TTL:          300,
+		SteeringPolicy: "off",
+		Proxied:      &[]bool{true}[0],
+		Enabled:      &[]bool{true}[0],
+		SessionAffinity: "cookie",
+		SessionAffinityTTL: &[]int{1800}[0],
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.CreateLoadBalancer(context.Background(), rc, params)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkLoadBalancerGet measures load balancer retrieval performance
+func BenchmarkLoadBalancerGet(b *testing.B) {
+	client := &fake.MockClient{
+		MockGetLoadBalancer: func(ctx context.Context, rc *cloudflare.ResourceContainer, loadBalancerID string) (cloudflare.LoadBalancer, error) {
+			return cloudflare.LoadBalancer{
+				ID:               loadBalancerID,
+				Name:             "test-lb",
+				FallbackPool:     "fallback-pool-id",
+				DefaultPools:     []string{"default-pool-id"},
+				Description:      "Test load balancer",
+				TTL:              300,
+				SteeringPolicy:   "off",
+				Proxied:          &[]bool{true}[0],
+				Enabled:          &[]bool{true}[0],
+				SessionAffinity:  "cookie",
+				SessionAffinityTTL: &[]int{1800}[0],
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.GetLoadBalancer(context.Background(), rc, "test-lb-id")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkLoadBalancerUpdate measures load balancer update performance
+func BenchmarkLoadBalancerUpdate(b *testing.B) {
+	client := &fake.MockClient{
+		MockModifyLoadBalancer: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ModifyLoadBalancerParams) (cloudflare.LoadBalancer, error) {
+			return cloudflare.LoadBalancer{
+				ID:               params.ID,
+				Name:             params.Name,
+				FallbackPool:     params.FallbackPool,
+				DefaultPools:     params.DefaultPools,
+				Description:      params.Description,
+				TTL:              params.TTL,
+				SteeringPolicy:   params.SteeringPolicy,
+				Proxied:          params.Proxied,
+				Enabled:          params.Enabled,
+				SessionAffinity:  params.SessionAffinity,
+				SessionAffinityTTL: params.SessionAffinityTTL,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	params := cloudflare.ModifyLoadBalancerParams{
+		ID:           "test-lb-id",
+		Name:         "updated-lb",
+		FallbackPool: "fallback-pool-id",
+		DefaultPools: []string{"default-pool-id", "backup-pool-id"},
+		Description:  "Updated test load balancer",
+		TTL:          600,
+		SteeringPolicy: "geo",
+		Proxied:      &[]bool{true}[0],
+		Enabled:      &[]bool{true}[0],
+		SessionAffinity: "ip_cookie",
+		SessionAffinityTTL: &[]int{3600}[0],
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.ModifyLoadBalancer(context.Background(), rc, params)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkLoadBalancerDelete measures load balancer deletion performance
+func BenchmarkLoadBalancerDelete(b *testing.B) {
+	client := &fake.MockClient{
+		MockDeleteLoadBalancer: func(ctx context.Context, rc *cloudflare.ResourceContainer, loadBalancerID string) error {
+			return nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		err := client.DeleteLoadBalancer(context.Background(), rc, "test-lb-id")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkLoadBalancerPoolCreate measures load balancer pool creation performance
+func BenchmarkLoadBalancerPoolCreate(b *testing.B) {
+	client := &fake.MockClient{
+		MockCreateLoadBalancerPool: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateLoadBalancerPoolParams) (cloudflare.LoadBalancerPool, error) {
+			return cloudflare.LoadBalancerPool{
+				ID:          "test-pool-id",
+				Name:        params.Name,
+				Description: params.Description,
+				Enabled:     params.Enabled,
+				MinimumOrigins: params.MinimumOrigins,
+				Origins:     params.Origins,
+				Monitor:     params.Monitor,
+				LoadShedding: params.LoadShedding,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.AccountRouteLevel,
+		Identifier: "test-account-id",
+	}
+
+	params := cloudflare.CreateLoadBalancerPoolParams{
+		Name:        "test-pool",
+		Description: "Test pool",
+		Enabled:     &[]bool{true}[0],
+		MinimumOrigins: &[]int{1}[0],
+		Origins: []cloudflare.LoadBalancerOrigin{
+			{
+				Name:    "origin1",
+				Address: "192.0.2.1",
+				Enabled: &[]bool{true}[0],
+				Weight:  &[]float64{1.0}[0],
+			},
+		},
+		Monitor:      "test-monitor-id",
+		LoadShedding: &cloudflare.LoadBalancerLoadShedding{},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.CreateLoadBalancerPool(context.Background(), rc, params)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkLoadBalancerMonitorCreate measures load balancer monitor creation performance
+func BenchmarkLoadBalancerMonitorCreate(b *testing.B) {
+	client := &fake.MockClient{
+		MockCreateLoadBalancerMonitor: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateLoadBalancerMonitorParams) (cloudflare.LoadBalancerMonitor, error) {
+			return cloudflare.LoadBalancerMonitor{
+				ID:          "test-monitor-id",
+				Type:        params.Type,
+				Description: params.Description,
+				Method:      params.Method,
+				Path:        params.Path,
+				Header:      params.Header,
+				Timeout:     params.Timeout,
+				Retries:     params.Retries,
+				Interval:    params.Interval,
+				ExpectedBody: params.ExpectedBody,
+				ExpectedCodes: params.ExpectedCodes,
+				FollowRedirects: params.FollowRedirects,
+				AllowInsecure: params.AllowInsecure,
+				ProbeZone:   params.ProbeZone,
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.AccountRouteLevel,
+		Identifier: "test-account-id",
+	}
+
+	params := cloudflare.CreateLoadBalancerMonitorParams{
+		Type:        "https",
+		Description: "Test monitor",
+		Method:      "GET",
+		Path:        "/health",
+		Header: map[string][]string{
+			"Host": {"example.com"},
+		},
+		Timeout:         30,
+		Retries:         2,
+		Interval:        60,
+		ExpectedBody:    "healthy",
+		ExpectedCodes:   "200",
+		FollowRedirects: &[]bool{false}[0],
+		AllowInsecure:   &[]bool{false}[0],
+		ProbeZone:       "test-zone-id",
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.CreateLoadBalancerMonitor(context.Background(), rc, params)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkLoadBalancerConcurrentOperations measures concurrent load balancer operations
+func BenchmarkLoadBalancerConcurrentOperations(b *testing.B) {
+	client := &fake.MockClient{
+		MockGetLoadBalancer: func(ctx context.Context, rc *cloudflare.ResourceContainer, loadBalancerID string) (cloudflare.LoadBalancer, error) {
+			return cloudflare.LoadBalancer{
+				ID:               loadBalancerID,
+				Name:             "test-lb",
+				FallbackPool:     "fallback-pool-id",
+				DefaultPools:     []string{"default-pool-id"},
+				Description:      "Test load balancer",
+				TTL:              300,
+				SteeringPolicy:   "off",
+				Proxied:          &[]bool{true}[0],
+				Enabled:          &[]bool{true}[0],
+				SessionAffinity:  "cookie",
+				SessionAffinityTTL: &[]int{1800}[0],
+			}, nil
+		},
+	}
+
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.ZoneRouteLevel,
+		Identifier: "test-zone-id",
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.GetLoadBalancer(context.Background(), rc, "test-lb-id")
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
+
+// BenchmarkLoadBalancerObservationGeneration measures load balancer observation generation performance
+func BenchmarkLoadBalancerObservationGeneration(b *testing.B) {
+	lb := cloudflare.LoadBalancer{
+		ID:               "test-lb-id",
+		Name:             "test-lb",
+		FallbackPool:     "fallback-pool-id",
+		DefaultPools:     []string{"default-pool-id"},
+		Description:      "Test load balancer",
+		TTL:              300,
+		SteeringPolicy:   "off",
+		Proxied:          &[]bool{true}[0],
+		Enabled:          &[]bool{true}[0],
+		SessionAffinity:  "cookie",
+		SessionAffinityTTL: &[]int{1800}[0],
+		RegionPools: map[string][]string{
+			"WNAM": {"us-west-pool"},
+			"ENAM": {"us-east-pool"},
+		},
+		PopPools: map[string][]string{
+			"LAX": {"lax-pool"},
+			"JFK": {"jfk-pool"},
+		},
+		CountryPools: map[string][]string{
+			"US": {"us-pool"},
+			"CA": {"ca-pool"},
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		obs := loadbalancing.GenerateLoadBalancerObservation(lb)
+		if obs.LoadBalancer == nil {
+			b.Fatal("observation generation failed")
+		}
+	}
+}
+
+// BenchmarkLoadBalancerUpToDateCheck measures load balancer up-to-date checking performance
+func BenchmarkLoadBalancerUpToDateCheck(b *testing.B) {
+	lb := cloudflare.LoadBalancer{
+		ID:               "test-lb-id",
+		Name:             "test-lb",
+		FallbackPool:     "fallback-pool-id",
+		DefaultPools:     []string{"default-pool-id"},
+		Description:      "Test load balancer",
+		TTL:              300,
+		SteeringPolicy:   "off",
+		Proxied:          &[]bool{true}[0],
+		Enabled:          &[]bool{true}[0],
+		SessionAffinity:  "cookie",
+		SessionAffinityTTL: &[]int{1800}[0],
+	}
+
+	proxied := true
+	enabled := true
+	sessionAffinityTTL := 1800
+	params := loadbalancing.LoadBalancerParameters{
+		Name:         "test-lb",
+		FallbackPool: "fallback-pool-id",
+		DefaultPools: []string{"default-pool-id"},
+		Description:  &[]string{"Test load balancer"}[0],
+		TTL:          &[]int{300}[0],
+		SteeringPolicy: &[]string{"off"}[0],
+		Proxied:      &proxied,
+		Enabled:      &enabled,
+		SessionAffinity: &[]string{"cookie"}[0],
+		SessionAffinityTTL: &sessionAffinityTTL,
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		upToDate := loadbalancing.IsLoadBalancerUpToDate(params, lb)
+		_ = upToDate
+	}
+}

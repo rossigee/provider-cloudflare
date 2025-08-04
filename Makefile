@@ -120,3 +120,82 @@ validate-package:
 	@grep -q "meta.crossplane.io/source" package/crossplane.yaml || (echo "Missing source annotation" && exit 1)
 	@grep -q "meta.crossplane.io/license" package/crossplane.yaml || (echo "Missing license annotation" && exit 1)
 	@$(INFO) Package validation passed!
+
+# Performance benchmarks
+benchmark: generate
+	@$(INFO) Running performance benchmarks...
+	@$(GO) test -bench=. -benchmem ./internal/clients/benchmarks/
+
+# Run benchmarks and save results
+benchmark.save: generate
+	@$(INFO) Running benchmarks and saving results...
+	@mkdir -p .benchmarks
+	@$(GO) test -bench=. -benchmem ./internal/clients/benchmarks/ > .benchmarks/benchmark-$(shell date +%Y%m%d-%H%M%S).txt
+
+# Compare benchmark results
+benchmark.compare: generate
+	@$(INFO) Comparing benchmark results...
+	@if [ ! -f .benchmarks/baseline.txt ]; then \
+		echo "No baseline found. Run 'make benchmark.baseline' first."; \
+		exit 1; \
+	fi
+	@$(GO) test -bench=. -benchmem ./internal/clients/benchmarks/ > .benchmarks/current.txt
+	@benchcmp .benchmarks/baseline.txt .benchmarks/current.txt || echo "benchcmp not installed, showing raw comparison:"
+	@echo "Baseline:" && head -10 .benchmarks/baseline.txt
+	@echo "Current:" && head -10 .benchmarks/current.txt
+
+# Set current benchmark results as baseline
+benchmark.baseline: generate
+	@$(INFO) Setting benchmark baseline...
+	@mkdir -p .benchmarks
+	@$(GO) test -bench=. -benchmem ./internal/clients/benchmarks/ > .benchmarks/baseline.txt
+	@$(INFO) Baseline set. Use 'make benchmark.compare' to compare future runs.
+
+# Run benchmarks with CPU profiling
+benchmark.profile: generate
+	@$(INFO) Running benchmarks with CPU profiling...
+	@mkdir -p .benchmarks/profiles
+	@$(GO) test -bench=BenchmarkZone -cpuprofile=.benchmarks/profiles/cpu.prof ./internal/clients/benchmarks/
+	@$(INFO) Profile saved to .benchmarks/profiles/cpu.prof
+	@$(INFO) Analyze with: go tool pprof .benchmarks/profiles/cpu.prof
+
+# Run benchmarks with memory profiling
+benchmark.memprofile: generate
+	@$(INFO) Running benchmarks with memory profiling...
+	@mkdir -p .benchmarks/profiles
+	@$(GO) test -bench=BenchmarkZone -memprofile=.benchmarks/profiles/mem.prof ./internal/clients/benchmarks/
+	@$(INFO) Profile saved to .benchmarks/profiles/mem.prof
+	@$(INFO) Analyze with: go tool pprof .benchmarks/profiles/mem.prof
+
+# Run specific benchmark category
+benchmark.zone: generate
+	@$(INFO) Running Zone benchmarks...
+	@$(GO) test -bench=BenchmarkZone -benchmem ./internal/clients/benchmarks/
+
+benchmark.record: generate
+	@$(INFO) Running Record benchmarks...
+	@$(GO) test -bench=BenchmarkRecord -benchmem ./internal/clients/benchmarks/
+
+benchmark.loadbalancing: generate
+	@$(INFO) Running Load Balancing benchmarks...
+	@$(GO) test -bench=BenchmarkLoadBalancer -benchmem ./internal/clients/benchmarks/
+
+benchmark.cache: generate
+	@$(INFO) Running Cache benchmarks...
+	@$(GO) test -bench=BenchmarkCache -benchmem ./internal/clients/benchmarks/
+
+benchmark.security: generate
+	@$(INFO) Running Security benchmarks...
+	@$(GO) test -bench=BenchmarkSecurity -benchmem ./internal/clients/benchmarks/
+
+# Extended benchmark run (longer duration for more accurate results)
+benchmark.extended: generate
+	@$(INFO) Running extended benchmarks (10s each)...
+	@$(GO) test -bench=. -benchmem -benchtime=10s ./internal/clients/benchmarks/
+
+# Continuous benchmarking for CI
+benchmark.ci: generate
+	@$(INFO) Running CI benchmarks...
+	@mkdir -p .benchmarks
+	@$(GO) test -bench=. -benchmem ./internal/clients/benchmarks/ | tee .benchmarks/ci-$(shell date +%Y%m%d-%H%M%S).txt
+	@echo "Benchmark results saved for CI analysis"

@@ -343,8 +343,8 @@ spec:
 
 ### 2025-08-02: v0.115.0 Modernization
 - **API Compatibility Update**: Updated cloudflare-go from legacy version to v0.115.0
-- **Go Modernization**: Updated from Go 1.13 to Go 1.23
-- **Dependency Updates**: Modernized dependencies including crossplane-runtime v1.17.0
+- **Go Modernization**: Updated from Go 1.13 to Go 1.24.5
+- **Dependency Updates**: Modernized dependencies including crossplane-runtime v1.16.0
 - **SRV Record Support**: Comprehensive SRV record implementation with proper API structure
 - **Interface-Based Testing**: Modern testing framework with comprehensive mocking
 - **Registry Standardization**: Migrated to ghcr.io/rossigee registry pattern

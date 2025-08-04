@@ -25,9 +25,14 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/controller/cache"
 	"github.com/rossigee/provider-cloudflare/internal/controller/config"
 	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
+	emailrouting "github.com/rossigee/provider-cloudflare/internal/controller/emailrouting"
 	loadbalancing "github.com/rossigee/provider-cloudflare/internal/controller/loadbalancing"
+	originssl "github.com/rossigee/provider-cloudflare/internal/controller/originssl"
+	r2 "github.com/rossigee/provider-cloudflare/internal/controller/r2"
 	rulesets "github.com/rossigee/provider-cloudflare/internal/controller/rulesets"
+	security "github.com/rossigee/provider-cloudflare/internal/controller/security"
 	application "github.com/rossigee/provider-cloudflare/internal/controller/spectrum"
+	ssl "github.com/rossigee/provider-cloudflare/internal/controller/ssl"
 	sslsaas "github.com/rossigee/provider-cloudflare/internal/controller/sslsaas"
 	transform "github.com/rossigee/provider-cloudflare/internal/controller/transform"
 	workers "github.com/rossigee/provider-cloudflare/internal/controller/workers"
@@ -43,11 +48,16 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 		record.Setup,
 		application.Setup,
 		workers.Setup,
+		ssl.Setup,
 		sslsaas.Setup,
 		transform.Setup,
 		rulesets.Setup,
+		security.Setup,
 		loadbalancing.Setup,
+		originssl.Setup,
 		cache.Setup,
+		r2.Setup,
+		emailrouting.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

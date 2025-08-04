@@ -1,0 +1,55 @@
+apiVersion: zone.cloudflare.crossplane.io/v1alpha1
+kind: Zone
+metadata:
+  name: example-website-zone
+spec:
+  forProvider:
+    # Replace with your actual domain
+    zone: "example.com"
+    paused: false
+    jumpStart: false  # Keep disabled for full Crossplane control
+    type: "full"
+    settings:
+      # SSL/TLS Settings
+      ssl: "flexible"
+      alwaysUseHTTPS: "on"
+      minTLSVersion: "1.2"
+      
+      # Performance Settings  
+      browserCacheTTL: 14400
+      edgeCacheTTL: 7200
+      
+      # Security Settings
+      securityLevel: "medium"
+      challengeTTL: 1800
+      
+      # Development Mode (disable for production)
+      developmentMode: "off"
+      
+      # IPv6 Support
+      ipv6: "on"
+      
+      # HTTP/2 and HTTP/3
+      http2: "on"
+      http3: "on"
+      
+      # Zero Round Trip Time Resumption
+      zeroRTT: "on"
+      
+      # Opportunistic Encryption
+      opportunisticEncryption: "on"
+      
+      # Pseudo IPv4
+      pseudoIpv4: "off"
+      
+      # WebSockets
+      websockets: "on"
+      
+      # Always Online
+      alwaysOnline: "on"
+      
+  providerConfigRef:
+    name: default
+  writeConnectionSecretsToRef:
+    name: zone-connection-details
+    namespace: default

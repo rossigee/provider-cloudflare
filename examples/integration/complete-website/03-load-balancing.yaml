@@ -1,0 +1,114 @@
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancerMonitor
+metadata:
+  name: website-health-monitor
+spec:
+  forProvider:
+    type: "https"
+    description: "Website health check monitor"
+    method: "GET"
+    path: "/health"
+    expectedBody: "healthy"
+    expectedCodes: "200"
+    followRedirects: true
+    allowInsecure: false
+    timeout: 5
+    retries: 2
+    interval: 60
+    consecutiveUp: 2
+    consecutiveDown: 3
+    probeZone: "auto"
+  providerConfigRef:
+    name: default
+---
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancerPool
+metadata:
+  name: website-primary-pool
+spec:
+  forProvider:
+    name: "Primary Web Servers"
+    description: "Primary pool for website traffic"
+    enabled: true
+    minimumOrigins: 1
+    monitorRef:
+      name: website-health-monitor
+    origins:
+      - name: "web-server-1"
+        address: "192.0.2.10"
+        enabled: true
+        weight: 1.0
+      - name: "web-server-2" 
+        address: "192.0.2.11"
+        enabled: true
+        weight: 1.0
+    originSteering:
+      policy: "random"
+    notificationEmail: "alerts@example.com"
+  providerConfigRef:
+    name: default
+---
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancerPool
+metadata:
+  name: website-backup-pool
+spec:
+  forProvider:
+    name: "Backup Web Servers"
+    description: "Backup pool for failover"
+    enabled: true
+    minimumOrigins: 1
+    monitorRef:
+      name: website-health-monitor
+    origins:
+      - name: "backup-server-1"
+        address: "192.0.2.20"
+        enabled: true
+        weight: 1.0
+    originSteering:
+      policy: "least_outstanding_requests"
+    notificationEmail: "alerts@example.com"
+  providerConfigRef:
+    name: default
+---
+apiVersion: loadbalancing.cloudflare.crossplane.io/v1alpha1
+kind: LoadBalancer
+metadata:
+  name: website-load-balancer
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "lb.example.com"
+    description: "Website load balancer with geographic routing"
+    enabled: true
+    proxied: true
+    steeringPolicy: "geo"
+    fallbackPoolRef:
+      name: website-backup-pool
+    defaultPools:
+      - poolRef:
+          name: website-primary-pool
+    regionPools:
+      WNAM:  # Western North America
+        - poolRef:
+            name: website-primary-pool
+      ENAM:  # Eastern North America
+        - poolRef:
+            name: website-primary-pool
+      WEU:   # Western Europe
+        - poolRef:
+            name: website-backup-pool
+    sessionAffinity: "cookie"
+    sessionAffinityTTL: 3600
+    sessionAffinityAttributes:
+      sameSite: "Auto"
+      secure: "Auto"
+      zeroDowntimeFailover: "temporary"
+    adaptiveRouting:
+      failoverAcrossPools: true
+    locationStrategy:
+      mode: "resolver_ip"
+      preferEcs: "proximity"
+  providerConfigRef:
+    name: default

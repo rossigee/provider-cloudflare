@@ -1,0 +1,568 @@
+/*
+Copyright 2025 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package workers
+
+import (
+	"context"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1alpha1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+)
+
+const (
+	testScriptName = "test-script"
+	testScript = `
+		addEventListener('fetch', event => {
+			event.respondWith(new Response('Hello World!'))
+		})
+	`
+)
+
+// MockScriptClient mocks the scriptclient.Client interface.
+type MockScriptClient struct {
+	MockCreate      func(ctx context.Context, params v1alpha1.ScriptParameters) (*v1alpha1.ScriptObservation, error)
+	MockGet         func(ctx context.Context, scriptName string) (*v1alpha1.ScriptObservation, error)
+	MockUpdate      func(ctx context.Context, params v1alpha1.ScriptParameters) (*v1alpha1.ScriptObservation, error)
+	MockDelete      func(ctx context.Context, scriptName string, dispatchNamespace *string) error
+	MockIsUpToDate  func(ctx context.Context, params v1alpha1.ScriptParameters, obs v1alpha1.ScriptObservation) (bool, error)
+}
+
+func (m *MockScriptClient) Create(ctx context.Context, params v1alpha1.ScriptParameters) (*v1alpha1.ScriptObservation, error) {
+	return m.MockCreate(ctx, params)
+}
+
+func (m *MockScriptClient) Get(ctx context.Context, scriptName string) (*v1alpha1.ScriptObservation, error) {
+	return m.MockGet(ctx, scriptName)
+}
+
+func (m *MockScriptClient) Update(ctx context.Context, params v1alpha1.ScriptParameters) (*v1alpha1.ScriptObservation, error) {
+	return m.MockUpdate(ctx, params)
+}
+
+func (m *MockScriptClient) Delete(ctx context.Context, scriptName string, dispatchNamespace *string) error {
+	return m.MockDelete(ctx, scriptName, dispatchNamespace)
+}
+
+func (m *MockScriptClient) IsUpToDate(ctx context.Context, params v1alpha1.ScriptParameters, obs v1alpha1.ScriptObservation) (bool, error) {
+	return m.MockIsUpToDate(ctx, params, obs)
+}
+
+func TestScriptObserve(t *testing.T) {
+	type fields struct {
+		service *MockScriptClient
+	}
+	type args struct {
+		mg resource.Managed
+	}
+	type want struct {
+		o   managed.ExternalObservation
+		err error
+	}
+
+	cases := map[string]struct {
+		fields fields
+		args   args
+		want   want
+	}{
+		"ScriptExists": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockGet: func(ctx context.Context, scriptName string) (*v1alpha1.ScriptObservation, error) {
+						return &v1alpha1.ScriptObservation{
+							ID:   "test-id",
+							Size: 1024,
+						}, nil
+					},
+					MockIsUpToDate: func(ctx context.Context, params v1alpha1.ScriptParameters, obs v1alpha1.ScriptObservation) (bool, error) {
+						return true, nil
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+							Script:     testScript,
+						},
+					},
+				},
+			},
+			want: want{
+				o: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"ScriptDoesNotExist": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockGet: func(ctx context.Context, scriptName string) (*v1alpha1.ScriptObservation, error) {
+						return nil, clients.NewNotFoundError("worker script not found")
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+							Script:     testScript,
+						},
+					},
+				},
+			},
+			want: want{
+				o: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+			},
+		},
+		"ScriptNeedsUpdate": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockGet: func(ctx context.Context, scriptName string) (*v1alpha1.ScriptObservation, error) {
+						return &v1alpha1.ScriptObservation{
+							ID:   "test-id",
+							Size: 1024,
+						}, nil
+					},
+					MockIsUpToDate: func(ctx context.Context, params v1alpha1.ScriptParameters, obs v1alpha1.ScriptObservation) (bool, error) {
+						return false, nil
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+							Script:     testScript,
+						},
+					},
+				},
+			},
+			want: want{
+				o: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
+		"GetError": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockGet: func(ctx context.Context, scriptName string) (*v1alpha1.ScriptObservation, error) {
+						return nil, errors.New("api error")
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+							Script:     testScript,
+						},
+					},
+				},
+			},
+			want: want{
+				err: errors.New("failed to get worker script: api error"),
+			},
+		},
+		"NotScript": {
+			fields: fields{
+				service: &MockScriptClient{},
+			},
+			args: args{
+				mg: &v1alpha1.Route{}, // Wrong type
+			},
+			want: want{
+				err: errors.New(errNotScript),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{service: tc.fields.service}
+			got, err := e.Observe(context.Background(), tc.args.mg)
+
+			if tc.want.err != nil {
+				if err == nil || err.Error() != tc.want.err.Error() {
+					t.Errorf("Observe() error = %v, want %v", err, tc.want.err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Observe() unexpected error = %v", err)
+				return
+			}
+
+			if diff := cmp.Diff(tc.want.o, got, test.EquateConditions()); diff != "" {
+				t.Errorf("Observe() -want +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestScriptCreate(t *testing.T) {
+	type fields struct {
+		service *MockScriptClient
+	}
+	type args struct {
+		mg resource.Managed
+	}
+	type want struct {
+		c   managed.ExternalCreation
+		err error
+	}
+
+	cases := map[string]struct {
+		fields fields
+		args   args
+		want   want
+	}{
+		"CreateSuccess": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockCreate: func(ctx context.Context, params v1alpha1.ScriptParameters) (*v1alpha1.ScriptObservation, error) {
+						return &v1alpha1.ScriptObservation{
+							ID:   "test-id",
+							Size: 1024,
+						}, nil
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+							Script:     testScript,
+						},
+					},
+				},
+			},
+			want: want{
+				c: managed.ExternalCreation{
+					ExternalNameAssigned: true,
+				},
+			},
+		},
+		"CreateError": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockCreate: func(ctx context.Context, params v1alpha1.ScriptParameters) (*v1alpha1.ScriptObservation, error) {
+						return nil, errors.New("api error")
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+							Script:     testScript,
+						},
+					},
+				},
+			},
+			want: want{
+				err: errors.New("failed to create worker script: api error"),
+			},
+		},
+		"NotScript": {
+			fields: fields{
+				service: &MockScriptClient{},
+			},
+			args: args{
+				mg: &v1alpha1.Route{}, // Wrong type
+			},
+			want: want{
+				err: errors.New(errNotScript),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{service: tc.fields.service}
+			got, err := e.Create(context.Background(), tc.args.mg)
+
+			if tc.want.err != nil {
+				if err == nil || err.Error() != tc.want.err.Error() {
+					t.Errorf("Create() error = %v, want %v", err, tc.want.err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Create() unexpected error = %v", err)
+				return
+			}
+
+			if diff := cmp.Diff(tc.want.c, got); diff != "" {
+				t.Errorf("Create() -want +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestScriptUpdate(t *testing.T) {
+	type fields struct {
+		service *MockScriptClient
+	}
+	type args struct {
+		mg resource.Managed
+	}
+	type want struct {
+		u   managed.ExternalUpdate
+		err error
+	}
+
+	cases := map[string]struct {
+		fields fields
+		args   args
+		want   want
+	}{
+		"UpdateSuccess": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockUpdate: func(ctx context.Context, params v1alpha1.ScriptParameters) (*v1alpha1.ScriptObservation, error) {
+						return &v1alpha1.ScriptObservation{
+							ID:   "test-id",
+							Size: 2048,
+						}, nil
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+							Script:     testScript,
+						},
+					},
+				},
+			},
+			want: want{
+				u: managed.ExternalUpdate{},
+			},
+		},
+		"UpdateError": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockUpdate: func(ctx context.Context, params v1alpha1.ScriptParameters) (*v1alpha1.ScriptObservation, error) {
+						return nil, errors.New("api error")
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+							Script:     testScript,
+						},
+					},
+				},
+			},
+			want: want{
+				err: errors.New("failed to update worker script: api error"),
+			},
+		},
+		"NotScript": {
+			fields: fields{
+				service: &MockScriptClient{},
+			},
+			args: args{
+				mg: &v1alpha1.Route{}, // Wrong type
+			},
+			want: want{
+				err: errors.New(errNotScript),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{service: tc.fields.service}
+			got, err := e.Update(context.Background(), tc.args.mg)
+
+			if tc.want.err != nil {
+				if err == nil || err.Error() != tc.want.err.Error() {
+					t.Errorf("Update() error = %v, want %v", err, tc.want.err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Update() unexpected error = %v", err)
+				return
+			}
+
+			if diff := cmp.Diff(tc.want.u, got); diff != "" {
+				t.Errorf("Update() -want +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestScriptDelete(t *testing.T) {
+	type fields struct {
+		service *MockScriptClient
+	}
+	type args struct {
+		mg resource.Managed
+	}
+	type want struct {
+		err error
+	}
+
+	cases := map[string]struct {
+		fields fields
+		args   args
+		want   want
+	}{
+		"DeleteSuccess": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockDelete: func(ctx context.Context, scriptName string, dispatchNamespace *string) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+						},
+					},
+				},
+			},
+			want: want{},
+		},
+		"DeleteWithDispatchNamespace": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockDelete: func(ctx context.Context, scriptName string, dispatchNamespace *string) error {
+						if dispatchNamespace == nil || *dispatchNamespace != "test-namespace" {
+							return errors.New("unexpected dispatch namespace")
+						}
+						return nil
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName:        testScriptName,
+							DispatchNamespace: ptr.To("test-namespace"),
+						},
+					},
+				},
+			},
+			want: want{},
+		},
+		"DeleteNotFound": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockDelete: func(ctx context.Context, scriptName string, dispatchNamespace *string) error {
+						return clients.NewNotFoundError("worker script not found")
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+						},
+					},
+				},
+			},
+			want: want{}, // Not found errors are ignored
+		},
+		"DeleteError": {
+			fields: fields{
+				service: &MockScriptClient{
+					MockDelete: func(ctx context.Context, scriptName string, dispatchNamespace *string) error {
+						return errors.New("api error")
+					},
+				},
+			},
+			args: args{
+				mg: &v1alpha1.Script{
+					Spec: v1alpha1.ScriptSpec{
+						ForProvider: v1alpha1.ScriptParameters{
+							ScriptName: testScriptName,
+						},
+					},
+				},
+			},
+			want: want{
+				err: errors.New("failed to delete worker script: api error"),
+			},
+		},
+		"NotScript": {
+			fields: fields{
+				service: &MockScriptClient{},
+			},
+			args: args{
+				mg: &v1alpha1.Route{}, // Wrong type
+			},
+			want: want{
+				err: errors.New(errNotScript),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{service: tc.fields.service}
+			err := e.Delete(context.Background(), tc.args.mg)
+
+			if tc.want.err != nil {
+				if err == nil || err.Error() != tc.want.err.Error() {
+					t.Errorf("Delete() error = %v, want %v", err, tc.want.err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Delete() unexpected error = %v", err)
+			}
+		})
+	}
+}

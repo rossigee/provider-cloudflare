@@ -1,0 +1,315 @@
+package benchmarks
+
+import (
+	"context"
+	"net/http"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go"
+	
+	"github.com/rossigee/provider-cloudflare/internal/clients/zones"
+	"github.com/rossigee/provider-cloudflare/internal/clients/zones/fake"
+)
+
+// BenchmarkZoneCreate measures zone creation performance
+func BenchmarkZoneCreate(b *testing.B) {
+	client := &fake.MockClient{
+		MockCreateZone: func(ctx context.Context, name string, jumpstart bool, account cloudflare.Account, zoneType string) (cloudflare.Zone, error) {
+			return cloudflare.Zone{
+				ID:       "test-zone-id",
+				Name:     name,
+				Type:     zoneType,
+				Account:  account,
+				Paused:   false,
+				VanityNS: []string{"ns1.example.com", "ns2.example.com"},
+			}, nil
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.CreateZone(context.Background(), "example.com", false, cloudflare.Account{ID: "test-account"}, "full")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkZoneDetails measures zone details retrieval performance
+func BenchmarkZoneDetails(b *testing.B) {
+	client := &fake.MockClient{
+		MockZoneDetails: func(ctx context.Context, zoneID string) (cloudflare.Zone, error) {
+			return cloudflare.Zone{
+				ID:   zoneID,
+				Name: "example.com",
+				Type: "full",
+				Account: cloudflare.Account{
+					ID:   "test-account",
+					Name: "Test Account",
+				},
+				Paused:   false,
+				VanityNS: []string{"ns1.example.com", "ns2.example.com"},
+			}, nil
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.ZoneDetails(context.Background(), "test-zone-id")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkZoneUpdate measures zone update performance
+func BenchmarkZoneUpdate(b *testing.B) {
+	client := &fake.MockClient{
+		MockEditZone: func(ctx context.Context, zoneID string, zoneOpts cloudflare.ZoneOptions) (cloudflare.Zone, error) {
+			return cloudflare.Zone{
+				ID:     zoneID,
+				Name:   "example.com",
+				Type:   "full",
+				Paused: *zoneOpts.Paused,
+			}, nil
+		},
+	}
+
+	paused := true
+	zoneOpts := cloudflare.ZoneOptions{
+		Paused: &paused,
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.EditZone(context.Background(), "test-zone-id", zoneOpts)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkZoneDelete measures zone deletion performance
+func BenchmarkZoneDelete(b *testing.B) {
+	client := &fake.MockClient{
+		MockDeleteZone: func(ctx context.Context, zoneID string) (cloudflare.ZoneID, error) {
+			return cloudflare.ZoneID{ID: zoneID}, nil
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.DeleteZone(context.Background(), "test-zone-id")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkZoneSettings measures zone settings retrieval performance
+func BenchmarkZoneSettings(b *testing.B) {
+	client := &fake.MockClient{
+		MockZoneSettings: func(ctx context.Context, zoneID string) (*cloudflare.ZoneSettingResponse, error) {
+			return &cloudflare.ZoneSettingResponse{
+				Result: []cloudflare.ZoneSetting{
+					{ID: "ssl", Value: "flexible", Editable: true},
+					{ID: "always_use_https", Value: "on", Editable: true},
+					{ID: "min_tls_version", Value: "1.2", Editable: true},
+					{ID: "edge_cache_ttl", Value: 7200, Editable: true},
+					{ID: "browser_cache_ttl", Value: 14400, Editable: true},
+				},
+			}, nil
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.ZoneSettings(context.Background(), "test-zone-id")
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkZoneSettingsUpdate measures zone settings update performance
+func BenchmarkZoneSettingsUpdate(b *testing.B) {
+	client := &fake.MockClient{
+		MockUpdateZoneSettings: func(ctx context.Context, zoneID string, settings []cloudflare.ZoneSetting) (*cloudflare.ZoneSettingResponse, error) {
+			return &cloudflare.ZoneSettingResponse{
+				Result: settings,
+			}, nil
+		},
+	}
+
+	settings := []cloudflare.ZoneSetting{
+		{ID: "ssl", Value: "strict", Editable: true},
+		{ID: "always_use_https", Value: "on", Editable: true},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := client.UpdateZoneSettings(context.Background(), "test-zone-id", settings)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkZoneConcurrentOperations measures concurrent zone operations
+func BenchmarkZoneConcurrentOperations(b *testing.B) {
+	client := &fake.MockClient{
+		MockZoneDetails: func(ctx context.Context, zoneID string) (cloudflare.Zone, error) {
+			return cloudflare.Zone{
+				ID:   zoneID,
+				Name: "example.com",
+				Type: "full",
+			}, nil
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := client.ZoneDetails(context.Background(), "test-zone-id")
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
+
+// BenchmarkZoneClientCreation measures zone client creation overhead
+func BenchmarkZoneClientCreation(b *testing.B) {
+	cfg := zones.Config{
+		APIKey:    "test-key",
+		Email:     "test@example.com",
+		UserAgent: "test-agent",
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, err := zones.NewClient(cfg, &http.Client{})
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkZoneObservationGeneration measures observation generation performance
+func BenchmarkZoneObservationGeneration(b *testing.B) {
+	zone := cloudflare.Zone{
+		ID:   "test-zone-id",
+		Name: "example.com",
+		Type: "full",
+		Account: cloudflare.Account{
+			ID:   "test-account",
+			Name: "Test Account",
+		},
+		Paused:   false,
+		VanityNS: []string{"ns1.example.com", "ns2.example.com"},
+	}
+
+	settings := &cloudflare.ZoneSettingResponse{
+		Result: []cloudflare.ZoneSetting{
+			{ID: "ssl", Value: "flexible", Editable: true},
+			{ID: "always_use_https", Value: "on", Editable: true},
+			{ID: "min_tls_version", Value: "1.2", Editable: true},
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		obs := zones.GenerateZoneObservation(zone, settings)
+		if obs.Zone == nil {
+			b.Fatal("observation generation failed")
+		}
+	}
+}
+
+// BenchmarkZoneUpToDateCheck measures up-to-date checking performance
+func BenchmarkZoneUpToDateCheck(b *testing.B) {
+	zone := cloudflare.Zone{
+		ID:     "test-zone-id",
+		Name:   "example.com",
+		Type:   "full",
+		Paused: false,
+	}
+
+	settings := &cloudflare.ZoneSettingResponse{
+		Result: []cloudflare.ZoneSetting{
+			{ID: "ssl", Value: "flexible", Editable: true},
+			{ID: "always_use_https", Value: "on", Editable: true},
+		},
+	}
+
+	params := zones.ZoneParameters{
+		Zone:   "example.com",
+		Paused: &[]bool{false}[0],
+		Type:   &[]string{"full"}[0],
+		Settings: &zones.ZoneSettingsParameters{
+			SSL:             &[]string{"flexible"}[0],
+			AlwaysUseHTTPS:  &[]string{"on"}[0],
+		},
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		upToDate := zones.IsZoneUpToDate(params, zone, settings)
+		_ = upToDate
+	}
+}
+
+// BenchmarkZoneLateInitialization measures late initialization performance
+func BenchmarkZoneLateInitialization(b *testing.B) {
+	zone := cloudflare.Zone{
+		ID:   "test-zone-id",
+		Name: "example.com",
+		Type: "full",
+		Account: cloudflare.Account{
+			ID:   "test-account",
+			Name: "Test Account",
+		},
+		Paused:   false,
+		VanityNS: []string{"ns1.example.com", "ns2.example.com"},
+	}
+
+	settings := &cloudflare.ZoneSettingResponse{
+		Result: []cloudflare.ZoneSetting{
+			{ID: "ssl", Value: "flexible", Editable: true},
+			{ID: "min_tls_version", Value: "1.2", Editable: true},
+		},
+	}
+
+	params := &zones.ZoneParameters{
+		Zone: "example.com",
+		Type: &[]string{"full"}[0],
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		lateInit := zones.LateInitializeZone(params, zone, settings)
+		_ = lateInit
+	}
+}

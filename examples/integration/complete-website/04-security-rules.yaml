@@ -1,0 +1,122 @@
+apiVersion: rulesets.cloudflare.crossplane.io/v1alpha1
+kind: Ruleset
+metadata:
+  name: website-security-ruleset
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "Website Security Rules"
+    description: "Comprehensive security ruleset for website protection"
+    kind: "zone"
+    phase: "http_request_firewall_custom"
+    rules:
+      # Block known malicious IPs
+      - expression: 'ip.src in {192.0.2.100 203.0.113.100}'
+        action: "block"
+        description: "Block known malicious IP addresses"
+        enabled: true
+        
+      # Rate limiting for API endpoints
+      - expression: 'http.request.uri.path matches "^/api/"'
+        action: "challenge"
+        description: "Challenge suspicious API requests"
+        enabled: true
+        ratelimit:
+          characteristics:
+            - "ip.src"
+          period: 60
+          requestsPerPeriod: 100
+          mitigationTimeout: 600
+          
+      # Block requests with suspicious user agents
+      - expression: 'http.user_agent contains "bot" and not http.user_agent contains "Googlebot"'
+        action: "managed_challenge"
+        description: "Challenge suspicious bots"
+        enabled: true
+        
+      # Protect admin areas
+      - expression: 'http.request.uri.path matches "^/(admin|wp-admin)/"'
+        action: "challenge"
+        description: "Protect admin areas"
+        enabled: true
+        
+      # Allow search engine bots
+      - expression: 'http.user_agent contains "Googlebot" or http.user_agent contains "Bingbot"'
+        action: "allow"
+        description: "Allow legitimate search engine bots"
+        enabled: true
+        
+      # Block common attack patterns
+      - expression: 'http.request.uri.query contains "union select" or http.request.uri.query contains "script>"'
+        action: "block"
+        description: "Block SQL injection and XSS attempts"
+        enabled: true
+        
+      # Geo-blocking (example: block specific countries)
+      - expression: 'ip.geoip.country in {"CN" "RU"}'
+        action: "managed_challenge"
+        description: "Challenge requests from high-risk countries"
+        enabled: false  # Disabled by default - enable as needed
+        
+      # Custom header validation
+      - expression: 'http.request.headers["x-forwarded-for"][0] matches "^192\\.168\\."'
+        action: "block"
+        description: "Block requests with private IP in X-Forwarded-For"
+        enabled: true
+        
+  providerConfigRef:
+    name: default
+---
+apiVersion: rulesets.cloudflare.crossplane.io/v1alpha1
+kind: Ruleset
+metadata:
+  name: website-transform-ruleset
+spec:
+  forProvider:
+    zoneRef:
+      name: example-website-zone
+    name: "Website Transform Rules"
+    description: "URL transformation and redirect rules"
+    kind: "zone"
+    phase: "http_request_transform"
+    rules:
+      # Redirect old URLs to new structure
+      - expression: 'http.request.uri.path matches "^/old-blog/(.*)"'
+        action: "rewrite"
+        description: "Redirect old blog URLs to new structure"
+        enabled: true
+        actionParameters:
+          uri:
+            path:
+              expression: 'concat("/blog/", regex_replace(http.request.uri.path, "^/old-blog/", ""))'
+              
+      # Add security headers
+      - expression: 'true'
+        action: "rewrite"
+        description: "Add security headers to all responses"
+        enabled: true
+        actionParameters:
+          headers:
+            - operation: "set"
+              name: "X-Frame-Options"
+              value: "DENY"
+            - operation: "set"
+              name: "X-Content-Type-Options"
+              value: "nosniff"
+            - operation: "set"
+              name: "Referrer-Policy"
+              value: "strict-origin-when-cross-origin"
+              
+      # Normalize query parameters
+      - expression: 'http.request.uri.query contains "utm_"'
+        action: "rewrite"
+        description: "Remove tracking parameters"
+        enabled: true
+        actionParameters:
+          uri:
+            query:
+              expression: 'regex_replace(http.request.uri.query, "&?utm_[^&]*", "")'
+              
+  providerConfigRef:
+    name: default
