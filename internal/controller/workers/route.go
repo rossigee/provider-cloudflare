@@ -54,7 +54,7 @@ const (
 )
 
 // SetupRoute adds a controller that reconciles Route managed resources.
-func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.RouteGroupKind)
 
 	o := controller.Options{

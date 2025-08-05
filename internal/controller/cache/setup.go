@@ -24,6 +24,6 @@ import (
 )
 
 // Setup Cache controllers.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	return SetupCacheRule(mgr, l, rl)
 }

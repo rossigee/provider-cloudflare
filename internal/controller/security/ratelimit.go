@@ -55,7 +55,7 @@ const (
 )
 
 // SetupRateLimit adds a controller that reconciles RateLimit managed resources.
-func SetupRateLimit(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupRateLimit(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(securityv1alpha1.RateLimitKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
@@ -214,7 +214,7 @@ func (c *rateLimitExternal) Disconnect(ctx context.Context) error {
 }
 
 // SetupBotManagement adds a controller that reconciles BotManagement managed resources.
-func SetupBotManagement(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupBotManagement(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(securityv1alpha1.BotManagementKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
@@ -375,7 +375,7 @@ func (c *botManagementExternal) Disconnect(ctx context.Context) error {
 }
 
 // SetupTurnstile adds a controller that reconciles Turnstile managed resources.
-func SetupTurnstile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupTurnstile(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(securityv1alpha1.TurnstileKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
@@ -536,7 +536,7 @@ func (c *turnstileExternal) Disconnect(ctx context.Context) error {
 }
 
 // Setup adds controllers for Security resources.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	if err := SetupRateLimit(mgr, l, rl); err != nil {
 		return err
 	}

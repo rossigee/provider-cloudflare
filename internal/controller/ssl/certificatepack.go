@@ -47,7 +47,7 @@ const (
 )
 
 // SetupCertificatePackController adds a controller that reconciles Certificate Pack managed resources.
-func SetupCertificatePackController(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCertificatePackController(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.CertificatePackKind)
 
 	o := controller.Options{

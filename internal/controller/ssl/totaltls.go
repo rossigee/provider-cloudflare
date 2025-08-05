@@ -46,7 +46,7 @@ const (
 )
 
 // SetupTotalTLSController adds a controller that reconciles Total TLS managed resources.
-func SetupTotalTLSController(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupTotalTLSController(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.TotalTLSKind)
 
 	o := controller.Options{

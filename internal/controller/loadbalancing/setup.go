@@ -27,7 +27,7 @@ import (
 )
 
 // Setup Load Balancer controllers.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	opts := controller.Options{
 		Logger:                  l,
 		GlobalRateLimiter:       nil, // Use default rate limiter

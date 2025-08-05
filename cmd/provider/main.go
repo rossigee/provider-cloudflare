@@ -60,7 +60,7 @@ func main() {
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 
-	rl := workqueue.DefaultControllerRateLimiter()
+	rl := workqueue.DefaultTypedControllerRateLimiter[any]()
 	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add CloudFlare APIs to scheme")
 	kingpin.FatalIfError(controller.SetupMinimal(mgr, log, rl), "Cannot setup minimal CloudFlare controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")

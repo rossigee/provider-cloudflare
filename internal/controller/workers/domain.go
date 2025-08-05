@@ -49,7 +49,7 @@ const (
 )
 
 // SetupDomain adds a controller that reconciles Domain managed resources.
-func SetupDomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupDomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(workersv1alpha1.DomainKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

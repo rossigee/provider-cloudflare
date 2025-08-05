@@ -24,7 +24,7 @@ import (
 )
 
 // Setup creates all SSL controllers and adds them to the supplied manager.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	if err := SetupUniversalSSLController(mgr, l, rl); err != nil {
 		return err
 	}

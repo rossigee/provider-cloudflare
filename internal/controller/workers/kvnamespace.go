@@ -48,7 +48,7 @@ const (
 )
 
 // SetupKVNamespace adds a controller that reconciles KVNamespace managed resources.
-func SetupKVNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupKVNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(workersv1alpha1.KVNamespaceGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

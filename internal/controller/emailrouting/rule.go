@@ -48,7 +48,7 @@ const (
 )
 
 // SetupRule adds a controller that reconciles Rule managed resources.
-func SetupRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.RuleKind)
 
 	r := managed.NewReconciler(mgr,

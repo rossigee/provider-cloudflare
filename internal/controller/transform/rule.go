@@ -54,7 +54,7 @@ const (
 )
 
 // Setup adds a controller that reconciles Transform Rule managed resources.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.RuleGroupKind)
 
 	o := controller.Options{

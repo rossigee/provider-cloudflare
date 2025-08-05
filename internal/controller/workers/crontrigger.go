@@ -54,7 +54,7 @@ const (
 )
 
 // SetupCronTrigger adds a controller that reconciles CronTrigger managed resources.
-func SetupCronTrigger(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCronTrigger(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.CronTriggerGroupKind)
 
 	o := controller.Options{

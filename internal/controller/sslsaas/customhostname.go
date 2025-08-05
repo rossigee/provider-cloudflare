@@ -58,7 +58,7 @@ const (
 )
 
 // SetupCustomHostname adds a controller that reconciles CustomHostname managed resources.
-func SetupCustomHostname(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCustomHostname(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.CustomHostnameGroupKind)
 
 	o := controller.Options{

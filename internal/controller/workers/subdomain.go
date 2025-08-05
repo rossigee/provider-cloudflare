@@ -49,7 +49,7 @@ const (
 )
 
 // SetupSubdomain adds a controller that reconciles Subdomain managed resources.
-func SetupSubdomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupSubdomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(workersv1alpha1.SubdomainKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

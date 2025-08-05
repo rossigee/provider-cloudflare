@@ -45,7 +45,7 @@ const (
 )
 
 // SetupCacheRule adds a controller that reconciles CacheRule managed resources.
-func SetupCacheRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCacheRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.CacheRuleGroupKind)
 
 	o := controller.Options{

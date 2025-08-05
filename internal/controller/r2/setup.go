@@ -25,7 +25,7 @@ import (
 
 // Setup creates all R2 controllers with the supplied logger and adds them to
 // the supplied manager.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	// Setup Bucket controller
 	if err := SetupBucket(mgr, l, rl); err != nil {
 		return err

@@ -56,12 +56,12 @@ const (
 )
 
 // Setup adds a controller that reconciles Ruleset managed resources.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	return SetupRuleset(mgr, l, rl)
 }
 
 // SetupRuleset adds a controller that reconciles Ruleset managed resources.
-func SetupRuleset(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupRuleset(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.RulesetGroupKind)
 
 	o := controller.Options{

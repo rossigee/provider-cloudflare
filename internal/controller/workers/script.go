@@ -48,7 +48,7 @@ const (
 )
 
 // SetupScript adds a controller that reconciles Script managed resources.
-func SetupScript(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupScript(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(workersv1alpha1.ScriptGroupKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}

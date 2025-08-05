@@ -24,8 +24,8 @@ import (
 )
 
 // Setup Email Routing controllers.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
-	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
+	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.TypedRateLimiter[any]) error{
 		SetupRule,
 	} {
 		if err := setup(mgr, l, rl); err != nil {

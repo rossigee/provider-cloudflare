@@ -25,8 +25,8 @@ import (
 
 // Setup creates all SSL for SaaS controllers with the supplied logger and adds them to
 // the supplied manager.
-func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
-	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
+func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
+	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.TypedRateLimiter[any]) error{
 		SetupCustomHostname,
 		SetupFallbackOrigin,
 	} {

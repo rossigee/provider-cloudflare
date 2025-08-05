@@ -58,7 +58,7 @@ const (
 )
 
 // Setup adds a controller that reconciles Zone managed resources.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.ZoneGroupKind)
 
 	o := controller.Options{

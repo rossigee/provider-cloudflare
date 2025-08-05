@@ -51,7 +51,7 @@ const (
 
 
 // SetupFallbackOrigin adds a controller that reconciles FallbackOrigin managed resources.
-func SetupFallbackOrigin(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupFallbackOrigin(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.FallbackOriginGroupKind)
 
 	o := controller.Options{

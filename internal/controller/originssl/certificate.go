@@ -49,7 +49,7 @@ const (
 )
 
 // SetupCertificate adds a controller that reconciles Certificate managed resources.
-func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(originsslv1alpha1.CertificateKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
@@ -209,6 +209,6 @@ func (c *certificateExternal) Disconnect(ctx context.Context) error {
 }
 
 // Setup adds controllers for Origin SSL resources.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	return SetupCertificate(mgr, l, rl)
 }

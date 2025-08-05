@@ -41,8 +41,8 @@ import (
 
 // Setup creates all CloudFlare controllers with the supplied logger and adds them to
 // the supplied manager.
-func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
-	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
+func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
+	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.TypedRateLimiter[any]) error{
 		config.Setup,
 		zone.Setup,
 		record.Setup,
@@ -67,6 +67,6 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 }
 
 // SetupMinimal creates minimal controllers with only config, zone, and dns record support.
-func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
+func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
 	return Setup(mgr, l, wl)
 }

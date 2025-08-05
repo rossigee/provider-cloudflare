@@ -46,7 +46,7 @@ const (
 )
 
 // SetupUniversalSSLController adds a controller that reconciles Universal SSL managed resources.
-func SetupUniversalSSLController(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupUniversalSSLController(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
 	name := managed.ControllerName(v1alpha1.UniversalSSLKind)
 
 	o := controller.Options{
