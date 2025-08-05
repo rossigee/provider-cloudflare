@@ -58,7 +58,7 @@ func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 	name := managed.ControllerName(v1alpha1.RouteGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -196,22 +196,27 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, errors.Wrap(err, errRouteUpdate)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Route)
 	if !ok {
-		return errors.New(errNotRoute)
+		return managed.ExternalDelete{}, errors.New(errNotRoute)
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
-		return errors.Wrap(errors.New(errRouteNoZone), errRouteDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(errors.New(errRouteNoZone), errRouteDeletion)
 	}
 
 	rid := meta.GetExternalName(cr)
 	if rid == "" {
-		return errors.New(errRouteDeletion)
+		return managed.ExternalDelete{}, errors.New(errRouteDeletion)
 	}
 
 	err := e.client.DeleteWorkerRoute(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
 
-	return errors.Wrap(err, errRouteDeletion)
+	return managed.ExternalDelete{}, errors.Wrap(err, errRouteDeletion)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

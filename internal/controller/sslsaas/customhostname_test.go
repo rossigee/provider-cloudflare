@@ -787,7 +787,7 @@ func TestCustomHostnameDelete(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			e := customHostnameExternal{client: tc.fields.client}
-			err := e.Delete(tc.args.ctx, tc.args.mg)
+			_, err := e.Delete(tc.args.ctx, tc.args.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Delete(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}

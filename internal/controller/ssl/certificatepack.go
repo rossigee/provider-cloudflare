@@ -51,7 +51,7 @@ func SetupCertificatePackController(mgr ctrl.Manager, l logging.Logger, rl workq
 	name := managed.ControllerName(v1alpha1.CertificatePackKind)
 
 	o := controller.Options{
-		RateLimiter: rl,
+		RateLimiter: nil, // Use default rate limiter
 	}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
@@ -188,18 +188,23 @@ func (c *certificatePackExternal) Update(ctx context.Context, mg resource.Manage
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *certificatePackExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *certificatePackExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.CertificatePack)
 	if !ok {
-		return errors.New(errNotCertificatePack)
+		return managed.ExternalDelete{}, errors.New(errNotCertificatePack)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
 
 	err := c.service.Delete(ctx, cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
 	if err != nil {
-		return errors.Wrap(err, "failed to delete Certificate Pack")
+		return managed.ExternalDelete{}, errors.Wrap(err, "failed to delete Certificate Pack")
 	}
 
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *certificatePackExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

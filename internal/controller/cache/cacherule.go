@@ -49,7 +49,7 @@ func SetupCacheRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 	name := managed.ControllerName(v1alpha1.CacheRuleGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: 5,
 	}
 
@@ -186,23 +186,28 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}, nil
 }
 
-func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.CacheRule)
 	if !ok {
-		return errors.New(errNotCacheRule)
+		return managed.ExternalDelete{}, errors.New(errNotCacheRule)
 	}
 
 	rulesetID := cr.Status.AtProvider.RulesetID
 	ruleID := cr.Status.AtProvider.ID
 
 	if ruleID == "" || rulesetID == "" {
-		return nil // Already deleted or never created
+		return managed.ExternalDelete{}, nil // Already deleted or never created
 	}
 
 	err := c.service.DeleteCacheRule(ctx, rulesetID, ruleID, cr.Spec.ForProvider)
 	if err != nil && !cache.IsCacheRuleNotFound(err) {
-		return errors.Wrap(err, "failed to delete cache rule from Cloudflare API")
+		return managed.ExternalDelete{}, errors.Wrap(err, "failed to delete cache rule from Cloudflare API")
 	}
 
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

@@ -203,18 +203,18 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}, nil
 }
 
-func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.LoadBalancer)
 	if !ok {
-		return errors.New(errNotLoadBalancer)
+		return managed.ExternalDelete{}, errors.New(errNotLoadBalancer)
 	}
 
 	err := c.service.DeleteLoadBalancer(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil && !loadbalancing.IsLoadBalancerNotFound(err) {
-		return errors.Wrap(err, "failed to delete load balancer from Cloudflare API")
+		return managed.ExternalDelete{}, errors.Wrap(err, "failed to delete load balancer from Cloudflare API")
 	}
 
-	return nil
+	return managed.ExternalDelete{}, nil
 }
 
 func (c *external) lateInitialize(spec *v1alpha1.LoadBalancerParameters, lb *cloudflare.LoadBalancer) bool {
@@ -320,5 +320,9 @@ func (c *external) resolveReferences(ctx context.Context, cr *v1alpha1.LoadBalan
 		}
 	}
 
+	return nil
+}
+func (c *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

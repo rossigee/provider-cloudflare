@@ -74,7 +74,7 @@ func SetupRateLimit(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: rl,
+			RateLimiter: nil, // Use default rate limiter
 		}).
 		For(&securityv1alpha1.RateLimit{}).
 		Complete(r)
@@ -197,15 +197,20 @@ func (c *rateLimitExternal) Update(ctx context.Context, mg resource.Managed) (ma
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *rateLimitExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *rateLimitExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*securityv1alpha1.RateLimit)
 	if !ok {
-		return errors.New(errNotRateLimit)
+		return managed.ExternalDelete{}, errors.New(errNotRateLimit)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
 
-	return c.service.Delete(ctx, cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
+	return managed.ExternalDelete{}, c.service.Delete(ctx, cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
+}
+
+func (c *rateLimitExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }
 
 // SetupBotManagement adds a controller that reconciles BotManagement managed resources.
@@ -228,7 +233,7 @@ func SetupBotManagement(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: rl,
+			RateLimiter: nil, // Use default rate limiter
 		}).
 		For(&securityv1alpha1.BotManagement{}).
 		Complete(r)
@@ -349,18 +354,23 @@ func (c *botManagementExternal) Update(ctx context.Context, mg resource.Managed)
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *botManagementExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *botManagementExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	// Bot Management is a zone-level configuration, we don't delete it
 	// We could reset it to default values, but that might not be desired
 	// For now, we'll just mark it as deleting but not actually change anything
 	cr, ok := mg.(*securityv1alpha1.BotManagement)
 	if !ok {
-		return errors.New(errNotBotManagement)
+		return managed.ExternalDelete{}, errors.New(errNotBotManagement)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
 
 	// Successfully "delete" by doing nothing - the configuration remains
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *botManagementExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }
 
@@ -384,7 +394,7 @@ func SetupTurnstile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: rl,
+			RateLimiter: nil, // Use default rate limiter
 		}).
 		For(&securityv1alpha1.Turnstile{}).
 		Complete(r)
@@ -509,15 +519,20 @@ func (c *turnstileExternal) Update(ctx context.Context, mg resource.Managed) (ma
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *turnstileExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *turnstileExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*securityv1alpha1.Turnstile)
 	if !ok {
-		return errors.New(errNotTurnstile)
+		return managed.ExternalDelete{}, errors.New(errNotTurnstile)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
 
-	return c.service.Delete(ctx, cr.Spec.ForProvider.AccountID, meta.GetExternalName(cr))
+	return managed.ExternalDelete{}, c.service.Delete(ctx, cr.Spec.ForProvider.AccountID, meta.GetExternalName(cr))
+}
+
+func (c *turnstileExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }
 
 // Setup adds controllers for Security resources.

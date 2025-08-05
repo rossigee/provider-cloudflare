@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: zones.zone.cloudflare.crossplane.io
 spec:
   group: zone.cloudflare.crossplane.io
@@ -90,14 +90,12 @@ spec:
                       JumpStart enables attempting to import existing DNS records
                       when a new Zone is created.
 
-
                       WARNING: When enabled, Cloudflare automatically creates DNS records
                       by scanning your domain's existing nameservers. These auto-created
                       records will NOT be managed by Crossplane and will exist only in
                       Cloudflare. To manage them with Crossplane, you must:
                       1. Create corresponding Record resources with matching settings
                       2. Import the external records using crossplane.io/external-name annotation
-
 
                       Recommendation: Leave disabled (false) for new zones to maintain
                       full Crossplane control over DNS records.

@@ -58,7 +58,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.ApplicationGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -208,24 +208,28 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Application)
 	if !ok {
-		return errors.New(errNotApplication)
+		return managed.ExternalDelete{}, errors.New(errNotApplication)
 	}
 
 	aid := meta.GetExternalName(cr)
 
 	// Delete should never be called on a nonexistent resource
 	if aid == "" {
-		return errors.New(errApplicationDeletion)
+		return managed.ExternalDelete{}, errors.New(errApplicationDeletion)
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
-		return errors.Wrap(errors.New(errApplicationNoZone), errApplicationDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(errors.New(errApplicationNoZone), errApplicationDeletion)
 	}
 
-	return errors.Wrap(
-		e.client.DeleteSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, aid),
-		errApplicationDeletion)
+	err := e.client.DeleteSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, aid)
+	return managed.ExternalDelete{}, errors.Wrap(err, errApplicationDeletion)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

@@ -202,17 +202,22 @@ func (c *poolExternal) Update(ctx context.Context, mg resource.Managed) (managed
 	}, nil
 }
 
-func (c *poolExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *poolExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.LoadBalancerPool)
 	if !ok {
-		return errors.New(errNotPool)
+		return managed.ExternalDelete{}, errors.New(errNotPool)
 	}
 
 	err := c.service.DeletePool(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil && !loadbalancing.IsPoolNotFound(err) {
-		return errors.Wrap(err, "failed to delete load balancer pool from Cloudflare API")
+		return managed.ExternalDelete{}, errors.Wrap(err, "failed to delete load balancer pool from Cloudflare API")
 	}
 
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *poolExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }
 

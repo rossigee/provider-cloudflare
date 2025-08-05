@@ -189,10 +189,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}, nil
 }
 
-func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Rule)
 	if !ok {
-		return errors.New(errNotRule)
+		return managed.ExternalDelete{}, errors.New(errNotRule)
 	}
 
 	fmt.Printf("Deleting: %+v", cr)
@@ -200,8 +200,12 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 	ruleTag := meta.GetExternalName(cr)
 	if ruleTag == "" {
 		// Rule doesn't exist, nothing to delete
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
-	return errors.Wrap(c.service.Delete(ctx, cr.Spec.ForProvider.ZoneID, ruleTag), errDeleteRule)
+	return managed.ExternalDelete{}, errors.Wrap(c.service.Delete(ctx, cr.Spec.ForProvider.ZoneID, ruleTag), errDeleteRule)
+}
+func (c *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

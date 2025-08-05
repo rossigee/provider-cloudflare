@@ -30,7 +30,7 @@ import (
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	opts := controller.Options{
 		Logger:                  l,
-		GlobalRateLimiter:       rl,
+		GlobalRateLimiter:       nil, // Use default rate limiter
 		PollInterval:            1 * time.Minute,
 		MaxConcurrentReconciles: 1,
 	}

@@ -85,6 +85,15 @@ run: go.build
 # NOTE: we ensure up is installed prior to running platform-specific packaging steps in xpkg.build.
 xpkg.build: $(UP)
 
+# Ensure CLI is available for package builds and publishing
+$(foreach x,$(XPKGS),$(eval xpkg.build.$(x): $(CROSSPLANE_CLI)))
+
+# Rules to build packages for each platform
+$(foreach p,$(filter linux_%,$(PLATFORMS)),$(foreach x,$(XPKGS),$(eval $(XPKG_OUTPUT_DIR)/$(p)/$(x)-$(VERSION).xpkg: $(CROSSPLANE_CLI); @$(MAKE) xpkg.build.$(x) PLATFORM=$(p))))
+
+# Ensure packages are built for all platforms before publishing
+$(foreach r,$(XPKG_REG_ORGS),$(foreach x,$(XPKGS),$(eval xpkg.release.publish.$(r).$(x): $(CROSSPLANE_CLI) $(foreach p,$(filter linux_%,$(PLATFORMS)),$(XPKG_OUTPUT_DIR)/$(p)/$(x)-$(VERSION).xpkg))))
+
 .PHONY: submodules run
 
 # Additional targets

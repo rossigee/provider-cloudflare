@@ -68,7 +68,7 @@ func SetupDomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) e
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: rl,
+			RateLimiter: nil, // Use default rate limiter
 		}).
 		For(&workersv1alpha1.Domain{}).
 		Complete(r)
@@ -193,13 +193,19 @@ func (c *domainExternal) Update(ctx context.Context, mg resource.Managed) (manag
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *domainExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *domainExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*workersv1alpha1.Domain)
 	if !ok {
-		return errors.New(errNotDomain)
+		return managed.ExternalDelete{}, errors.New(errNotDomain)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
 
-	return c.service.Delete(ctx, cr.Spec.ForProvider.AccountID, meta.GetExternalName(cr))
+	err := c.service.Delete(ctx, cr.Spec.ForProvider.AccountID, meta.GetExternalName(cr))
+	return managed.ExternalDelete{}, err
+}
+
+func (c *domainExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

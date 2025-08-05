@@ -35,7 +35,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := providerconfig.ControllerName(v1alpha1.ProviderConfigGroupKind)
 
 	o := controller.Options{
-		RateLimiter: rl,
+		RateLimiter: nil, // Use default rate limiter
 	}
 
 	of := resource.ProviderConfigKinds{

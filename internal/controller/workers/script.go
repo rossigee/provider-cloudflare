@@ -67,7 +67,7 @@ func SetupScript(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) e
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: rl,
+			RateLimiter: nil, // Use default rate limiter
 		}).
 		For(&workersv1alpha1.Script{}).
 		Complete(r)
@@ -191,13 +191,19 @@ func (c *scriptExternal) Update(ctx context.Context, mg resource.Managed) (manag
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *scriptExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *scriptExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*workersv1alpha1.Script)
 	if !ok {
-		return errors.New(errNotScript)
+		return managed.ExternalDelete{}, errors.New(errNotScript)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
 
-	return c.service.Delete(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider.DispatchNamespace)
+	err := c.service.Delete(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider.DispatchNamespace)
+	return managed.ExternalDelete{}, err
+}
+
+func (c *scriptExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

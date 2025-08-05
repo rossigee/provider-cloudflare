@@ -58,7 +58,7 @@ func SetupCronTrigger(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 	name := managed.ControllerName(v1alpha1.CronTriggerGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: cronTriggerMaxConcurrency,
 	}
 
@@ -198,10 +198,10 @@ func (c *cronTriggerExternal) Update(ctx context.Context, mg resource.Managed) (
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *cronTriggerExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *cronTriggerExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.CronTrigger)
 	if !ok {
-		return errors.New(errNotCronTrigger)
+		return managed.ExternalDelete{}, errors.New(errNotCronTrigger)
 	}
 
 	scriptName := cr.Spec.ForProvider.ScriptName
@@ -209,8 +209,13 @@ func (c *cronTriggerExternal) Delete(ctx context.Context, mg resource.Managed) e
 
 	err := c.client.Delete(ctx, scriptName, cronExpression)
 	if err != nil && !crontriggerclient.IsCronTriggerNotFound(err) {
-		return errors.Wrap(err, errCronTriggerDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(err, errCronTriggerDeletion)
 	}
 
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *cronTriggerExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

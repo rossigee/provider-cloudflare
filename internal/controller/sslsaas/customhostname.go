@@ -62,7 +62,7 @@ func SetupCustomHostname(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLi
 	name := managed.ControllerName(v1alpha1.CustomHostnameGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -235,24 +235,29 @@ func (e *customHostnameExternal) Update(ctx context.Context, mg resource.Managed
 		)
 }
 
-func (e *customHostnameExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *customHostnameExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.CustomHostname)
 	if !ok {
-		return errors.New(errNotCustomHostname)
+		return managed.ExternalDelete{}, errors.New(errNotCustomHostname)
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
-		return errors.New(errCustomHostnameDeletion)
+		return managed.ExternalDelete{}, errors.New(errCustomHostnameDeletion)
 	}
 
 	chid := meta.GetExternalName(cr)
 
 	// Delete should never be called on a nonexistent resource
 	if chid == "" {
-		return errors.New(errCustomHostnameDeletion)
+		return managed.ExternalDelete{}, errors.New(errCustomHostnameDeletion)
 	}
 
-	return errors.Wrap(
+	return managed.ExternalDelete{}, errors.Wrap(
 		e.client.DeleteCustomHostname(ctx, *cr.Spec.ForProvider.Zone, chid),
 		errCustomHostnameDeletion)
+}
+
+func (e *customHostnameExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

@@ -50,7 +50,7 @@ func SetupUniversalSSLController(mgr ctrl.Manager, l logging.Logger, rl workqueu
 	name := managed.ControllerName(v1alpha1.UniversalSSLKind)
 
 	o := controller.Options{
-		RateLimiter: rl,
+		RateLimiter: nil, // Use default rate limiter
 	}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
@@ -183,10 +183,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.UniversalSSL)
 	if !ok {
-		return errors.New(errNotUniversalSSL)
+		return managed.ExternalDelete{}, errors.New(errNotUniversalSSL)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
@@ -198,8 +198,12 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	_, err := c.service.Update(ctx, params)
 	if err != nil {
-		return errors.Wrap(err, "failed to disable Universal SSL settings")
+		return managed.ExternalDelete{}, errors.Wrap(err, "failed to disable Universal SSL settings")
 	}
 
+	return managed.ExternalDelete{}, nil
+}
+func (c *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

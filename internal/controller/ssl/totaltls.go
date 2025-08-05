@@ -50,7 +50,7 @@ func SetupTotalTLSController(mgr ctrl.Manager, l logging.Logger, rl workqueue.Ra
 	name := managed.ControllerName(v1alpha1.TotalTLSKind)
 
 	o := controller.Options{
-		RateLimiter: rl,
+		RateLimiter: nil, // Use default rate limiter
 	}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
@@ -183,10 +183,10 @@ func (c *totalTLSExternal) Update(ctx context.Context, mg resource.Managed) (man
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *totalTLSExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *totalTLSExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.TotalTLS)
 	if !ok {
-		return errors.New(errNotTotalTLS)
+		return managed.ExternalDelete{}, errors.New(errNotTotalTLS)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
@@ -199,8 +199,13 @@ func (c *totalTLSExternal) Delete(ctx context.Context, mg resource.Managed) erro
 
 	_, err := c.service.Update(ctx, params)
 	if err != nil {
-		return errors.Wrap(err, "failed to disable Total TLS settings")
+		return managed.ExternalDelete{}, errors.Wrap(err, "failed to disable Total TLS settings")
 	}
 
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *totalTLSExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

@@ -55,7 +55,7 @@ func SetupFallbackOrigin(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLi
 	name := managed.ControllerName(v1alpha1.FallbackOriginGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -194,14 +194,14 @@ func (e *fallbackOriginExternal) Update(ctx context.Context, mg resource.Managed
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *fallbackOriginExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *fallbackOriginExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.FallbackOrigin)
 	if !ok {
-		return errors.New(errNotFallbackOrigin)
+		return managed.ExternalDelete{}, errors.New(errNotFallbackOrigin)
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
-		return errors.New(errFallbackOriginNoZone)
+		return managed.ExternalDelete{}, errors.New(errFallbackOriginNoZone)
 	}
 
 	zoneID := *cr.Spec.ForProvider.Zone
@@ -209,7 +209,12 @@ func (e *fallbackOriginExternal) Delete(ctx context.Context, mg resource.Managed
 	// Delete by calling the delete API
 	err := e.client.DeleteFallbackOrigin(ctx, zoneID)
 	if err != nil {
-		return errors.Wrap(err, errFallbackOriginDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(err, errFallbackOriginDeletion)
 	}
+	return managed.ExternalDelete{}, nil
+}
+
+func (e *fallbackOriginExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

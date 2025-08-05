@@ -58,7 +58,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.RuleGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -203,21 +203,25 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Rule)
 	if !ok {
-		return errors.New(errNotRule)
+		return managed.ExternalDelete{}, errors.New(errNotRule)
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
-		return errors.Wrap(errors.New(errRuleNoZone), errRuleDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(errors.New(errRuleNoZone), errRuleDeletion)
 	}
 
 	rid := meta.GetExternalName(cr)
 	if rid == "" {
-		return errors.New(errRuleDeletion)
+		return managed.ExternalDelete{}, errors.New(errRuleDeletion)
 	}
 
 	err := e.client.DeleteTransformRule(ctx, *cr.Spec.ForProvider.Zone, rid, cr.Spec.ForProvider.Phase)
-	return errors.Wrap(err, errRuleDeletion)
+	return managed.ExternalDelete{}, errors.Wrap(err, errRuleDeletion)
+}
+func (c *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

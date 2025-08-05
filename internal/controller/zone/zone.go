@@ -62,7 +62,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.ZoneGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -230,19 +230,24 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		errZoneUpdate)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Zone)
 	if !ok {
-		return errors.New(errNotZone)
+		return managed.ExternalDelete{}, errors.New(errNotZone)
 	}
 
 	zid := meta.GetExternalName(cr)
 
 	// Delete should never be called on a nonexistent resource
 	if zid == "" {
-		return errors.New(errZoneDeletion)
+		return managed.ExternalDelete{}, errors.New(errZoneDeletion)
 	}
 
 	_, err := e.client.DeleteZone(ctx, zid)
-	return errors.Wrap(err, errZoneDeletion)
+	return managed.ExternalDelete{}, errors.Wrap(err, errZoneDeletion)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

@@ -68,7 +68,7 @@ func SetupSubdomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: rl,
+			RateLimiter: nil, // Use default rate limiter
 		}).
 		For(&workersv1alpha1.Subdomain{}).
 		Complete(r)
@@ -189,17 +189,22 @@ func (c *subdomainExternal) Update(ctx context.Context, mg resource.Managed) (ma
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *subdomainExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *subdomainExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	// Workers Subdomain is an account-level configuration, we don't delete it
 	// We could reset it to empty, but that might not be desired
 	// For now, we'll just mark it as deleting but not actually change anything
 	cr, ok := mg.(*workersv1alpha1.Subdomain)
 	if !ok {
-		return errors.New(errNotSubdomain)
+		return managed.ExternalDelete{}, errors.New(errNotSubdomain)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
 
 	// Successfully "delete" by doing nothing - the configuration remains
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *subdomainExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

@@ -68,7 +68,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: rl,
+			RateLimiter: nil, // Use default rate limiter
 		}).
 		For(&originsslv1alpha1.Certificate{}).
 		Complete(r)
@@ -191,15 +191,21 @@ func (c *certificateExternal) Update(ctx context.Context, mg resource.Managed) (
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *certificateExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *certificateExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*originsslv1alpha1.Certificate)
 	if !ok {
-		return errors.New(errNotCertificate)
+		return managed.ExternalDelete{}, errors.New(errNotCertificate)
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
 
-	return c.service.Delete(ctx, meta.GetExternalName(cr))
+	err := c.service.Delete(ctx, meta.GetExternalName(cr))
+	return managed.ExternalDelete{}, err
+}
+
+func (c *certificateExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }
 
 // Setup adds controllers for Origin SSL resources.

@@ -165,26 +165,26 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Application)
 	if !ok {
-		return errors.New(errNotApplication)
+		return managed.ExternalDelete{}, errors.New(errNotApplication)
 	}
 
 	rid := meta.GetExternalName(cr)
 	if rid == "" {
-		return errors.New(errApplicationDeletion)
+		return managed.ExternalDelete{}, errors.New(errApplicationDeletion)
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
-		return errors.Wrap(errors.New(errApplicationNoZone), errApplicationDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(errors.New(errApplicationNoZone), errApplicationDeletion)
 	}
 
 	err := e.client.DeleteSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, rid)
 	if err != nil {
-		return errors.Wrap(err, errApplicationDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(err, errApplicationDeletion)
 	}
-	return nil
+	return managed.ExternalDelete{}, nil
 }
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -1115,10 +1115,15 @@ func TestDelete(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			e := external{client: tc.fields.client}
-			err := e.Delete(tc.args.ctx, tc.args.mg)
+			_, err := e.Delete(tc.args.ctx, tc.args.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Delete(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
 		})
 	}
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

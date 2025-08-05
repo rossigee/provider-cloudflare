@@ -236,7 +236,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.FilterGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -380,24 +380,29 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Filter)
 	if !ok {
-		return errors.New(errNotFilter)
+		return managed.ExternalDelete{}, errors.New(errNotFilter)
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
-		return errors.Wrap(errors.New(errNoZone), errFilterDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(errors.New(errNoZone), errFilterDeletion)
 	}
 
 	rid := meta.GetExternalName(cr)
 
 	// Delete should never be called on a nonexistent resource
 	if rid == "" {
-		return errors.New(errFilterDeletion)
+		return managed.ExternalDelete{}, errors.New(errFilterDeletion)
 	}
 
-	return errors.Wrap(
+	return managed.ExternalDelete{}, errors.Wrap(
 		e.client.DeleteFilter(ctx, *cr.Spec.ForProvider.Zone, meta.GetExternalName(cr)),
 		errFilterDeletion)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

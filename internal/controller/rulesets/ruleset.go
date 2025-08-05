@@ -65,7 +65,7 @@ func SetupRuleset(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) 
 	name := managed.ControllerName(v1alpha1.RulesetGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -216,25 +216,29 @@ func (e *rulesetExternal) Update(ctx context.Context, mg resource.Managed) (mana
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *rulesetExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *rulesetExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Ruleset)
 	if !ok {
-		return errors.New(errNotRuleset)
+		return managed.ExternalDelete{}, errors.New(errNotRuleset)
 	}
 
 	// Validate that either zone or account is specified
 	if cr.Spec.ForProvider.Zone == nil && cr.Spec.ForProvider.Account == nil {
-		return errors.New(errRulesetNoScope)
+		return managed.ExternalDelete{}, errors.New(errRulesetNoScope)
 	}
 
 	rulesetID := meta.GetExternalName(cr)
 
 	// Delete should never be called on a nonexistent resource
 	if rulesetID == "" {
-		return errors.New(errRulesetDeletion)
+		return managed.ExternalDelete{}, errors.New(errRulesetDeletion)
 	}
 
-	return errors.Wrap(
-		e.client.DeleteRuleset(ctx, rulesetID, cr.Spec.ForProvider),
-		errRulesetDeletion)
+	err := e.client.DeleteRuleset(ctx, rulesetID, cr.Spec.ForProvider)
+	return managed.ExternalDelete{}, errors.Wrap(err, errRulesetDeletion)
+}
+
+func (e *rulesetExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }

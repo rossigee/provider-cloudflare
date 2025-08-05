@@ -58,7 +58,7 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) e
 	name := managed.ControllerName(v1alpha1.BucketKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: bucketMaxConcurrency,
 	}
 
@@ -181,22 +181,27 @@ func (c *bucketExternal) Update(ctx context.Context, mg resource.Managed) (manag
 	return managed.ExternalUpdate{}, nil
 }
 
-func (c *bucketExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *bucketExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Bucket)
 	if !ok {
-		return errors.New(errNotBucket)
+		return managed.ExternalDelete{}, errors.New(errNotBucket)
 	}
 
 	bucketName := meta.GetExternalName(cr)
 	if bucketName == "" {
 		// Nothing to delete if no external name is set
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
 	err := c.client.Delete(ctx, bucketName)
 	if err != nil && !bucketclient.IsBucketNotFound(err) {
-		return errors.Wrap(err, errBucketDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(err, errBucketDeletion)
 	}
 
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *bucketExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }

@@ -186,17 +186,22 @@ func (c *monitorExternal) Update(ctx context.Context, mg resource.Managed) (mana
 	}, nil
 }
 
-func (c *monitorExternal) Delete(ctx context.Context, mg resource.Managed) error {
+func (c *monitorExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.LoadBalancerMonitor)
 	if !ok {
-		return errors.New(errNotMonitor)
+		return managed.ExternalDelete{}, errors.New(errNotMonitor)
 	}
 
 	err := c.service.DeleteMonitor(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil && !loadbalancing.IsMonitorNotFound(err) {
-		return errors.Wrap(err, "failed to delete load balancer monitor from Cloudflare API")
+		return managed.ExternalDelete{}, errors.Wrap(err, "failed to delete load balancer monitor from Cloudflare API")
 	}
 
+	return managed.ExternalDelete{}, nil
+}
+
+func (c *monitorExternal) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
 	return nil
 }
 

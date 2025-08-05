@@ -62,7 +62,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.RecordGroupKind)
 
 	o := controller.Options{
-		RateLimiter:             rl,
+		RateLimiter: nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -265,25 +265,29 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1alpha1.Record)
 	if !ok {
-		return errors.New(errNotRecord)
+		return managed.ExternalDelete{}, errors.New(errNotRecord)
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
-		return errors.Wrap(errors.New(errRecordNoZone), errRecordDeletion)
+		return managed.ExternalDelete{}, errors.Wrap(errors.New(errRecordNoZone), errRecordDeletion)
 	}
 
 	rid := meta.GetExternalName(cr)
 
 	// Delete should never be called on a nonexistent resource
 	if rid == "" {
-		return errors.New(errRecordDeletion)
+		return managed.ExternalDelete{}, errors.New(errRecordDeletion)
 	}
 
 	rc := cloudflare.ZoneIdentifier(*cr.Spec.ForProvider.Zone)
-	return errors.Wrap(
-		e.client.DeleteDNSRecord(ctx, rc, meta.GetExternalName(cr)),
-		errRecordDeletion)
+	err := e.client.DeleteDNSRecord(ctx, rc, meta.GetExternalName(cr))
+	return managed.ExternalDelete{}, errors.Wrap(err, errRecordDeletion)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// No persistent connections to clean up
+	return nil
 }
