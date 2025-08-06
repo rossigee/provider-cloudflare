@@ -40,12 +40,10 @@ jobs:
           paths_ignore: '["**.md", "**.png", "**.jpg"]'
           do_not_skip: '["workflow_dispatch", "schedule", "push"]'
 
-  setup:
+  lint:
     runs-on: ubuntu-24.04
     needs: detect-noop
     if: needs.detect-noop.outputs.noop != 'true'
-    outputs:
-      cache-key: ${{ steps.cache-key.outputs.key }}
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -57,9 +55,12 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Generate Cache Key
-        id: cache-key
-        run: echo "key=go-v2-${{ runner.os }}-${{ hashFiles('**/go.sum') }}" >> $GITHUB_OUTPUT
+      - name: Clean Go Module Cache (prevent cache conflicts)
+        run: |
+          echo "Cleaning potential cache conflicts..."
+          go clean -modcache || true
+          rm -rf ~/.cache/go-build || true
+          rm -rf ~/go/pkg/mod || true
 
       - name: Cache Go Dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
@@ -67,45 +68,14 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ steps.cache-key.outputs.key }}
+          key: ${{ runner.os }}-go-v2-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            go-v2-${{ runner.os }}-
+            ${{ runner.os }}-go-v2-
 
-      - name: Download and Verify Dependencies
-        run: |
-          make vendor vendor.check
-          
+      - name: Vendor Dependencies
+        run: make vendor vendor.check
+
       - name: Install Crossplane CLI
-        run: |
-          mkdir -p .cache/tools/linux_x86_64
-          curl -fsSLo .cache/tools/linux_x86_64/crossplane-cli-v1.20.0 --create-dirs https://releases.crossplane.io/stable/v1.20.0/bin/linux_amd64/crank?source=build
-          chmod +x .cache/tools/linux_x86_64/crossplane-cli-v1.20.0
-
-  lint:
-    runs-on: ubuntu-24.04
-    needs: setup
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          submodules: true
-
-      - name: Setup Go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Restore Go Dependencies
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ needs.setup.outputs.cache-key }}
-          restore-keys: |
-            go-v2-${{ runner.os }}-
-
-      - name: Restore Crossplane CLI
         run: |
           mkdir -p .cache/tools/linux_x86_64
           curl -fsSLo .cache/tools/linux_x86_64/crossplane-cli-v1.20.0 --create-dirs https://releases.crossplane.io/stable/v1.20.0/bin/linux_amd64/crank?source=build
@@ -116,7 +86,8 @@ jobs:
 
   check-diff:
     runs-on: ubuntu-24.04
-    needs: setup
+    needs: detect-noop
+    if: needs.detect-noop.outputs.noop != 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -128,22 +99,33 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Restore Go Dependencies
+      - name: Clean Go Module Cache (prevent cache conflicts)
+        run: |
+          echo "Cleaning potential cache conflicts..."
+          go clean -modcache || true
+          rm -rf ~/.cache/go-build || true
+          rm -rf ~/go/pkg/mod || true
+
+      - name: Cache Go Dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ needs.setup.outputs.cache-key }}
+          key: ${{ runner.os }}-go-v2-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            go-v2-${{ runner.os }}-
+            ${{ runner.os }}-go-v2-
+
+      - name: Vendor Dependencies
+        run: make vendor vendor.check
 
       - name: Check Diff
         run: make check-diff
 
   unit-tests:
     runs-on: ubuntu-24.04
-    needs: setup
+    needs: detect-noop
+    if: needs.detect-noop.outputs.noop != 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -158,15 +140,25 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Restore Go Dependencies
+      - name: Clean Go Module Cache (prevent cache conflicts)
+        run: |
+          echo "Cleaning potential cache conflicts..."
+          go clean -modcache || true
+          rm -rf ~/.cache/go-build || true
+          rm -rf ~/go/pkg/mod || true
+
+      - name: Cache Go Dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ needs.setup.outputs.cache-key }}
+          key: ${{ runner.os }}-go-v2-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            go-v2-${{ runner.os }}-
+            ${{ runner.os }}-go-v2-
+
+      - name: Vendor Dependencies
+        run: make vendor vendor.check
 
       - name: Run Unit Tests
         run: make -j2 test
@@ -179,7 +171,7 @@ jobs:
 
   publish-artifacts:
     runs-on: ubuntu-24.04
-    needs: [setup, lint, check-diff, unit-tests]
+    needs: [lint, check-diff, unit-tests]
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     permissions:
       contents: read
@@ -218,17 +210,27 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Restore Go Dependencies
+      - name: Clean Go Module Cache (prevent cache conflicts)
+        run: |
+          echo "Cleaning potential cache conflicts..."
+          go clean -modcache || true
+          rm -rf ~/.cache/go-build || true
+          rm -rf ~/go/pkg/mod || true
+
+      - name: Cache Go Dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ needs.setup.outputs.cache-key }}
+          key: ${{ runner.os }}-go-v2-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            go-v2-${{ runner.os }}-
+            ${{ runner.os }}-go-v2-
 
-      - name: Restore Crossplane CLI
+      - name: Vendor Dependencies
+        run: make vendor vendor.check
+
+      - name: Install Crossplane CLI
         run: |
           mkdir -p .cache/tools/linux_x86_64
           curl -fsSLo .cache/tools/linux_x86_64/crossplane-cli-v1.20.0 --create-dirs https://releases.crossplane.io/stable/v1.20.0/bin/linux_amd64/crank?source=build
