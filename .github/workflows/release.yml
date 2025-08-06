@@ -83,7 +83,7 @@ jobs:
             VERSION=${{ steps.version.outputs.version }}
 
       - name: Build and Push Release to Upbound (Optional)
-        if: env.ENABLE_UPBOUND_PUBLISH == 'true' && secrets.UPBOUND_TOKEN != ''
+        if: env.ENABLE_UPBOUND_PUBLISH == 'true'
         run: |
           # Push to Upbound Registry
           make publish XPKG_REG_ORGS="xpkg.upbound.io/crossplane-contrib" \
