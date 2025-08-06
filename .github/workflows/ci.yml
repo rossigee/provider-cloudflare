@@ -213,7 +213,7 @@ jobs:
           # Build and push to GitHub Container Registry (primary)
           echo "Repository: ${{ github.repository }}"
           echo "Repository owner: ${{ github.repository_owner }}"
-          make build
-          make publish XPKG_REG_ORGS="ghcr.io/${{ github.repository_owner }}"
+          make build PLATFORM=linux_amd64
+          make publish XPKG_REG_ORGS="ghcr.io/${{ github.repository_owner }}" PLATFORMS=linux_amd64
         env:
           BUILD_ARGS: "--load"
