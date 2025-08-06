@@ -55,15 +55,22 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
+      - name: Clean Go Module Cache (prevent cache conflicts)
+        run: |
+          echo "Cleaning potential cache conflicts..."
+          go clean -modcache || true
+          rm -rf ~/.cache/go-build || true
+          rm -rf ~/go/pkg/mod || true
+
       - name: Cache Go Dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-v2-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-v2-
 
       - name: Vendor Dependencies
         run: make vendor vendor.check
@@ -92,15 +99,22 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
+      - name: Clean Go Module Cache (prevent cache conflicts)
+        run: |
+          echo "Cleaning potential cache conflicts..."
+          go clean -modcache || true
+          rm -rf ~/.cache/go-build || true
+          rm -rf ~/go/pkg/mod || true
+
       - name: Cache Go Dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-v2-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-v2-
 
       - name: Vendor Dependencies
         run: make vendor vendor.check
@@ -126,15 +140,22 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
+      - name: Clean Go Module Cache (prevent cache conflicts)
+        run: |
+          echo "Cleaning potential cache conflicts..."
+          go clean -modcache || true
+          rm -rf ~/.cache/go-build || true
+          rm -rf ~/go/pkg/mod || true
+
       - name: Cache Go Dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-v2-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-v2-
 
       - name: Vendor Dependencies
         run: make vendor vendor.check
@@ -189,15 +210,22 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
+      - name: Clean Go Module Cache (prevent cache conflicts)
+        run: |
+          echo "Cleaning potential cache conflicts..."
+          go clean -modcache || true
+          rm -rf ~/.cache/go-build || true
+          rm -rf ~/go/pkg/mod || true
+
       - name: Cache Go Dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-v2-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-v2-
 
       - name: Vendor Dependencies
         run: make vendor vendor.check
