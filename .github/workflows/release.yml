@@ -67,7 +67,9 @@ jobs:
           # Build and push to GitHub Container Registry (primary)
           # Ensure all dependencies are installed and packages are built
           make build.all xpkg.build
-          make publish XPKG_REG_ORGS="${{ env.PRIMARY_REGISTRY }}" \
+          make publish \
+            REGISTRY_ORGS="${{ env.PRIMARY_REGISTRY }}" \
+            XPKG_REG_ORGS="${{ env.PRIMARY_REGISTRY }}" \
             VERSION=${{ steps.version.outputs.version }}
 
       - name: Build and Push Release to Upbound (Optional)
