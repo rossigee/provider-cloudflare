@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Tag to release'
         required: true
-        default: 'v0.8.4'
+        default: 'v0.8.11'
 
 env:
   GO_VERSION: '1.24.5'
@@ -67,10 +67,13 @@ jobs:
           # Ensure all dependencies are installed and packages are built
           make build.all xpkg.build \
             BUILD_REGISTRY="${{ env.PRIMARY_REGISTRY }}"
+          # Publish both container images and packages
+          # Set BRANCH_NAME=master to ensure image publishing is enabled
           make publish \
             BUILD_REGISTRY="${{ env.PRIMARY_REGISTRY }}" \
             REGISTRY_ORGS="${{ env.PRIMARY_REGISTRY }}" \
             XPKG_REG_ORGS="${{ env.PRIMARY_REGISTRY }}" \
+            BRANCH_NAME=master \
             VERSION=${{ steps.version.outputs.version }}
 
       - name: Build and Push Release to Upbound (Optional)
