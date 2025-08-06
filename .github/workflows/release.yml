@@ -65,7 +65,8 @@ jobs:
         run: |
           # Build and push to GitHub Container Registry (primary)
           # Ensure all dependencies are installed and packages are built
-          make build.all xpkg.build
+          make build.all xpkg.build \
+            BUILD_REGISTRY="${{ env.PRIMARY_REGISTRY }}"
           make publish \
             BUILD_REGISTRY="${{ env.PRIMARY_REGISTRY }}" \
             REGISTRY_ORGS="${{ env.PRIMARY_REGISTRY }}" \
