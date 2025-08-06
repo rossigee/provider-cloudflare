@@ -65,7 +65,7 @@ metadata:
       metadata:
         name: provider-cloudflare
       spec:
-        package: ghcr.io/rossigee/provider-cloudflare:v0.8.5
+        package: ghcr.io/rossigee/provider-cloudflare:v0.8.6
       EOF
       ```
 
