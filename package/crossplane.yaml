@@ -26,7 +26,7 @@ metadata:
       ✅ **Complete Resource Coverage** - All major Cloudflare APIs supported  
       ✅ **100% Test Coverage** - Comprehensive test suite with interface-based testing  
       ✅ **Production Ready** - Used in production environments with proven reliability  
-      ✅ **Modern Go** - Go 1.23 with latest dependencies and best practices  
+      ✅ **Modern Go** - Go 1.24.5 with latest dependencies and best practices  
       ✅ **Advanced Capabilities** - Geographic routing, traffic steering, advanced caching  
       ✅ **Comprehensive Examples** - Detailed usage examples for all resource types  
 
@@ -65,7 +65,7 @@ metadata:
       metadata:
         name: provider-cloudflare
       spec:
-        package: ghcr.io/rossigee/provider-cloudflare:v0.6.1
+        package: ghcr.io/rossigee/provider-cloudflare:v0.8.4
       EOF
       ```
 
