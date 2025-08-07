@@ -18,6 +18,7 @@ package workers
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -25,6 +26,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	rtv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -67,7 +69,10 @@ func SetupScript(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimit
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: nil, // Use default rate limiter
+			RateLimiter: workqueue.NewTypedItemExponentialFailureRateLimiter[reconcile.Request](
+				5*time.Second,  // Base delay: 5 seconds instead of default 1ms
+				5*time.Minute,  // Max delay: 5 minutes instead of default 16.7 minutes
+			),
 		}).
 		For(&workersv1alpha1.Script{}).
 		Complete(r)
