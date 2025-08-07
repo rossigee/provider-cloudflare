@@ -896,5 +896,8 @@ func IsNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	return strings.Contains(err.Error(), "not found")
+	errMsg := err.Error()
+	return strings.Contains(errMsg, "not found") ||
+		strings.Contains(errMsg, "does not exist") ||
+		strings.Contains(errMsg, "10007") // CloudFlare Worker not found error code
 }

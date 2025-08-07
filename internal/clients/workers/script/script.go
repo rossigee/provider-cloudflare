@@ -210,11 +210,29 @@ func (c *ScriptClient) Create(ctx context.Context, params v1alpha1.ScriptParamet
 	}
 	rc := cloudflare.AccountIdentifier(accountID)
 	
+	// Debug logging
+	// TODO: Remove debug logging after issue is resolved
+	if accountID == "" {
+		return nil, errors.New("DEBUG: accountID is empty")
+	}
+	if createParams.ScriptName == "" {
+		return nil, errors.New("DEBUG: ScriptName is empty")
+	}
+	if createParams.Script == "" {
+		return nil, errors.New("DEBUG: Script content is empty")
+	}
+	
 	resp, err := c.client.UploadWorker(ctx, rc, createParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateScript)
 	}
 
+	// Debug logging for response
+	if resp.ID == "" {
+		return nil, errors.New("DEBUG: Response WorkerMetaData.ID is empty - accountID=" + accountID + ", scriptName=" + createParams.ScriptName)
+	}
+	
+	// Success debug logging - convert and return observation
 	obs := convertToObservation(resp.WorkerMetaData, &resp.WorkerScript)
 	return &obs, nil
 }

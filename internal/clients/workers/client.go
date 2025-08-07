@@ -55,9 +55,8 @@ func NewClient(cfg clients.Config, hc *http.Client) (Client, error) {
 
 // WorkerRoute retrieves a Worker Route
 func (c *client) WorkerRoute(ctx context.Context, zoneID, routeID string) (cloudflare.WorkerRoute, error) {
-	rc := &cloudflare.ResourceContainer{
-		Identifier: zoneID,
-	}
+	// Worker Routes use zone-level API, but need proper ResourceContainer
+	rc := cloudflare.ZoneIdentifier(zoneID)
 	
 	response, err := c.cf.ListWorkerRoutes(ctx, rc, cloudflare.ListWorkerRoutesParams{})
 	if err != nil {
@@ -75,9 +74,8 @@ func (c *client) WorkerRoute(ctx context.Context, zoneID, routeID string) (cloud
 
 // CreateWorkerRoute creates a new Worker Route
 func (c *client) CreateWorkerRoute(ctx context.Context, zoneID string, params *v1alpha1.RouteParameters) (cloudflare.WorkerRoute, error) {
-	rc := &cloudflare.ResourceContainer{
-		Identifier: zoneID,
-	}
+	// Worker Routes use zone-level API, but need proper ResourceContainer
+	rc := cloudflare.ZoneIdentifier(zoneID)
 	
 	createParams := cloudflare.CreateWorkerRouteParams{
 		Pattern: params.Pattern,
@@ -97,9 +95,8 @@ func (c *client) CreateWorkerRoute(ctx context.Context, zoneID string, params *v
 
 // UpdateWorkerRoute updates an existing Worker Route
 func (c *client) UpdateWorkerRoute(ctx context.Context, zoneID, routeID string, params *v1alpha1.RouteParameters) error {
-	rc := &cloudflare.ResourceContainer{
-		Identifier: zoneID,
-	}
+	// Worker Routes use zone-level API, but need proper ResourceContainer
+	rc := cloudflare.ZoneIdentifier(zoneID)
 	
 	updateParams := cloudflare.UpdateWorkerRouteParams{
 		ID:      routeID,
@@ -116,9 +113,8 @@ func (c *client) UpdateWorkerRoute(ctx context.Context, zoneID, routeID string, 
 
 // DeleteWorkerRoute deletes a Worker Route
 func (c *client) DeleteWorkerRoute(ctx context.Context, zoneID, routeID string) error {
-	rc := &cloudflare.ResourceContainer{
-		Identifier: zoneID,
-	}
+	// Worker Routes use zone-level API, but need proper ResourceContainer
+	rc := cloudflare.ZoneIdentifier(zoneID)
 	
 	_, err := c.cf.DeleteWorkerRoute(ctx, rc, routeID)
 	return err
