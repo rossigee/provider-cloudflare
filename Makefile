@@ -2,6 +2,14 @@
 PROJECT_NAME := provider-cloudflare
 PROJECT_REPO := github.com/rossigee/$(PROJECT_NAME)
 
+# Set VERSION from VERSION file if it exists and VERSION is not already set
+ifeq ($(origin VERSION), undefined)
+ifneq (,$(wildcard VERSION))
+VERSION := $(shell cat VERSION)
+export VERSION
+endif
+endif
+
 PLATFORMS ?= linux_amd64 linux_arm64
 -include build/makelib/common.mk
 

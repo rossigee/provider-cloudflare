@@ -5,10 +5,11 @@ set -e
 PROVIDER="provider-cloudflare"
 BASE_REGISTRY="ghcr.io/rossigee"
 
-# Get version from git or default
-VERSION=${VERSION:-$(git describe --tags --always --dirty)}
-if [[ "$VERSION" == *-dirty ]]; then
-    echo "Warning: Working directory is dirty, using dirty tag"
+# Get version from VERSION file or default
+if [[ -f VERSION ]]; then
+    VERSION=${VERSION:-$(cat VERSION)}
+else
+    VERSION=${VERSION:-"v0.0.0-dev"}
 fi
 
 echo "Building ${PROVIDER} version ${VERSION}"
