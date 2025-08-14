@@ -28,10 +28,6 @@ spec:
     - jsonPath: .status.atProvider.name
       name: NAME
       type: string
-    - format: name + '.workers.dev'
-      jsonPath: .status.atProvider.name
-      name: FULL_DOMAIN
-      type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date

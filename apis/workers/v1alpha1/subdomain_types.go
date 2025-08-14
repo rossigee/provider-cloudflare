@@ -56,7 +56,6 @@ type SubdomainStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="NAME",type="string",JSONPath=".status.atProvider.name"
-// +kubebuilder:printcolumn:name="FULL_DOMAIN",type="string",JSONPath=".status.atProvider.name",format="name + '.workers.dev'"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,cloudflare}
