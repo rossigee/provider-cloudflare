@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.9.0] - 2025-08-14
+
+### Added
+- Standardized CI/CD build system with "CI Builds, Release Publishes" pattern
+- Comprehensive security scanning (govulncheck, gosec, CodeQL) in CI pipeline
+- Parallel validation jobs for optimal CI performance
+- Transform Rules resource for URL rewriting, header modification, and HTTP redirects
+- Enhanced CRD display columns for Workers subdomain with full domain format
+
+### Changed
+- **BREAKING**: Migrated to standardized CI/CD workflows eliminating tag conflicts
+- Updated CI workflow to validation-only (no publishing)
+- Updated Release workflow as single source of truth for all publishing
+- Registry standardization to `ghcr.io/rossigee/provider-cloudflare` for consistency
+- Enhanced marketplace metadata with updated installation instructions
+- Improved build validation with artifact verification
+
+### Fixed
+- CI/CD tag conflicts between workflows by implementing proper separation
+- Build system reliability through standardized templates
+- Security scanning integration with GitHub Security tab via SARIF uploads
+
+### Infrastructure
+- **CI Pipeline**: Build validation only with parallel job execution
+- **Release Pipeline**: Single publishing source ensuring identical version/latest tags
+- **Security**: Nightly security scans + per-commit vulnerability detection
+- **Registry**: Primary ghcr.io/rossigee with consistent tagging strategy
+
 ## [v0.6.1] - 2025-01-08
 
 ### Added
