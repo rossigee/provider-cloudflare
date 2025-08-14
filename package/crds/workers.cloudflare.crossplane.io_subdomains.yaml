@@ -28,8 +28,9 @@ spec:
     - jsonPath: .status.atProvider.name
       name: NAME
       type: string
-    - jsonPath: .status.atProvider.name
-      name: SUBDOMAIN
+    - format: name + '.workers.dev'
+      jsonPath: .status.atProvider.name
+      name: FULL_DOMAIN
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
