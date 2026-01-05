@@ -1,0 +1,23 @@
+apiVersion: device.cloudflare.m.crossplane.io/v1beta1
+kind: DevicePostureRule
+metadata:
+  namespace: default
+  name: corporate-device-rule
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    name: "Corporate Devices"
+    type: "os_version"
+    description: "Ensure devices are running approved OS versions"
+    schedule: "5m"
+    expiration: "24h"
+    input:
+      os: "windows"
+      operator: ">="
+      version: "10.0.19043"
+      osDistroName: "ubuntu"
+      osDistroRevision: "20.04"
+    match:
+      platform: "windows"
+  providerConfigRef:
+    name: default

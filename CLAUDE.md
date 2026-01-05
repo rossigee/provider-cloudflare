@@ -1,14 +1,14 @@
 # Provider Cloudflare
 
 ## Overview
-Comprehensive Crossplane provider for managing Cloudflare resources via their V4 API. This provider offers complete coverage of Cloudflare's cloud security, performance, and reliability services including DNS, load balancing, WAF, caching, and SSL management.
+Comprehensive Crossplane provider for managing Cloudflare resources via their V4 API. This provider offers complete coverage of Cloudflare's cloud security, performance, and reliability services including DNS, load balancing, WAF, caching, SSL management, Zero Trust Access, tunneling, and device management.
 
 ## Status
 - **Registry**: `ghcr.io/rossigee/provider-cloudflare:v0.13.0`
 - **Branch**: master
 - **CI/CD**: ✅ Standardized GitHub Actions with "CI Builds, Release Publishes" pattern
 - **Build System**: ✅ Standard Crossplane build submodule
-- **Testing**: ✅ Interface-based testing with 100% coverage
+- **Testing**: ✅ Interface-based testing with comprehensive coverage
 - **API Compatibility**: ✅ cloudflare-go v0.115.0
 - **Production Ready**: ✅ Complete resource implementation with comprehensive examples
 
@@ -21,6 +21,8 @@ Comprehensive Crossplane provider for managing Cloudflare resources via their V4
 ### Security & Firewall
 - **Ruleset**: Modern WAF rulesets with advanced rule matching and actions
 - **Rule/Filter**: Legacy firewall rules and filters (deprecated, use Rulesets)
+- **AccessApplication**: Zero Trust access applications with authentication policies
+- **DevicePostureRule**: Device posture rules for endpoint security
 
 ### Load Balancing & Traffic Management
 - **LoadBalancer**: Geographic load balancing with intelligent traffic steering
@@ -38,6 +40,7 @@ Comprehensive Crossplane provider for managing Cloudflare resources via their V4
 - **KVNamespace**: Key-Value storage namespaces for Workers
 - **Route**: URL route bindings for Worker scripts
 - **Subdomain**: Custom subdomain configuration for Workers
+- **Tunnel**: Cloudflare Tunnel (Cloudflared) connections for secure access
 
 ### SSL/TLS & Certificates
 - **CustomHostname/FallbackOrigin**: SSL for SaaS certificate management
@@ -353,6 +356,12 @@ spec:
 - **Complete Worker Ecosystem**: Full support for serverless edge computing with all Cloudflare Worker APIs
 - **Production Ready**: Worker resources ready for enterprise deployment
 
+### 2026-01-05: Enterprise Features Implementation
+- **Zero Trust Access**: Complete Cloudflare Access implementation with applications and policies
+- **Cloudflare Tunnel**: Full Argo Tunnel management for secure remote access
+- **Device Management**: Device posture rules for endpoint security and compliance
+- **Enhanced Security**: Enterprise-grade security features for modern infrastructure
+
 ### 2025-08-03: Complete Provider Enhancement
 - **Load Balancing Implementation**: Full load balancing suite with geographic routing, health monitoring, and traffic steering
 - **Cache Rules Implementation**: Advanced caching rules with custom TTL, bypass conditions, and cache key customization
@@ -360,7 +369,7 @@ spec:
 - **URI Transformation**: Advanced URL rewriting and query parameter manipulation
 - **Zone Plan Management**: Complete zone plan setting functionality with test coverage
 - **Comprehensive Examples**: Detailed usage examples for all resource types
-- **100% Test Coverage**: Complete interface-based testing for all clients and controllers
+- **Interface-Based Testing**: Modern testing framework with comprehensive mocking
 
 ### 2025-08-02: v0.115.0 Modernization
 - **API Compatibility Update**: Updated cloudflare-go from legacy version to v0.115.0
@@ -480,6 +489,99 @@ spec:
     name: default
 ```
 
+## Access Application Usage
+
+Zero Trust access applications for secure application access with authentication policies:
+
+```yaml
+apiVersion: access.cloudflare.m.crossplane.io/v1beta1
+kind: AccessApplication
+metadata:
+  namespace: default
+  name: admin-dashboard
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    name: "Admin Dashboard"
+    domain: "admin.example.com"
+    type: "self_hosted"
+    sessionDuration: "24h"
+    allowedIdps: ["your-idp-id"]
+    autoRedirectToIdentity: false
+    enableBindingCookie: false
+    httpOnlyCookieAttribute: true
+    sameSiteCookieAttribute: "strict"
+    skipInterstitial: false
+    appLauncherVisible: true
+    policies:
+      - id: "policy-id-1"
+        precedence: 1
+      - id: "policy-id-2"
+        precedence: 2
+    corsHeaders:
+      allowedMethods: ["GET", "POST"]
+      allowedOrigins: ["https://trusted.example.com"]
+      allowCredentials: true
+      maxAge: 86400
+    logoUrl: "https://example.com/logo.png"
+    tags: ["admin", "internal"]
+  providerConfigRef:
+    name: default
+```
+
+## Device Posture Rule Usage
+
+Device posture rules for endpoint security and compliance:
+
+```yaml
+apiVersion: device.cloudflare.m.crossplane.io/v1beta1
+kind: DevicePostureRule
+metadata:
+  namespace: default
+  name: corporate-device-rule
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    name: "Corporate Devices"
+    type: "os_version"
+    description: "Ensure devices are running approved OS versions"
+    schedule: "5m"
+    expiration: "24h"
+    input:
+      os: "windows"
+      operator: ">="
+      version: "10.0.19043"
+      osDistroName: "ubuntu"
+      osDistroRevision: "20.04"
+    match:
+      platform: "windows"
+  providerConfigRef:
+    name: default
+```
+
+## Cloudflare Tunnel Usage
+
+Argo Tunnel connections for secure remote access:
+
+```yaml
+apiVersion: tunnel.cloudflare.m.crossplane.io/v1beta1
+kind: Tunnel
+metadata:
+  namespace: default
+  name: office-tunnel
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    name: "Office Tunnel"
+    tunnelSecret: "base64-encoded-secret"
+    configSrc: "local"
+    metadata:
+      "environment": "production"
+      "location": "office"
+  providerConfigRef:
+    name: default
+```
+
 ### Resource Implementation Status
 ✅ **DNS & Zone Management**: Zone settings, all DNS record types including SRV
 ✅ **Security & Firewall**: Modern Rulesets + legacy Rule/Filter support
@@ -488,6 +590,9 @@ spec:
 ✅ **Applications**: Spectrum TCP/UDP acceleration
 ✅ **Workers**: Complete worker ecosystem with scripts, cron triggers, domains, KV storage, routes, and subdomains
 ✅ **SSL/TLS**: SSL for SaaS custom hostname and fallback origin management
+✅ **Zero Trust Access**: Access applications with authentication policies
+✅ **Device Management**: Device posture rules for endpoint security
+✅ **Tunneling**: Cloudflare Tunnel connections for secure access
 
 ## Registry Migration
 Original: `crossplane/provider-cloudflare` → **Current**: `ghcr.io/rossigee/provider-cloudflare`

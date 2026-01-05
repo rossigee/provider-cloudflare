@@ -14,6 +14,8 @@ This directory contains comprehensive examples for all Cloudflare provider resou
 
 - **[rulesets/](rulesets/)** - Modern WAF rulesets with advanced rule matching
 - **[firewall/](firewall/)** - Legacy firewall rules and filters (deprecated)
+- **[access/](access/)** - Zero Trust access applications and policies
+- **[device/](device/)** - Device posture rules for endpoint security
 - **[transform/](transform/)** - URL transformation and rewriting rules
 
 ### Load Balancing & Traffic Management
@@ -42,6 +44,7 @@ This directory contains comprehensive examples for all Cloudflare provider resou
   - KV namespaces for storage
   - Route bindings
   - Subdomain configuration
+- **[tunnel/](tunnel/)** - Cloudflare Tunnel (Argo Tunnel) for secure remote access
 
 ### SSL/TLS & Certificates
 
@@ -89,6 +92,27 @@ The `cache/` examples demonstrate:
 - Custom TTL policies for different content types
 - Conditional caching based on request headers
 - Geographic cache distribution strategies
+
+### Enterprise Zero Trust
+The `access/` examples show complete Zero Trust implementations:
+- Access application configuration with authentication policies
+- CORS and session management settings
+- Integration with identity providers
+- Application launcher and branding customization
+
+### Device Security & Compliance
+The `device/` examples demonstrate endpoint security:
+- Device posture rules for compliance checking
+- OS version enforcement and validation
+- Platform-specific security policies
+- Integration with device management systems
+
+### Secure Remote Access
+The `tunnel/` examples show Cloudflare Tunnel setup:
+- Secure remote access to internal services
+- Tunnel configuration and secret management
+- Metadata tagging for organization
+- Integration with Zero Trust policies
 
 ## Resource Relationships
 

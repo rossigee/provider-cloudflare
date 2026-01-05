@@ -1,0 +1,16 @@
+apiVersion: tunnel.cloudflare.m.crossplane.io/v1beta1
+kind: Tunnel
+metadata:
+  namespace: default
+  name: office-tunnel
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    name: "Office Tunnel"
+    tunnelSecret: "base64-encoded-secret"
+    configSrc: "local"
+    metadata:
+      "environment": "production"
+      "location": "office"
+  providerConfigRef:
+    name: default

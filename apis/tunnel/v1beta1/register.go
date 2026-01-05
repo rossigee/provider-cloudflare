@@ -1,0 +1,39 @@
+/*
+Copyright 2025 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Package v1beta1 contains the core resources of the Cloudflare Tunnel provider.
+// +kubebuilder:object:generate=true
+package v1beta1
+
+import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+)
+
+var (
+	// TunnelKind is the kind of the Tunnel resource.
+	TunnelKind = "Tunnel"
+
+	// TunnelGroupVersionKind is the GroupVersionKind of the Tunnel resource.
+	TunnelGroupVersionKind = schema.GroupVersionKind{
+		Group:   Group,
+		Version: Version,
+		Kind:    TunnelKind,
+	}
+)
+
+func init() {
+	SchemeBuilder.Register(&Tunnel{}, &TunnelList{})
+}

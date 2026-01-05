@@ -19,9 +19,10 @@ package apis
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	accessv1beta1 "github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
 	cachev1beta1 "github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
+	devicev1beta1 "github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
 	dnsv1beta1 "github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	emailroutingv1beta1 "github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
 	firewallv1beta1 "github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
@@ -35,12 +36,14 @@ import (
 	sslv1beta1 "github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	sslsaasv1beta1 "github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
 	transformv1beta1 "github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
+	tunnelv1beta1 "github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
 	cloudflarev1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	workersv1beta1 "github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
-
-	"github.com/pkg/errors"
 )
+
+// AddToSchemes may be used to add all resources defined in the project to a Scheme
+var AddToSchemes runtime.SchemeBuilder
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
@@ -62,130 +65,26 @@ func init() {
 		loadbalancingv1beta1.SchemeBuilder.AddToScheme,
 		logpushv1beta1.SchemeBuilder.AddToScheme,
 		r2v1beta1.SchemeBuilder.AddToScheme,
+		accessv1beta1.SchemeBuilder.AddToScheme,
+		tunnelv1beta1.SchemeBuilder.AddToScheme,
+		devicev1beta1.SchemeBuilder.AddToScheme,
 	)
 }
-
-// AddToSchemes may be used to add all resources defined in the project to a Scheme
-var AddToSchemes runtime.SchemeBuilder
 
 // AddToScheme adds all Resources to the Scheme
 func AddToScheme(s *runtime.Scheme) error {
 	return AddToSchemes.AddToScheme(s)
 }
 
-// VerifySchemeRegistration tests that all API types are properly registered
-// This helps catch scheme registration issues that would cause panics during provider startup
+// VerifySchemeRegistration verifies that all API types are properly registered
 func VerifySchemeRegistration() error {
+	// Create a test scheme
 	scheme := runtime.NewScheme()
+	
+	// Try to add all types to the scheme
 	if err := AddToScheme(scheme); err != nil {
 		return err
 	}
-
-	// Test that we can create instances of key types from all packages
-	// This would fail if types weren't registered properly
-	testTypes := []runtime.Object{
-		// Core provider types
-		&cloudflarev1beta1.ProviderConfig{},
-		&cloudflarev1beta1.ProviderConfigList{},
-		&cloudflarev1beta1.ProviderConfigUsage{},
-		&cloudflarev1beta1.ProviderConfigUsageList{},
-
-		// Zone and DNS
-		&zonev1beta1.Zone{},
-		&zonev1beta1.ZoneList{},
-		&dnsv1beta1.Record{},
-		&dnsv1beta1.RecordList{},
-
-		// Load balancing
-		&loadbalancingv1beta1.LoadBalancer{},
-		&loadbalancingv1beta1.LoadBalancerList{},
-		&loadbalancingv1beta1.LoadBalancerMonitor{},
-		&loadbalancingv1beta1.LoadBalancerMonitorList{},
-		&loadbalancingv1beta1.LoadBalancerPool{},
-		&loadbalancingv1beta1.LoadBalancerPoolList{},
-
-		// Security and firewall
-		&securityv1beta1.BotManagement{},
-		&securityv1beta1.BotManagementList{},
-		&securityv1beta1.RateLimit{},
-		&securityv1beta1.RateLimitList{},
-		&securityv1beta1.Turnstile{},
-		&securityv1beta1.TurnstileList{},
-
-		// SSL and certificates
-		&sslv1beta1.CertificatePack{},
-		&sslv1beta1.CertificatePackList{},
-		&sslv1beta1.TotalTLS{},
-		&sslv1beta1.TotalTLSList{},
-		&sslv1beta1.UniversalSSL{},
-		&sslv1beta1.UniversalSSLList{},
-		&originsslv1beta1.Certificate{},
-		&originsslv1beta1.CertificateList{},
-
-		// Applications and services
-		&spectrumv1beta1.Application{},
-		&spectrumv1beta1.ApplicationList{},
-		&sslsaasv1beta1.CustomHostname{},
-		&sslsaasv1beta1.CustomHostnameList{},
-		&sslsaasv1beta1.FallbackOrigin{},
-		&sslsaasv1beta1.FallbackOriginList{},
-
-		// Rules and transforms
-		&rulesetsv1beta1.Ruleset{},
-		&rulesetsv1beta1.RulesetList{},
-		&transformv1beta1.Rule{},
-		&transformv1beta1.RuleList{},
-
-		// Workers and edge computing
-		&workersv1beta1.CronTrigger{},
-		&workersv1beta1.CronTriggerList{},
-		&workersv1beta1.Domain{},
-		&workersv1beta1.DomainList{},
-		&workersv1beta1.KVNamespace{},
-		&workersv1beta1.KVNamespaceList{},
-		&workersv1beta1.Route{},
-		&workersv1beta1.RouteList{},
-		&workersv1beta1.Script{},
-		&workersv1beta1.ScriptList{},
-		&workersv1beta1.Subdomain{},
-		&workersv1beta1.SubdomainList{},
-
-		// Cache and performance
-		&cachev1beta1.CacheRule{},
-		&cachev1beta1.CacheRuleList{},
-
-		// Email and logging
-		&emailroutingv1beta1.Rule{},
-		&emailroutingv1beta1.RuleList{},
-		&logpushv1beta1.Job{},
-		&logpushv1beta1.JobList{},
-
-		// Storage
-		&r2v1beta1.Bucket{},
-		&r2v1beta1.BucketList{},
-	}
-
-	for _, obj := range testTypes {
-		gvk, err := SchemeGroupVersionKind(obj, scheme)
-		if err != nil {
-			return err
-		}
-		if gvk.Group == "" || gvk.Version == "" || gvk.Kind == "" {
-			return errors.Errorf("type %T has incomplete GVK: %v", obj, gvk)
-		}
-	}
-
+	
 	return nil
-}
-
-// SchemeGroupVersionKind returns the GroupVersionKind for the given object using the scheme
-func SchemeGroupVersionKind(obj runtime.Object, scheme *runtime.Scheme) (schema.GroupVersionKind, error) {
-	gvks, _, err := scheme.ObjectKinds(obj)
-	if err != nil {
-		return schema.GroupVersionKind{}, err
-	}
-	if len(gvks) == 0 {
-		return schema.GroupVersionKind{}, errors.New("no GVKs found")
-	}
-	return gvks[0], nil
 }

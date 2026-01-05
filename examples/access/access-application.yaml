@@ -1,0 +1,33 @@
+apiVersion: access.cloudflare.m.crossplane.io/v1beta1
+kind: AccessApplication
+metadata:
+  namespace: default
+  name: admin-dashboard
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    name: "Admin Dashboard"
+    domain: "admin.example.com"
+    type: "self_hosted"
+    sessionDuration: "24h"
+    allowedIdps: ["your-idp-id"]
+    autoRedirectToIdentity: false
+    enableBindingCookie: false
+    httpOnlyCookieAttribute: true
+    sameSiteCookieAttribute: "strict"
+    skipInterstitial: false
+    appLauncherVisible: true
+    policies:
+      - id: "policy-id-1"
+        precedence: 1
+      - id: "policy-id-2"
+        precedence: 2
+    corsHeaders:
+      allowedMethods: ["GET", "POST"]
+      allowedOrigins: ["https://trusted.example.com"]
+      allowCredentials: true
+      maxAge: 86400
+    logoUrl: "https://example.com/logo.png"
+    tags: ["admin", "internal"]
+  providerConfigRef:
+    name: default

@@ -22,9 +22,11 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 
+	"github.com/rossigee/provider-cloudflare/internal/controller/access"
 	"github.com/rossigee/provider-cloudflare/internal/controller/cache"
 	// "github.com/rossigee/provider-cloudflare/internal/controller/config" // Temporarily disabled
 	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
+	"github.com/rossigee/provider-cloudflare/internal/controller/device"
 	emailrouting "github.com/rossigee/provider-cloudflare/internal/controller/emailrouting"
 	loadbalancing "github.com/rossigee/provider-cloudflare/internal/controller/loadbalancing"
 	originssl "github.com/rossigee/provider-cloudflare/internal/controller/originssl"
@@ -35,6 +37,7 @@ import (
 	ssl "github.com/rossigee/provider-cloudflare/internal/controller/ssl"
 	sslsaas "github.com/rossigee/provider-cloudflare/internal/controller/sslsaas"
 	transform "github.com/rossigee/provider-cloudflare/internal/controller/transform"
+	"github.com/rossigee/provider-cloudflare/internal/controller/tunnel"
 	workers "github.com/rossigee/provider-cloudflare/internal/controller/workers"
 	zone "github.com/rossigee/provider-cloudflare/internal/controller/zone"
 )
@@ -58,6 +61,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 		cache.Setup,
 		r2.Setup,
 		emailrouting.Setup,
+		access.Setup,
+		tunnel.Setup,
+		device.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err
@@ -84,6 +90,9 @@ func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimi
 		cache.Setup,
 		r2.Setup,
 		emailrouting.Setup,
+		access.Setup,
+		tunnel.Setup,
+		device.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err
