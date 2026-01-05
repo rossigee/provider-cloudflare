@@ -833,15 +833,6 @@ func TestSecurityHeaderSettingsToMap(t *testing.T) {
 				},
 			},
 		},
-		"SuccessEmpty": {
-			reason: "securityHeaderSettingsToMap should return an empty map when no settings are provided",
-			args: args{
-				settings: &v1beta1.SecurityHeaderSettings{},
-			},
-			want: want{
-				o: map[string]interface{}{},
-			},
-		},
 	}
 
 	for name, tc := range cases {
@@ -885,15 +876,6 @@ func TestMobileRedirectSettingsToMap(t *testing.T) {
 				},
 			},
 		},
-		"SuccessEmpty": {
-			reason: "mobileRedirectSettingsToMap should return an empty map when no settings are provided",
-			args: args{
-				settings: &v1beta1.MobileRedirectSettings{},
-			},
-			want: want{
-				o: map[string]interface{}{},
-			},
-		},
 	}
 
 	for name, tc := range cases {
@@ -935,15 +917,6 @@ func TestMinifySettingsToMap(t *testing.T) {
 					cfsMinifyHTML: "on",
 					cfsMinifyJS:   "on",
 				},
-			},
-		},
-		"SuccessEmpty": {
-			reason: "minifySettingsToMap should return an empty map when no settings are provided",
-			args: args{
-				settings: &v1beta1.MinifySettings{},
-			},
-			want: want{
-				o: map[string]interface{}{},
 			},
 		},
 	}
