@@ -2,7 +2,8 @@
 
 `provider-cloudflare` is a [Crossplane](https://crossplane.io/) Provider
 that manages Cloudflare resources via their V4 API (`cloudflare-go`). It provides
-comprehensive coverage of Cloudflare's cloud security, performance, and reliability services.
+comprehensive coverage of Cloudflare's cloud security, performance, and reliability services
+including enterprise Zero Trust, tunneling, and device management.
 
 ## Resources
 
@@ -13,6 +14,8 @@ comprehensive coverage of Cloudflare's cloud security, performance, and reliabil
 ### Security & Firewall
 - **`Ruleset`** - Modern WAF rulesets with advanced rule matching and actions (replaces legacy firewall rules)
 - **`Rule`** & **`Filter`** - Legacy firewall rules and filters (deprecated, use Rulesets instead)
+- **`AccessApplication`** - Zero Trust access applications with authentication policies
+- **`DevicePostureRule`** - Device posture rules for endpoint security
 
 ### Load Balancing & Traffic Management  
 - **`LoadBalancer`** - Geographic load balancing with intelligent traffic steering
@@ -30,6 +33,7 @@ comprehensive coverage of Cloudflare's cloud security, performance, and reliabil
 - **`KVNamespace`** - Key-Value storage namespaces for Workers
 - **`Route`** - URL route bindings for Worker scripts
 - **`Subdomain`** - Custom subdomain configuration for Workers
+- **`Tunnel`** - Cloudflare Tunnel (Cloudflared) connections for secure access
 
 ### SSL/TLS & Certificates
 - **`CustomHostname`** & **`FallbackOrigin`** - SSL for SaaS certificate management
@@ -38,19 +42,19 @@ comprehensive coverage of Cloudflare's cloud security, performance, and reliabil
 
 ✅ **Crossplane v2 Native** - Full v2 migration complete with namespaced resources
 ✅ **v1beta1 APIs Only** - Modern namespaced APIs with `.m.` group naming (v1alpha1 removed)
-✅ **Complete Test Coverage** - 100% test coverage for all clients and controllers
+✅ **Enterprise Features** - Zero Trust Access, Cloudflare Tunnel, and Device Management
 ✅ **Interface-Based Testing** - Modern testing framework with comprehensive mocking
 ✅ **Production Ready** - Used in production environments with proven reliability
-✅ **Modern Go** - Updated to Go 1.25.3 with latest dependencies
+✅ **Modern Go** - Updated to Go 1.25.5 with latest dependencies
 ✅ **Comprehensive Examples** - Detailed usage examples for all resource types
 ✅ **Advanced Capabilities** - Support for complex scenarios like geographic routing, traffic steering, and advanced caching
 
 ## Status
 
-- **Registry**: `ghcr.io/rossigee/provider-cloudflare:v0.13.0`
+- **Registry**: `ghcr.io/rossigee/provider-cloudflare:v0.14.0`
 - **Build Status**: ✅ `make lint` and `make test` passing
 - **Crossplane v2**: ✅ Fully migrated to v2-native architecture
-- **API Compatibility**: ✅ cloudflare-go v0.115.0, Go 1.25.3
+- **API Compatibility**: ✅ cloudflare-go v0.115.0, Go 1.25.5
 - **Production Ready**: ✅ Complete resource implementation with v1beta1 namespaced resources
 
 See [Current Status](docs/CURRENT-STATUS.md) for detailed technical information.
@@ -62,9 +66,9 @@ This provider has **fully migrated to Crossplane v2** with namespaced v1beta1 AP
 ### ✅ Available Namespaced APIs (v1beta1)
 - **DNS & Zones** - `dns.cloudflare.m.crossplane.io/v1beta1`, `zone.cloudflare.m.crossplane.io/v1beta1`
 - **Load Balancing** - `loadbalancing.cloudflare.m.crossplane.io/v1beta1`
-- **Security** - `firewall.cloudflare.m.crossplane.io/v1beta1`, `security.cloudflare.m.crossplane.io/v1beta1`
+- **Security & Access** - `firewall.cloudflare.m.crossplane.io/v1beta1`, `security.cloudflare.m.crossplane.io/v1beta1`, `access.cloudflare.m.crossplane.io/v1beta1`, `device.cloudflare.m.crossplane.io/v1beta1`
 - **Performance** - `cache.cloudflare.m.crossplane.io/v1beta1`
-- **Edge Computing** - `workers.cloudflare.m.crossplane.io/v1beta1`, `spectrum.cloudflare.m.crossplane.io/v1beta1`
+- **Edge Computing** - `workers.cloudflare.m.crossplane.io/v1beta1`, `spectrum.cloudflare.m.crossplane.io/v1beta1`, `tunnel.cloudflare.m.crossplane.io/v1beta1`
 - **SSL/TLS** - `ssl.cloudflare.m.crossplane.io/v1beta1`, `sslsaas.cloudflare.m.crossplane.io/v1beta1`, `originssl.cloudflare.m.crossplane.io/v1beta1`
 - **Advanced** - `transform.cloudflare.m.crossplane.io/v1beta1`, `logpush.cloudflare.m.crossplane.io/v1beta1`, `emailrouting.cloudflare.m.crossplane.io/v1beta1`, `r2.cloudflare.m.crossplane.io/v1beta1`
 
@@ -175,7 +179,7 @@ spec:
     name: default
 ```
 
-For comprehensive examples covering all resource types, see the **[examples/](examples/)** directory with detailed usage scenarios.
+For comprehensive examples covering all resource types including enterprise Zero Trust and device management, see the **[examples/](examples/)** directory with detailed usage scenarios.
 
 ## Developing
 
@@ -261,6 +265,9 @@ This provider follows Crossplane's provider architecture:
 - **Cache API** - Advanced cache rule configuration
 - **Spectrum API** - TCP/UDP application acceleration
 - **Workers API** - Serverless edge computing routes
+- **Access API** - Zero Trust access applications and policies
+- **Tunnel API** - Cloudflare Tunnel (Cloudflared) management
+- **Device Posture API** - Endpoint security and device management
 - **SSL for SaaS API** - Custom certificate management
 
 ## Contributing
