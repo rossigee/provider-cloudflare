@@ -20,7 +20,7 @@ jobs:
       registry_org: rossigee
       mirror: false  # Disable mirroring to xpkg.upbound.io for rossigee registry
     secrets:
-      GHCR_PAT: ${{ secrets.PAT_TOKEN }}
+      GHCR_TOKEN: ${{ github.token }}
 
   # Create GitHub release with generated notes
   github-release:
