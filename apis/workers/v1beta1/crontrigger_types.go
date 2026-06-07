@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // CronTriggerParameters are the configurable fields of a Workers Cron Trigger.
@@ -51,13 +51,13 @@ type CronTriggerObservation struct {
 
 // A CronTriggerSpec defines the desired state of a Workers Cron Trigger.
 type CronTriggerSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       CronTriggerParameters `json:"forProvider"`
 }
 
 // A CronTriggerStatus represents the observed state of a Workers Cron Trigger.
 type CronTriggerStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          CronTriggerObservation `json:"atProvider,omitempty"`
 }
 

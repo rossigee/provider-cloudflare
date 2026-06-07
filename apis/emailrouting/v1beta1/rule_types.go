@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	rtv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // RuleParameters are the configurable fields of an Email Routing Rule.
@@ -110,13 +110,13 @@ type RuleObservation struct {
 
 // A RuleSpec defines the desired state of an Email Routing Rule.
 type RuleSpec struct {
-	rtv1.ResourceSpec `json:",inline"`
+	rtv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       RuleParameters `json:"forProvider"`
 }
 
 // A RuleStatus represents the observed state of an Email Routing Rule.
 type RuleStatus struct {
-	rtv1.ResourceStatus `json:",inline"`
+	rtv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          RuleObservation `json:"atProvider,omitempty"`
 }
 

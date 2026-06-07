@@ -36,7 +36,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -133,7 +133,7 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.Rule{
 					Spec: v1beta1.RuleSpec{
-						ResourceSpec: xpv1.ResourceSpec{},
+						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{},
 					},
 				},
 			},
@@ -163,7 +163,7 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.Rule{
 					Spec: v1beta1.RuleSpec{
-						ResourceSpec: xpv1.ResourceSpec{
+						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{
 								Name: "blah",
 							},
@@ -327,7 +327,7 @@ func TestObserve(t *testing.T) {
 					withZone("test-zone-id"),
 					withConditions(xpv1.Available()),
 					withStatus(v1beta1.RuleStatus{
-						ResourceStatus: xpv1.ResourceStatus{
+						ManagedResourceStatus: xpv1.ManagedResourceStatus{
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Available()},
 							},
@@ -368,7 +368,7 @@ func TestObserve(t *testing.T) {
 					withZone("test-zone-id"),
 					withConditions(xpv1.Available()),
 					withStatus(v1beta1.RuleStatus{
-						ResourceStatus: xpv1.ResourceStatus{
+						ManagedResourceStatus: xpv1.ManagedResourceStatus{
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Available()},
 							},
@@ -489,7 +489,7 @@ func TestCreate(t *testing.T) {
 					withExternalName("new-rule-id"),
 					withConditions(xpv1.Creating()),
 					withStatus(v1beta1.RuleStatus{
-						ResourceStatus: xpv1.ResourceStatus{
+						ManagedResourceStatus: xpv1.ManagedResourceStatus{
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Creating()},
 							},

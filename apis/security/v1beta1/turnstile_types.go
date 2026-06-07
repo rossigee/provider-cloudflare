@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	rtv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // TurnstileParameters define the desired state of a Cloudflare Turnstile widget.
@@ -93,13 +93,13 @@ type TurnstileObservation struct {
 
 // TurnstileSpec defines the desired state of Turnstile.
 type TurnstileSpec struct {
-	rtv1.ResourceSpec `json:",inline"`
+	rtv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       TurnstileParameters `json:"forProvider"`
 }
 
 // TurnstileStatus defines the observed state of Turnstile.
 type TurnstileStatus struct {
-	rtv1.ResourceStatus `json:",inline"`
+	rtv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          TurnstileObservation `json:"atProvider,omitempty"`
 }
 

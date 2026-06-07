@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/cloudflare/cloudflare-go"
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/pkg/errors"
 
@@ -209,13 +209,13 @@ type CustomHostnameObservation struct {
 
 // A CustomHostnameSpec defines the desired state of a custom hostname.
 type CustomHostnameSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       CustomHostnameParameters `json:"forProvider"`
 }
 
 // A CustomHostnameStatus represents the observed state of a custom hostname.
 type CustomHostnameStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          CustomHostnameObservation `json:"atProvider,omitempty"`
 }
 

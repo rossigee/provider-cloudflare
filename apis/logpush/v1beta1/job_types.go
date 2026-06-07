@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	rtv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // JobParameters are the configurable fields of a Logpush Job.
@@ -201,13 +201,13 @@ type JobObservation struct {
 
 // A JobSpec defines the desired state of a Logpush Job.
 type JobSpec struct {
-	rtv1.ResourceSpec `json:",inline"`
+	rtv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       JobParameters `json:"forProvider"`
 }
 
 // A JobStatus represents the observed state of a Logpush Job.
 type JobStatus struct {
-	rtv1.ResourceStatus `json:",inline"`
+	rtv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          JobObservation `json:"atProvider,omitempty"`
 }
 

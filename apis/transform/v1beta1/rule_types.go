@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // Transform Rule phases for different types of transformations
@@ -167,13 +167,13 @@ type RuleObservation struct {
 
 // RuleSpec defines the desired state of Rule
 type RuleSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       RuleParameters `json:"forProvider"`
 }
 
 // RuleStatus defines the observed state of Rule
 type RuleStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          RuleObservation `json:"atProvider,omitempty"`
 }
 

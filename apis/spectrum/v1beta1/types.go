@@ -19,7 +19,7 @@ package v1beta1
 import (
 	"context"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -154,13 +154,13 @@ type ApplicationObservation struct {
 
 // A ApplicationSpec defines the desired state of a Spectrum Application.
 type ApplicationSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       ApplicationParameters `json:"forProvider"`
 }
 
 // A ApplicationStatus represents the observed state of a Spectrum Application.
 type ApplicationStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          ApplicationObservation `json:"atProvider,omitempty"`
 }
 

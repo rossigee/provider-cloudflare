@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // Zone type metadata.
@@ -400,13 +400,13 @@ type ZoneObservation struct {
 
 // A ZoneSpec defines the desired state of a Zone.
 type ZoneSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       ZoneParameters `json:"forProvider"`
 }
 
 // A ZoneStatus represents the observed state of a Zone.
 type ZoneStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          ZoneObservation `json:"atProvider,omitempty"`
 }
 

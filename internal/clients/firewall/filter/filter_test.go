@@ -37,7 +37,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
 	corev1 "k8s.io/api/core/v1"
 
@@ -357,7 +357,7 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.Filter{
 					Spec: v1beta1.FilterSpec{
-						ResourceSpec: xpv1.ResourceSpec{},
+						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{},
 					},
 				},
 			},
@@ -387,7 +387,7 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.Filter{
 					Spec: v1beta1.FilterSpec{
-						ResourceSpec: xpv1.ResourceSpec{
+						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{
 								Name: "blah",
 							},

@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // LoadBalancerOrigin represents an origin server in a load balancer pool
@@ -125,13 +125,13 @@ type LoadBalancerPoolObservation struct {
 
 // LoadBalancerPoolSpec defines the desired state of LoadBalancerPool
 type LoadBalancerPoolSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       LoadBalancerPoolParameters `json:"forProvider"`
 }
 
 // LoadBalancerPoolStatus defines the observed state of LoadBalancerPool
 type LoadBalancerPoolStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          LoadBalancerPoolObservation `json:"atProvider,omitempty"`
 }
 

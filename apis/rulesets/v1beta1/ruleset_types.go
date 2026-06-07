@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // RulesetRule defines a single rule within a ruleset
@@ -104,13 +104,13 @@ type RulesetObservation struct {
 
 // A RulesetSpec defines the desired state of a Ruleset.
 type RulesetSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       RulesetParameters `json:"forProvider"`
 }
 
 // A RulesetStatus represents the observed state of a Ruleset.
 type RulesetStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          RulesetObservation `json:"atProvider,omitempty"`
 }
 

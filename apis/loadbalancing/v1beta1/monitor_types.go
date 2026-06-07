@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // LoadBalancerMonitorParameters define the desired state of a Cloudflare Load Balancer Monitor
@@ -129,13 +129,13 @@ type LoadBalancerMonitorObservation struct {
 
 // LoadBalancerMonitorSpec defines the desired state of LoadBalancerMonitor
 type LoadBalancerMonitorSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       LoadBalancerMonitorParameters `json:"forProvider"`
 }
 
 // LoadBalancerMonitorStatus defines the observed state of LoadBalancerMonitor
 type LoadBalancerMonitorStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          LoadBalancerMonitorObservation `json:"atProvider,omitempty"`
 }
 

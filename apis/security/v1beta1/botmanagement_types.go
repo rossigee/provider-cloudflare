@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	rtv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // BotManagementParameters define the desired state of Cloudflare Bot Management for a zone.
@@ -118,13 +118,13 @@ type BotManagementObservation struct {
 
 // BotManagementSpec defines the desired state of Bot Management.
 type BotManagementSpec struct {
-	rtv1.ResourceSpec `json:",inline"`
+	rtv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       BotManagementParameters `json:"forProvider"`
 }
 
 // BotManagementStatus defines the observed state of Bot Management.
 type BotManagementStatus struct {
-	rtv1.ResourceStatus `json:",inline"`
+	rtv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          BotManagementObservation `json:"atProvider,omitempty"`
 }
 

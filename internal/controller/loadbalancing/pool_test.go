@@ -34,7 +34,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
@@ -94,7 +94,7 @@ func TestPoolConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.LoadBalancerPool{
 					Spec: v1beta1.LoadBalancerPoolSpec{
-						ResourceSpec: xpv1.ResourceSpec{
+						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{
 								Name: "test-config",
 							},
@@ -130,7 +130,7 @@ func TestPoolConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.LoadBalancerPool{
 					Spec: v1beta1.LoadBalancerPoolSpec{
-						ResourceSpec: xpv1.ResourceSpec{
+						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{
 								Name: "blah",
 							},

@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	rtv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // UniversalSSLParameters define the desired state of Cloudflare Universal SSL for a zone.
@@ -42,13 +42,13 @@ type UniversalSSLObservation struct {
 
 // UniversalSSLSpec defines the desired state of Universal SSL.
 type UniversalSSLSpec struct {
-	rtv1.ResourceSpec `json:",inline"`
+	rtv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       UniversalSSLParameters `json:"forProvider"`
 }
 
 // UniversalSSLStatus defines the observed state of Universal SSL.
 type UniversalSSLStatus struct {
-	rtv1.ResourceStatus `json:",inline"`
+	rtv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          UniversalSSLObservation `json:"atProvider,omitempty"`
 }
 

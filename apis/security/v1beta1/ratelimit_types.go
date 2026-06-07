@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // RateLimitParameters define the desired state of a Cloudflare Rate Limit rule.
@@ -185,13 +185,13 @@ type RateLimitObservation struct {
 
 // A RateLimitSpec defines the desired state of a Rate Limit.
 type RateLimitSpec struct {
-	xpv1.ResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       RateLimitParameters `json:"forProvider"`
 }
 
 // A RateLimitStatus represents the observed state of a Rate Limit.
 type RateLimitStatus struct {
-	xpv1.ResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          RateLimitObservation `json:"atProvider,omitempty"`
 }
 

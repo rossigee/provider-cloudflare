@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	rtv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 // BucketParameters are the configurable fields of a Bucket.
@@ -50,13 +50,13 @@ type BucketObservation struct {
 
 // A BucketSpec defines the desired state of a Bucket.
 type BucketSpec struct {
-	rtv1.ResourceSpec `json:",inline"`
+	rtv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       BucketParameters `json:"forProvider"`
 }
 
 // A BucketStatus represents the observed state of a Bucket.
 type BucketStatus struct {
-	rtv1.ResourceStatus `json:",inline"`
+	rtv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          BucketObservation `json:"atProvider,omitempty"`
 }
 
