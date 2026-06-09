@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/cloudflare/cloudflare-go v0.117.0
-	github.com/crossplane/crossplane-runtime/v2 v2.4.0-rc.0
+	github.com/crossplane/crossplane-runtime/v2 v2.3.2
 	github.com/crossplane/crossplane-tools v0.0.0-20251017183449-dd4517244339
 	github.com/crossplane/crossplane/apis/v2 v2.3.1
 	github.com/google/go-cmp v0.7.0

@@ -23,8 +23,8 @@ github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XL
 github.com/cloudflare/cloudflare-go v0.117.0 h1:y00E0XCvxuZGplL+gkoMRIhWpfNqIgyBFS6UUWC4s0c=
 github.com/cloudflare/cloudflare-go v0.117.0/go.mod h1:Ds6urDwn/TF2uIU24mu7H91xkKP8gSAHxQ44DSZgVmU=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
-github.com/crossplane/crossplane-runtime/v2 v2.4.0-rc.0 h1:Zgiq+hrh9lbjWtv8ECCLd1A0I9knt3c8ZUELExw6M1w=
-github.com/crossplane/crossplane-runtime/v2 v2.4.0-rc.0/go.mod h1:PAo3zIfmMzrS18HGyHJLXCeXIp0nFW2Md2Fn9gocMaU=
+github.com/crossplane/crossplane-runtime/v2 v2.3.2 h1:gjfJmr0PTf3/Ccg4iasogXKIRjYdEMILduiP/IZN260=
+github.com/crossplane/crossplane-runtime/v2 v2.3.2/go.mod h1:POGt8DSTcxQJlTww+3yGeeXuEdLyjZ61vZ3ap5tTxhE=
 github.com/crossplane/crossplane-tools v0.0.0-20251017183449-dd4517244339 h1:MPbMxSlY+82UsjrLUAGyXlh/iX1tL5WNj8W9SOaq/nk=
 github.com/crossplane/crossplane-tools v0.0.0-20251017183449-dd4517244339/go.mod h1:8etxwmP4cZwJDwen4+PQlnc1tggltAhEfyyigmdHulQ=
 github.com/crossplane/crossplane/apis/v2 v2.3.1 h1:gaJX/DSp5qnfLoThMxbJZOEziIJBEGbcRl7HjT3R1fk=
