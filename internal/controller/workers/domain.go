@@ -60,7 +60,7 @@ func SetupDomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimit
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.DomainGroupVersionKind),
-		managed.WithExternalConnecter(&domainConnector{
+		managed.WithExternalConnector(&domainConnector{
 			kube: mgr.GetClient(),
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),

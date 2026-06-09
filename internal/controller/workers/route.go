@@ -62,7 +62,7 @@ func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimite
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.RouteGroupVersionKind),
-		managed.WithExternalConnecter(&routeConnector{
+		managed.WithExternalConnector(&routeConnector{
 			kube: mgr.GetClient(),
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),

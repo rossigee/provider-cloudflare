@@ -60,7 +60,7 @@ func SetupKVNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRate
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.KVNamespaceGroupVersionKind),
-		managed.WithExternalConnecter(&kvNamespaceConnector{
+		managed.WithExternalConnector(&kvNamespaceConnector{
 			kube: mgr.GetClient(),
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),

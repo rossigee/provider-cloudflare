@@ -57,7 +57,7 @@ func SetupCertificatePackController(mgr ctrl.Manager, l logging.Logger, rl workq
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.CertificatePackGroupVersionKind),
-		managed.WithExternalConnecter(&certificatePackConnector{
+		managed.WithExternalConnector(&certificatePackConnector{
 			kube: mgr.GetClient(),
 			newCloudflareClientFn: func(cfg clients.Config) (*cloudflare.API, error) {
 				return clients.NewClient(cfg, nil)

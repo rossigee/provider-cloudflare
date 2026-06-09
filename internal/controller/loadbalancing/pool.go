@@ -57,7 +57,7 @@ func SetupPool(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.LoadBalancerPoolGroupVersionKind),
-		managed.WithExternalConnecter(&poolConnector{
+		managed.WithExternalConnector(&poolConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(cfg clients.Config, httpClient *http.Client) (loadbalancing.PoolClient, error) {
 				return loadbalancing.NewPoolClient(cfg, httpClient)

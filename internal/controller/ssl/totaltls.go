@@ -56,7 +56,7 @@ func SetupTotalTLSController(mgr ctrl.Manager, l logging.Logger, rl workqueue.Ty
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.TotalTLSGroupVersionKind),
-		managed.WithExternalConnecter(&totalTLSConnector{
+		managed.WithExternalConnector(&totalTLSConnector{
 			kube: mgr.GetClient(),
 			newCloudflareClientFn: func(cfg clients.Config) (*cloudflare.API, error) {
 				return clients.NewClient(cfg, nil)

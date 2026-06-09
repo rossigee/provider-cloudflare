@@ -69,7 +69,7 @@ func SetupCustomHostname(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedR
 	hc := metrics.NewInstrumentedHTTPClient(name)
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.CustomHostnameGroupVersionKind),
-		managed.WithExternalConnecter(&customHostnameConnector{
+		managed.WithExternalConnector(&customHostnameConnector{
 			kube: mgr.GetClient(),
 			newCloudflareClientFn: func(cfg clients.Config) (customhostname.Client, error) {
 				return customhostname.NewClient(cfg, hc)

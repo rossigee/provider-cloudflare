@@ -62,7 +62,7 @@ func SetupRateLimit(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(securityv1beta1.RateLimitGroupVersionKind),
-		managed.WithExternalConnecter(&rateLimitConnector{
+		managed.WithExternalConnector(&rateLimitConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(api *cloudflare.API) *ratelimit.CloudflareRateLimitClient {
 				return ratelimit.NewClientFromAPI(api)
@@ -215,7 +215,7 @@ func SetupBotManagement(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRa
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(securityv1beta1.BotManagementGroupVersionKind),
-		managed.WithExternalConnecter(&botManagementConnector{
+		managed.WithExternalConnector(&botManagementConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(api *cloudflare.API) *botmanagement.CloudflareBotManagementClient {
 				return botmanagement.NewClientFromAPI(api)
@@ -370,7 +370,7 @@ func SetupTurnstile(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(securityv1beta1.TurnstileGroupVersionKind),
-		managed.WithExternalConnecter(&turnstileConnector{
+		managed.WithExternalConnector(&turnstileConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(api *cloudflare.API) *turnstile.CloudflareTurnstileClient {
 				return turnstile.NewClientFromAPI(api)

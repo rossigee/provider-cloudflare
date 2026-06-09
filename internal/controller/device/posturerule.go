@@ -56,7 +56,7 @@ func SetupDevicePostureRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.Typ
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(devicev1beta1.DevicePostureRuleGroupVersionKind),
-		managed.WithExternalConnecter(&devicePostureRuleConnector{
+		managed.WithExternalConnector(&devicePostureRuleConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(api *cloudflare.API) *posturerule.CloudflareDevicePostureRuleClient {
 				return posturerule.NewClientFromAPI(api)

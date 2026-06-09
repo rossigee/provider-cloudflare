@@ -56,7 +56,7 @@ func SetupCacheRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 	hc := metrics.NewInstrumentedHTTPClient(name)
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.CacheRuleGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
+		managed.WithExternalConnector(&connector{
 			kube: mgr.GetClient(),
 			newClientFn: func(cfg clients.Config) (cache.CacheRuleClient, error) {
 				return cache.NewCacheRuleClient(cfg, hc)

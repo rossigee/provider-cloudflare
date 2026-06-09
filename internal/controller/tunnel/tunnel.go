@@ -56,7 +56,7 @@ func SetupTunnel(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimit
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(tunnelv1beta1.TunnelGroupVersionKind),
-		managed.WithExternalConnecter(&tunnelConnector{
+		managed.WithExternalConnector(&tunnelConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(api *cloudflare.API) *tunnel.CloudflareTunnelClient {
 				return tunnel.NewClientFromAPI(api)

@@ -56,7 +56,7 @@ func SetupAccessApplication(mgr ctrl.Manager, l logging.Logger, rl workqueue.Typ
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(accessv1beta1.AccessApplicationGroupVersionKind),
-		managed.WithExternalConnecter(&accessApplicationConnector{
+		managed.WithExternalConnector(&accessApplicationConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(api *cloudflare.API) *application.CloudflareAccessApplicationClient {
 				return application.NewClientFromAPI(api)

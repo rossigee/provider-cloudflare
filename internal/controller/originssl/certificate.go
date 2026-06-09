@@ -59,7 +59,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRate
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(originsslv1beta1.CertificateGroupVersionKind),
-		managed.WithExternalConnecter(&certificateConnector{
+		managed.WithExternalConnector(&certificateConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(api *cloudflare.API) *certificate.CloudflareOriginCertificateClient {
 				return certificate.NewClientFromAPI(api)

@@ -62,7 +62,7 @@ func SetupFallbackOrigin(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedR
 	hc := metrics.NewInstrumentedHTTPClient(name)
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.FallbackOriginGroupVersionKind),
-		managed.WithExternalConnecter(&fallbackOriginConnector{
+		managed.WithExternalConnector(&fallbackOriginConnector{
 			kube: mgr.GetClient(),
 			newCloudflareClientFn: func(cfg clients.Config) (fallbackorigin.Client, error) {
 				return fallbackorigin.NewClient(cfg, hc)

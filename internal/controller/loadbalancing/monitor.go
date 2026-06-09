@@ -57,7 +57,7 @@ func SetupMonitor(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimi
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.LoadBalancerMonitorGroupVersionKind),
-		managed.WithExternalConnecter(&monitorConnector{
+		managed.WithExternalConnector(&monitorConnector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(cfg clients.Config, httpClient *http.Client) (loadbalancing.MonitorClient, error) {
 				return loadbalancing.NewMonitorClient(cfg, httpClient)

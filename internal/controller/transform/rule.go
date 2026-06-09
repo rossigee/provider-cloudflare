@@ -65,7 +65,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 	hc := metrics.NewInstrumentedHTTPClient(name)
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.RuleGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
+		managed.WithExternalConnector(&connector{
 			kube: mgr.GetClient(),
 			newTransformRuleClientFn: func(cfg clients.Config) (transformrule.Client, error) {
 				return transformrule.NewClient(cfg, hc)

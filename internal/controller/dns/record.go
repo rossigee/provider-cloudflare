@@ -72,7 +72,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 	hc := metrics.NewInstrumentedHTTPClient(name)
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.RecordGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
+		managed.WithExternalConnector(&connector{
 			kube: mgr.GetClient(),
 			newCloudflareClientFn: func(cfg clients.Config) (records.Client, error) {
 				return records.NewClient(cfg, hc)

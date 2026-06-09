@@ -56,7 +56,7 @@ func SetupUniversalSSLController(mgr ctrl.Manager, l logging.Logger, rl workqueu
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.UniversalSSLGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
+		managed.WithExternalConnector(&connector{
 			kube: mgr.GetClient(),
 			newCloudflareClientFn: func(cfg clients.Config) (*cloudflare.API, error) {
 				return clients.NewClient(cfg, nil)

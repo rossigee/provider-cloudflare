@@ -62,7 +62,7 @@ func SetupCronTrigger(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRate
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.CronTriggerGroupVersionKind),
-		managed.WithExternalConnecter(&cronTriggerConnector{
+		managed.WithExternalConnector(&cronTriggerConnector{
 			kube: mgr.GetClient(),
 			newWorkersClientFn: func(client clients.ClientInterface) workersclient.Client {
 				return &stubWorkersClient{mainClient: client}

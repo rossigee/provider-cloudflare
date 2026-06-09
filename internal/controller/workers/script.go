@@ -65,7 +65,7 @@ func SetupScript(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimit
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.ScriptGroupVersionKind),
-		managed.WithExternalConnecter(&scriptConnector{
+		managed.WithExternalConnector(&scriptConnector{
 			kube: mgr.GetClient(),
 			newCloudflareClientFn: func(client clients.ClientInterface) *workerscript.ScriptClient {
 				return workerscript.NewClient(client)

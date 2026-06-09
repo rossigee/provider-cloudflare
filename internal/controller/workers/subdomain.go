@@ -60,7 +60,7 @@ func SetupSubdomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.SubdomainGroupVersionKind),
-		managed.WithExternalConnecter(&subdomainConnector{
+		managed.WithExternalConnector(&subdomainConnector{
 			kube: mgr.GetClient(),
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),

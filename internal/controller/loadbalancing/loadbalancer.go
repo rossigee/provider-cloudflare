@@ -59,7 +59,7 @@ func SetupLoadBalancer(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRat
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.LoadBalancerGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
+		managed.WithExternalConnector(&connector{
 			kube: mgr.GetClient(),
 			newServiceFn: func(cfg clients.Config, httpClient *http.Client) (loadbalancing.LoadBalancerClient, error) {
 				return loadbalancing.NewLoadBalancerClient(cfg, httpClient)

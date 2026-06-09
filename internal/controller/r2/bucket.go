@@ -65,7 +65,7 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimit
 	hc := metrics.NewInstrumentedHTTPClient(name)
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.BucketGroupVersionKind),
-		managed.WithExternalConnecter(&bucketConnector{
+		managed.WithExternalConnector(&bucketConnector{
 			kube: mgr.GetClient(),
 			newCloudflareClientFn: func(cfg clients.Config) (*cloudflare.API, error) {
 				return clients.NewClient(cfg, hc)
