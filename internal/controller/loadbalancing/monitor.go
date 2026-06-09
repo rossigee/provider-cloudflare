@@ -64,7 +64,7 @@ func SetupMonitor(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimi
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))), //nolint:staticcheck
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)

@@ -66,7 +66,7 @@ func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimite
 			kube: mgr.GetClient(),
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))), //nolint:staticcheck
 		managed.WithPollInterval(10*time.Minute),
 		managed.WithInitializers(),
 	)
