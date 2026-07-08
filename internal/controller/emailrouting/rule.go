@@ -107,7 +107,7 @@ type external struct {
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	_, span := tracing.StartSpan(ctx, "emailroutingrule.observe",
-		tracing.SpanAttrs("emailroutingrule", mg.GetName(), "observe")...)
+		tracing.SpanAttrs("emailroutingrule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "observe")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.Rule)
@@ -146,7 +146,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
 	_, span := tracing.StartSpan(ctx, "emailroutingrule.create",
-		tracing.SpanAttrs("emailroutingrule", mg.GetName(), "create")...)
+		tracing.SpanAttrs("emailroutingrule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "create")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.Rule)
@@ -171,7 +171,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	_, span := tracing.StartSpan(ctx, "emailroutingrule.update",
-		tracing.SpanAttrs("emailroutingrule", mg.GetName(), "update")...)
+		tracing.SpanAttrs("emailroutingrule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "update")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.Rule)
@@ -196,7 +196,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	_, span := tracing.StartSpan(ctx, "emailroutingrule.delete",
-		tracing.SpanAttrs("emailroutingrule", mg.GetName(), "delete")...)
+		tracing.SpanAttrs("emailroutingrule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "delete")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.Rule)

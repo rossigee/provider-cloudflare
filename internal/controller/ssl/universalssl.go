@@ -119,7 +119,7 @@ type external struct {
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	_, span := tracing.StartSpan(ctx, "universalssl.observe",
-		tracing.SpanAttrs("universalssl", mg.GetName(), "observe")...)
+		tracing.SpanAttrs("universalssl", func() string { if mg == nil { return "" }; return mg.GetName() }(), "observe")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.UniversalSSL)
@@ -156,7 +156,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
 	_, span := tracing.StartSpan(ctx, "universalssl.create",
-		tracing.SpanAttrs("universalssl", mg.GetName(), "create")...)
+		tracing.SpanAttrs("universalssl", func() string { if mg == nil { return "" }; return mg.GetName() }(), "create")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.UniversalSSL)
@@ -179,7 +179,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	_, span := tracing.StartSpan(ctx, "universalssl.update",
-		tracing.SpanAttrs("universalssl", mg.GetName(), "update")...)
+		tracing.SpanAttrs("universalssl", func() string { if mg == nil { return "" }; return mg.GetName() }(), "update")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.UniversalSSL)
@@ -199,7 +199,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	_, span := tracing.StartSpan(ctx, "universalssl.delete",
-		tracing.SpanAttrs("universalssl", mg.GetName(), "delete")...)
+		tracing.SpanAttrs("universalssl", func() string { if mg == nil { return "" }; return mg.GetName() }(), "delete")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.UniversalSSL)

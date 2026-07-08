@@ -82,27 +82,39 @@ func Init(serviceName string) func(context.Context) {
 }
 
 func StartSpan(ctx context.Context, name string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
+	if tracer == nil {
+		return ctx, nil
+	}
 	return tracer.Start(ctx, name,
 		trace.WithAttributes(attrs...),
 	)
 }
 
 func StartSpanWithAttrs(ctx context.Context, name, resourceType, resourceName, operation string) (context.Context, trace.Span) {
+	if tracer == nil {
+		return ctx, nil
+	}
+	attrs := []attribute.KeyValue{
+		attribute.String(resourceTypeAttr, resourceType),
+		attribute.String(operationAttr, operation),
+	}
+	if resourceName != "" {
+		attrs = append(attrs, attribute.String(resourceNameAttr, resourceName))
+	}
 	return tracer.Start(ctx, name,
-		trace.WithAttributes(
-			attribute.String(resourceTypeAttr, resourceType),
-			attribute.String(resourceNameAttr, resourceName),
-			attribute.String(operationAttr, operation),
-		),
+		trace.WithAttributes(attrs...),
 	)
 }
 
 func SpanAttrs(resourceType, resourceName, operation string) []attribute.KeyValue {
-	return []attribute.KeyValue{
+	attrs := []attribute.KeyValue{
 		attribute.String(resourceTypeAttr, resourceType),
-		attribute.String(resourceNameAttr, resourceName),
 		attribute.String(operationAttr, operation),
 	}
+	if resourceName != "" {
+		attrs = append(attrs, attribute.String(resourceNameAttr, resourceName))
+	}
+	return attrs
 }
 
 func getEnv(key, def string) string {

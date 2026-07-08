@@ -126,7 +126,7 @@ type external struct {
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	_, span := tracing.StartSpan(ctx, "loadbalancer.observe",
-		tracing.SpanAttrs("loadbalancer", mg.GetName(), "observe")...)
+		tracing.SpanAttrs("loadbalancer", func() string { if mg == nil { return "" }; return mg.GetName() }(), "observe")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.LoadBalancer)
@@ -167,7 +167,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
 	_, span := tracing.StartSpan(ctx, "loadbalancer.create",
-		tracing.SpanAttrs("loadbalancer", mg.GetName(), "create")...)
+		tracing.SpanAttrs("loadbalancer", func() string { if mg == nil { return "" }; return mg.GetName() }(), "create")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.LoadBalancer)
@@ -194,7 +194,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	_, span := tracing.StartSpan(ctx, "loadbalancer.update",
-		tracing.SpanAttrs("loadbalancer", mg.GetName(), "update")...)
+		tracing.SpanAttrs("loadbalancer", func() string { if mg == nil { return "" }; return mg.GetName() }(), "update")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.LoadBalancer)
@@ -219,7 +219,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	_, span := tracing.StartSpan(ctx, "loadbalancer.delete",
-		tracing.SpanAttrs("loadbalancer", mg.GetName(), "delete")...)
+		tracing.SpanAttrs("loadbalancer", func() string { if mg == nil { return "" }; return mg.GetName() }(), "delete")...)
 	defer span.End()
 
 	cr, ok := mg.(*v1beta1.LoadBalancer)
