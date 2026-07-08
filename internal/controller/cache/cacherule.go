@@ -18,25 +18,22 @@ package cache
 
 import (
 	"context"
-	"time"
-
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/cache"
 	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
@@ -50,7 +47,7 @@ func SetupCacheRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 	name := managed.ControllerName(v1beta1.CacheRuleGroupKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: 5,
 	}
 
@@ -64,7 +61,7 @@ func SetupCacheRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)
@@ -120,7 +117,11 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	_, span := tracing.StartSpan(ctx, "cacherule.observe",
 		tracing.SpanAttrs("cacherule", cr.GetName(), "observe")...)
-	defer func() { if span != nil { span.End() } }()
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	rulesetID := cr.Status.AtProvider.RulesetID
 	ruleID := cr.Status.AtProvider.ID
@@ -159,7 +160,11 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, span := tracing.StartSpan(ctx, "cacherule.create",
 		tracing.SpanAttrs("cacherule", cr.GetName(), "create")...)
-	defer func() { if span != nil { span.End() } }()
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	rule, ruleset, err := c.service.CreateCacheRule(ctx, cr.Spec.ForProvider)
 	if err != nil {
@@ -182,7 +187,11 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, span := tracing.StartSpan(ctx, "cacherule.update",
 		tracing.SpanAttrs("cacherule", cr.GetName(), "update")...)
-	defer func() { if span != nil { span.End() } }()
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	rulesetID := cr.Status.AtProvider.RulesetID
 	ruleID := cr.Status.AtProvider.ID
@@ -207,7 +216,11 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, span := tracing.StartSpan(ctx, "cacherule.delete",
 		tracing.SpanAttrs("cacherule", cr.GetName(), "delete")...)
-	defer func() { if span != nil { span.End() } }()
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	rulesetID := cr.Status.AtProvider.RulesetID
 	ruleID := cr.Status.AtProvider.ID

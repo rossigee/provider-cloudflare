@@ -18,21 +18,17 @@ package spectrum
 
 import (
 	"context"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	applications "github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -97,7 +93,6 @@ func applicationCR(m ...applicationModifier) *v1beta1.Application {
 	}
 	return app
 }
-
 
 func TestConnect(t *testing.T) {
 	mc := &test.MockClient{

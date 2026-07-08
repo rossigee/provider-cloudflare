@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+
 // Package type metadata.
 const (
 	CRDGroup   = "logpush.cloudflare.m.crossplane.io"
@@ -34,6 +35,4 @@ var (
 	SchemeGroupVersion = CRDGroupVersion
 )
 
-func init() {
-	SchemeBuilder.Register(&Job{}, &JobList{})
 }

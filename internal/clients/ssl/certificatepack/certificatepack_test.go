@@ -18,19 +18,16 @@ package certificatepack
 
 import (
 	"context"
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+	"testing"
+	"time"
 )
 
 // MockCertificatePackAPI implements the CertificatePackAPI interface for testing
@@ -146,7 +143,7 @@ func TestGet(t *testing.T) {
 						expiryTime := time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC)
 						uploadTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 						modifyTime := time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)
-						
+
 						return cloudflare.CertificatePack{
 							ID:               "test-cert-pack-id",
 							Type:             "advanced",
@@ -176,12 +173,12 @@ func TestGet(t *testing.T) {
 			},
 			want: want{
 				obs: &v1beta1.CertificatePackObservation{
-					ID:               ptr.To("test-cert-pack-id"),
-					Type:             ptr.To("advanced"),
-					Hosts:            []string{"example.com"},
-					ValidationMethod: ptr.To("http"),
-					ValidityDays:     ptr.To(365),
-					Status:           ptr.To("pending_validation"),
+					ID:                 ptr.To("test-cert-pack-id"),
+					Type:               ptr.To("advanced"),
+					Hosts:              []string{"example.com"},
+					ValidationMethod:   ptr.To("http"),
+					ValidityDays:       ptr.To(365),
+					Status:             ptr.To("pending_validation"),
 					CloudflareBranding: ptr.To(false),
 					Certificates: []v1beta1.CertificateInfo{
 						{
@@ -242,7 +239,7 @@ func TestGet(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Get(tc.args.ctx, tc.args.zoneID, tc.args.certificatePackID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nGet(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -359,12 +356,12 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				obs: &v1beta1.CertificatePackObservation{
-					ID:               ptr.To("basic-cert-pack-id"),
-					Type:             ptr.To("universal"),
-					Hosts:            []string{"example.com"},
-					ValidationMethod: ptr.To("http"),
-					ValidityDays:     ptr.To(0),
-					Status:           ptr.To("active"),
+					ID:                 ptr.To("basic-cert-pack-id"),
+					Type:               ptr.To("universal"),
+					Hosts:              []string{"example.com"},
+					ValidationMethod:   ptr.To("http"),
+					ValidityDays:       ptr.To(0),
+					Status:             ptr.To("active"),
 					CloudflareBranding: ptr.To(false),
 				},
 				err: nil,
@@ -399,7 +396,7 @@ func TestCreate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Create(tc.args.ctx, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nCreate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -501,7 +498,7 @@ func TestDelete(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			err := client.Delete(tc.args.ctx, tc.args.zoneID, tc.args.certificatePackID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nDelete(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -599,7 +596,7 @@ func TestRestartValidation(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.RestartValidation(tc.args.ctx, tc.args.zoneID, tc.args.certificatePackID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nRestartValidation(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}

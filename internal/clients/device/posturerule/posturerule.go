@@ -18,13 +18,11 @@ package posturerule
 
 import (
 	"context"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-
 	"github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"strings"
 )
 
 // DevicePostureRuleAPI defines the interface for Device Posture Rule operations
@@ -301,27 +299,27 @@ func convertInputFromCloudflare(input *cloudflare.DevicePostureRuleInput) *v1bet
 	}
 
 	v1Input := &v1beta1.DevicePostureRuleInput{
-		ID:                &input.ID,
-		Path:              &input.Path,
-		Exists:            input.Exists,
-		Thumbprint:        &input.Thumbprint,
-		SHA256:            &input.Sha256,
-		Running:           input.Running,
-		RequireAll:        input.RequireAll,
-		Enabled:           input.Enabled,
-		Version:           &input.Version,
-		Operator:          &input.Operator,
-		Domain:            &input.Domain,
-		OS:                &input.Os,
-		Overall:           &input.Overall,
-		SensorConfig:      &input.SensorConfig,
-		State:             &input.State,
-		CertificateID:     &input.CertificateID,
-		CN:                &input.CommonName,
-		CheckDisks:        input.CheckDisks,
-		CheckPrivateKey:   input.CheckPrivateKey,
-		ComplianceStatus:  &input.ComplianceStatus,
-		ConnectionID:      &input.ConnectionID,
+		ID:               &input.ID,
+		Path:             &input.Path,
+		Exists:           input.Exists,
+		Thumbprint:       &input.Thumbprint,
+		SHA256:           &input.Sha256,
+		Running:          input.Running,
+		RequireAll:       input.RequireAll,
+		Enabled:          input.Enabled,
+		Version:          &input.Version,
+		Operator:         &input.Operator,
+		Domain:           &input.Domain,
+		OS:               &input.Os,
+		Overall:          &input.Overall,
+		SensorConfig:     &input.SensorConfig,
+		State:            &input.State,
+		CertificateID:    &input.CertificateID,
+		CN:               &input.CommonName,
+		CheckDisks:       input.CheckDisks,
+		CheckPrivateKey:  input.CheckPrivateKey,
+		ComplianceStatus: &input.ComplianceStatus,
+		ConnectionID:     &input.ConnectionID,
 	}
 
 	return v1Input

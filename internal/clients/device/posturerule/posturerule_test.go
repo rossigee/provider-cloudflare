@@ -19,12 +19,10 @@ package posturerule
 import (
 	"context"
 	"errors"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
+	"testing"
 )
 
 func stringPtr(s string) *string {
@@ -50,12 +48,12 @@ func TestIsUpToDate(t *testing.T) {
 			reason: "Should return true when all fields match",
 			args: args{
 				params: v1beta1.DevicePostureRuleParameters{
-					AccountID: "test-account-id",
-					Name:      "test-rule",
-					Type:      "os_version",
+					AccountID:   "test-account-id",
+					Name:        "test-rule",
+					Type:        "os_version",
 					Description: stringPtr("Test rule"),
-					Schedule: stringPtr("5m"),
-					Expiration: stringPtr("24h"),
+					Schedule:    stringPtr("5m"),
+					Expiration:  stringPtr("24h"),
 				},
 				obs: v1beta1.DevicePostureRuleObservation{
 					Name:        "test-rule",

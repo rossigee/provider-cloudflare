@@ -17,16 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"originssl.cloudflare.m.crossplane.io"
+	"originsslv1alpha1"
 	"reflect"
-
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
-)
-
-// Package type metadata.
-const (
-	CRDGroup   = "originssl.cloudflare.m.crossplane.io"
-	CRDVersion = "originsslv1alpha1"
 )
 
 var (
@@ -34,10 +28,8 @@ var (
 	CRDGroupVersion = schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = &scheme.Builder{GroupVersion: CRDGroupVersion} //nolint:staticcheck
-
-	// AddToScheme adds the types in this group-version to the given scheme.
-	AddToScheme = SchemeBuilder.AddToScheme
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
 // Certificate type metadata.
@@ -48,6 +40,10 @@ var (
 	CertificateGroupVersionKind = CRDGroupVersion.WithKind(CertificateKind)
 )
 
-func init() {
-	SchemeBuilder.Register(&Certificate{}, &CertificateList{})
+func addKnownTypes(s *runtime.Scheme) error {
+	s.AddKnownTypes(SchemeGroupVersion,
+		&Certificate{},
+		&CertificateList{},
+	)
+	return nil
 }

@@ -17,16 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
-
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
-)
-
-// Package type metadata.
-const (
-	Group   = "sslsaas.cloudflare.m.crossplane.io"
-	Version = "sslsaasv1alpha1"
+	"sslsaas.cloudflare.m.crossplane.io"
+	"sslsaasv1alpha1"
 )
 
 var (
@@ -34,7 +28,7 @@ var (
 	SchemeGroupVersion = schema.GroupVersion{Group: Group, Version: Version}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion} //nolint:staticcheck
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 )
 
 // FallbackOrigin type metadata.
@@ -53,7 +47,12 @@ var (
 	CustomHostnameGroupVersionKind = SchemeGroupVersion.WithKind(CustomHostnameKind)
 )
 
-func init() {
-	SchemeBuilder.Register(&FallbackOrigin{}, &FallbackOriginList{})
-	SchemeBuilder.Register(&CustomHostname{}, &CustomHostnameList{})
+func addKnownTypes(s *runtime.Scheme) error {
+	s.AddKnownTypes(SchemeGroupVersion,
+		&CustomHostname{},
+		&CustomHostnameList{},
+		&FallbackOrigin{},
+		&FallbackOriginList{},
+	)
+	return nil
 }

@@ -18,9 +18,7 @@ package fake
 
 import (
 	"context"
-
 	"github.com/cloudflare/cloudflare-go"
-
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 )
 

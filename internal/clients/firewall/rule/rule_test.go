@@ -18,33 +18,24 @@ package rule
 
 import (
 	"context"
-	"net/http"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-
-	"github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
-	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
-
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/internal/clients/firewall/rule/fake"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
-	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
-	corev1 "k8s.io/api/core/v1"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/firewall/rule/fake"
+	"k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
-
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -311,7 +302,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{},
+				o:   managed.ExternalCreation{},
 				err: nil,
 			},
 		},

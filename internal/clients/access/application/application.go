@@ -18,14 +18,12 @@ package application
 
 import (
 	"context"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 // AccessApplicationAPI defines the interface for Access Application operations
@@ -144,13 +142,13 @@ func (c *CloudflareAccessApplicationClient) IsUpToDate(ctx context.Context, para
 // getResourceContainer creates a ResourceContainer based on the parameters.
 func getResourceContainer(params v1beta1.AccessApplicationParameters) *cloudflare.ResourceContainer {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: params.AccountID,
 	}
 
 	if params.ZoneID != nil {
 		rc = &cloudflare.ResourceContainer{
-			Level: cloudflare.ZoneRouteLevel,
+			Level:      cloudflare.ZoneRouteLevel,
 			Identifier: *params.ZoneID,
 		}
 	}
@@ -161,9 +159,9 @@ func getResourceContainer(params v1beta1.AccessApplicationParameters) *cloudflar
 // convertParametersToCreateAccessApplication converts AccessApplicationParameters to cloudflare.CreateAccessApplicationParams.
 func convertParametersToCreateAccessApplication(params v1beta1.AccessApplicationParameters) cloudflare.CreateAccessApplicationParams {
 	app := cloudflare.CreateAccessApplicationParams{
-		Name:    params.Name,
-		Domain:  params.Domain,
-		Type:    cloudflare.AccessApplicationType(params.Type),
+		Name:   params.Name,
+		Domain: params.Domain,
+		Type:   cloudflare.AccessApplicationType(params.Type),
 	}
 
 	if params.SessionDuration != nil {

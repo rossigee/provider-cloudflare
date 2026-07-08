@@ -47,12 +47,12 @@ func Float64Ptr(f float64) *float64 {
 func ContainsString(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || (len(s) > len(substr) &&
 		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-		func() bool {
-			for i := 1; i < len(s)-len(substr)+1; i++ {
-				if s[i:i+len(substr)] == substr {
-					return true
+			func() bool {
+				for i := 1; i < len(s)-len(substr)+1; i++ {
+					if s[i:i+len(substr)] == substr {
+						return true
+					}
 				}
-			}
-			return false
-		}())))
+				return false
+			}())))
 }

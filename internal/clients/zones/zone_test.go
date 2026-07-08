@@ -18,19 +18,14 @@ package zones
 
 import (
 	"context"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-
-	"github.com/pkg/errors"
-
-	"k8s.io/utils/ptr"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients/zones/fake"
+	"k8s.io/utils/ptr"
+	"testing"
 )
 
 func TestLateInitialize(t *testing.T) {
@@ -61,8 +56,8 @@ func TestLateInitialize(t *testing.T) {
 			reason: "LateInit should update fields from a Zone",
 			args: args{
 				zp: &v1beta1.ZoneParameters{
-					AccountID:         ptr.To("beef"),
-					PlanID:            ptr.To("dead"),				},
+					AccountID: ptr.To("beef"),
+					PlanID:    ptr.To("dead")},
 				z: cloudflare.Zone{
 					Account: cloudflare.Account{
 						ID: "beef",
@@ -80,18 +75,18 @@ func TestLateInitialize(t *testing.T) {
 			want: want{
 				o: true,
 				zp: &v1beta1.ZoneParameters{
-					Paused:            ptr.To(false),
-					AccountID:         ptr.To("beef"),
-					PlanID:            ptr.To("dead"),				},
+					Paused:    ptr.To(false),
+					AccountID: ptr.To("beef"),
+					PlanID:    ptr.To("dead")},
 			},
 		},
 		"SuccessSettings": {
 			reason: "LateInit should update settings from a Zone",
 			args: args{
 				zp: &v1beta1.ZoneParameters{
-					AccountID:         ptr.To("beef"),
-					Paused:            ptr.To(false),
-					PlanID:            ptr.To("dead"),				},
+					AccountID: ptr.To("beef"),
+					Paused:    ptr.To(false),
+					PlanID:    ptr.To("dead")},
 				z: cloudflare.Zone{
 					Account: cloudflare.Account{
 						ID: "beef",
@@ -139,18 +134,18 @@ func TestLateInitialize(t *testing.T) {
 			want: want{
 				o: false,
 				zp: &v1beta1.ZoneParameters{
-					Paused:            ptr.To(false),
-					AccountID:         ptr.To("beef"),
-					PlanID:            ptr.To("dead"),				},
+					Paused:    ptr.To(false),
+					AccountID: ptr.To("beef"),
+					PlanID:    ptr.To("dead")},
 			},
 		},
 		"SuccessSettingsPartial": {
 			reason: "LateInit should update partially set settings from a Zone",
 			args: args{
 				zp: &v1beta1.ZoneParameters{
-					AccountID:         ptr.To("beef"),
-					Paused:            ptr.To(false),
-					PlanID:            ptr.To("dead"),				},
+					AccountID: ptr.To("beef"),
+					Paused:    ptr.To(false),
+					PlanID:    ptr.To("dead")},
 				z: cloudflare.Zone{
 					Account: cloudflare.Account{
 						ID: "beef",
@@ -192,9 +187,9 @@ func TestLateInitialize(t *testing.T) {
 			want: want{
 				o: false,
 				zp: &v1beta1.ZoneParameters{
-					Paused:            ptr.To(false),
-					AccountID:         ptr.To("beef"),
-					PlanID:            ptr.To("dead"),				},
+					Paused:    ptr.To(false),
+					AccountID: ptr.To("beef"),
+					PlanID:    ptr.To("dead")},
 			},
 		},
 	}
@@ -320,7 +315,7 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return true if PlanID is pending Plan ID",
 			args: args{
 				zp: &v1beta1.ZoneParameters{
-					PlanID:   ptr.To("cake"),				},
+					PlanID: ptr.To("cake")},
 				z: cloudflare.Zone{
 					PlanPending: cloudflare.ZonePlan{
 						ZonePlanCommon: cloudflare.ZonePlanCommon{
@@ -338,7 +333,7 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return true as settings are not checked",
 			args: args{
 				zp: &v1beta1.ZoneParameters{
-					PlanID: ptr.To("cake"),				},
+					PlanID: ptr.To("cake")},
 				z: cloudflare.Zone{
 					PlanPending: cloudflare.ZonePlan{
 						ZonePlanCommon: cloudflare.ZonePlanCommon{
@@ -358,7 +353,7 @@ func TestUpToDate(t *testing.T) {
 			reason: "UpToDate should return true if VanityNS field matches in any order",
 			args: args{
 				zp: &v1beta1.ZoneParameters{
-					PlanID:            ptr.To("cake"),				},
+					PlanID: ptr.To("cake")},
 				z: cloudflare.Zone{
 					PlanPending: cloudflare.ZonePlan{
 						ZonePlanCommon: cloudflare.ZonePlanCommon{
@@ -474,7 +469,7 @@ func TestUpdateZone(t *testing.T) {
 			args: args{
 				id: inputZoneID,
 				zp: v1beta1.ZoneParameters{
-					Paused:            ptr.To(false),				},
+					Paused: ptr.To(false)},
 			},
 			want: want{
 				err: nil,
@@ -551,7 +546,7 @@ func TestUpdateZone(t *testing.T) {
 			args: args{
 				id: inputZoneID,
 				zp: v1beta1.ZoneParameters{
-					Paused:            ptr.To(false),				},
+					Paused: ptr.To(false)},
 			},
 			want: want{
 				err: nil,

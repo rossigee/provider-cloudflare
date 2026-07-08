@@ -17,11 +17,11 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 )
+
 
 // CertificatePackParameters define the desired state of a Cloudflare Certificate Pack.
 type CertificatePackParameters struct {
@@ -186,9 +186,6 @@ type CertificatePackList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []CertificatePack `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&CertificatePack{}, &CertificatePackList{})
 }
 
 // GetCondition of this CertificatePack.

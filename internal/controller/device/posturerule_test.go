@@ -18,24 +18,18 @@ package device
 
 import (
 	"context"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
-	"github.com/rossigee/provider-cloudflare/internal/clients/device/posturerule"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	rtmeta "github.com/crossplane/crossplane-runtime/v2/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients/device/posturerule"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
-
-
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
 // libraries, per the common Go test review comments. Crossplane encourages the
@@ -47,7 +41,7 @@ import (
 
 // mockDevicePostureRuleAPI mocks the posturerule.DevicePostureRuleAPI interface
 type mockDevicePostureRuleAPI struct {
-	MockDevicePostureRule   func(ctx context.Context, accountID, ruleID string) (cloudflare.DevicePostureRule, error)
+	MockDevicePostureRule       func(ctx context.Context, accountID, ruleID string) (cloudflare.DevicePostureRule, error)
 	MockCreateDevicePostureRule func(ctx context.Context, accountID string, rule cloudflare.DevicePostureRule) (cloudflare.DevicePostureRule, error)
 	MockUpdateDevicePostureRule func(ctx context.Context, accountID string, rule cloudflare.DevicePostureRule) (cloudflare.DevicePostureRule, error)
 	MockDeleteDevicePostureRule func(ctx context.Context, accountID, ruleID string) error
@@ -121,7 +115,7 @@ func TestConnect(t *testing.T) {
 	}
 
 	type fields struct {
-		kube        client.Client
+		kube         client.Client
 		newServiceFn func(api *cloudflare.API) *posturerule.CloudflareDevicePostureRuleClient
 	}
 

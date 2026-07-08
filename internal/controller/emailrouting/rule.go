@@ -18,23 +18,20 @@ package emailrouting
 
 import (
 	"context"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	emailroutingruleclient "github.com/rossigee/provider-cloudflare/internal/clients/emailrouting/rule"
+	"github.com/rossigee/provider-cloudflare/internal/clients/emailrouting/rule"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -113,9 +110,11 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	_, span := tracing.StartSpan(ctx, "emailroutingrule.observe",
 		tracing.SpanAttrs("emailroutingrule", cr.GetName(), "observe")...)
-	defer func() { if span != nil { span.End() } }()
-
-
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	ruleTag := meta.GetExternalName(cr)
 	if ruleTag == "" {

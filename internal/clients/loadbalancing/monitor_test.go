@@ -17,13 +17,11 @@ limitations under the License.
 package loadbalancing
 
 import (
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
+	"testing"
+	"time"
 )
 
 func TestGenerateMonitorObservation(t *testing.T) {
@@ -68,21 +66,21 @@ func TestIsMonitorUpToDate(t *testing.T) {
 			reason: "Should return true when all fields match",
 			args: args{
 				params: &v1beta1.LoadBalancerMonitorParameters{
-					Type:             "http",
-					Description:      stringPtr("Test monitor"),
-					Method:           stringPtr("GET"),
-					Path:             stringPtr("/health"),
-					Timeout:          intPtr(10),
-					Retries:          intPtr(3),
-					Interval:         intPtr(60),
-					ConsecutiveUp:    intPtr(2),
-					ConsecutiveDown:  intPtr(3),
-					Port:             intPtr(80),
-					ExpectedBody:     stringPtr("OK"),
-					ExpectedCodes:    stringPtr("200"),
-					FollowRedirects:  boolPtr(false),
-					AllowInsecure:    boolPtr(false),
-					ProbeZone:        stringPtr("example.com"),
+					Type:            "http",
+					Description:     stringPtr("Test monitor"),
+					Method:          stringPtr("GET"),
+					Path:            stringPtr("/health"),
+					Timeout:         intPtr(10),
+					Retries:         intPtr(3),
+					Interval:        intPtr(60),
+					ConsecutiveUp:   intPtr(2),
+					ConsecutiveDown: intPtr(3),
+					Port:            intPtr(80),
+					ExpectedBody:    stringPtr("OK"),
+					ExpectedCodes:   stringPtr("200"),
+					FollowRedirects: boolPtr(false),
+					AllowInsecure:   boolPtr(false),
+					ProbeZone:       stringPtr("example.com"),
 				},
 				monitor: &cloudflare.LoadBalancerMonitor{
 					Type:            "http",

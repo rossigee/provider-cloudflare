@@ -18,19 +18,16 @@ package certificate
 
 import (
 	"context"
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
 	"github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+	"testing"
+	"time"
 )
 
 // MockOriginCACertificateAPI implements the OriginCACertificateAPI interface for testing
@@ -191,7 +188,7 @@ func TestGet(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Get(tc.args.ctx, tc.args.certificateID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nGet(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -365,7 +362,7 @@ func TestCreate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Create(tc.args.ctx, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nCreate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -423,7 +420,7 @@ func TestUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Update(tc.args.ctx, tc.args.certificateID, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nUpdate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -517,7 +514,7 @@ func TestDelete(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			err := client.Delete(tc.args.ctx, tc.args.certificateID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nDelete(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -633,7 +630,7 @@ func TestIsUpToDate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.IsUpToDate(tc.args.ctx, tc.args.params, tc.args.obs)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nIsUpToDate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}

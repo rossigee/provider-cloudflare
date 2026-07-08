@@ -18,26 +18,23 @@ package spectrum
 
 import (
 	"context"
-	"time"
-
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
-
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	applications "github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
-	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
+	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (

@@ -19,15 +19,13 @@ package rule
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/http"
+	"strings"
 )
 
 const (
@@ -70,10 +68,10 @@ func (c *clientImpl) CreateTransformRule(ctx context.Context, zoneID string, spe
 
 	// Convert spec to Cloudflare RulesetRule
 	rule := c.specToRulesetRule(spec)
-	
+
 	// Add the rule to the ruleset
 	newRules := append(ruleset.Rules, rule)
-	
+
 	// Update the ruleset with the new rule
 	updateParams := cloudflare.UpdateRulesetParams{
 		ID:          ruleset.ID,
@@ -217,7 +215,7 @@ func (c *clientImpl) ListTransformRules(ctx context.Context, zoneID string, phas
 // getPhaseRuleset gets the ruleset for a specific phase
 func (c *clientImpl) getPhaseRuleset(ctx context.Context, zoneID string, phase string) (cloudflare.Ruleset, error) {
 	rc := cloudflare.ZoneIdentifier(zoneID)
-	
+
 	// Try to get the entrypoint ruleset for this phase
 	ruleset, err := c.GetEntrypointRuleset(ctx, rc, phase)
 	if err != nil {

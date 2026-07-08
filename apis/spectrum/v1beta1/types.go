@@ -18,15 +18,14 @@ package v1beta1
 
 import (
 	"context"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 )
+
 
 // SpectrumApplicationDNS holds the external DNS configuration
 // for a Spectrum Application.
@@ -187,9 +186,6 @@ type ApplicationList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Application `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&Application{}, &ApplicationList{})
 }
 
 // ResolveReferences resolves references to the Zone that this Spectrum Application

@@ -18,16 +18,14 @@ package v1beta1
 
 import (
 	"context"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/pkg/errors"
-
-	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 )
+
 
 // RuleBypassProduct identifies a product that will be
 // bypassed when the bypass action is used.
@@ -136,9 +134,6 @@ type RuleList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Rule `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&Rule{}, &RuleList{})
 }
 
 // ResolveReferences of this Rule

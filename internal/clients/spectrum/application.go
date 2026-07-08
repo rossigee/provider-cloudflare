@@ -18,15 +18,13 @@ package spectrum
 
 import (
 	"context"
-	"net"
-	"net/http"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net"
+	"net/http"
 )
 
 const (
@@ -138,8 +136,8 @@ func (c *client) CreateSpectrumApplication(ctx context.Context, zoneID string, p
 // UpdateSpectrumApplication updates an existing Spectrum Application
 func (c *client) UpdateSpectrumApplication(ctx context.Context, zoneID, applicationID string, params *v1beta1.ApplicationParameters) error {
 	app := cloudflare.SpectrumApplication{
-		ID:           applicationID,
-		Protocol:     params.Protocol,
+		ID:       applicationID,
+		Protocol: params.Protocol,
 		DNS: cloudflare.SpectrumApplicationDNS{
 			Type: params.DNS.Type,
 			Name: params.DNS.Name,
@@ -223,10 +221,10 @@ func IsApplicationNotFound(err error) bool {
 		return false
 	}
 	// Check for Cloudflare not found error or our specific error message
-	return err.Error() == errApplicationNotFound || 
-		   err.Error() == "404" ||
-		   err.Error() == "Not found" ||
-		   err.Error() == "10006"
+	return err.Error() == errApplicationNotFound ||
+		err.Error() == "404" ||
+		err.Error() == "Not found" ||
+		err.Error() == "10006"
 }
 
 // GenerateObservation creates observation data from a Spectrum Application
@@ -247,18 +245,18 @@ func GenerateObservation(app cloudflare.SpectrumApplication) v1beta1.Application
 // LateInitialize fills in any missing fields in the spec from the observed application
 func LateInitialize(spec *v1beta1.ApplicationParameters, app cloudflare.SpectrumApplication) bool {
 	lateInitialized := false
-	
+
 	// Late initialize EdgeIPs if not set in spec but present in observed app
 	if spec.EdgeIPs == nil && app.EdgeIPs != nil {
 		spec.EdgeIPs = &v1beta1.SpectrumApplicationEdgeIPs{
 			Type: string(app.EdgeIPs.Type),
 		}
-		
+
 		if app.EdgeIPs.Connectivity != nil {
 			connectivity := string(*app.EdgeIPs.Connectivity)
 			spec.EdgeIPs.Connectivity = &connectivity
 		}
-		
+
 		if app.EdgeIPs.IPs != nil {
 			ips := make([]string, len(app.EdgeIPs.IPs))
 			for i, ip := range app.EdgeIPs.IPs {
@@ -266,10 +264,10 @@ func LateInitialize(spec *v1beta1.ApplicationParameters, app cloudflare.Spectrum
 			}
 			spec.EdgeIPs.IPs = ips
 		}
-		
+
 		lateInitialized = true
 	}
-	
+
 	return lateInitialized
 }
 
@@ -296,7 +294,7 @@ func UpToDate(spec *v1beta1.ApplicationParameters, app cloudflare.SpectrumApplic
 	}
 
 	// Additional checks for other fields would go here...
-	
+
 	return true
 }
 

@@ -18,10 +18,8 @@ package rule
 
 import (
 	"context"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-
 	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
 )
 
@@ -166,9 +164,9 @@ func convertToUpdateParams(ruleTag string, params v1beta1.RuleParameters) cloudf
 // Create creates a new Email Routing Rule.
 func (c *RuleClient) Create(ctx context.Context, params v1beta1.RuleParameters) (*v1beta1.RuleObservation, error) {
 	rc := cloudflare.ZoneIdentifier(params.ZoneID)
-	
+
 	createParams := convertToCloudflareParams(params)
-	
+
 	rule, err := c.client.CreateEmailRoutingRule(ctx, rc, createParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateRule)
@@ -194,9 +192,9 @@ func (c *RuleClient) Get(ctx context.Context, zoneID, ruleTag string) (*v1beta1.
 // Update updates an existing Email Routing Rule.
 func (c *RuleClient) Update(ctx context.Context, ruleTag string, params v1beta1.RuleParameters) (*v1beta1.RuleObservation, error) {
 	rc := cloudflare.ZoneIdentifier(params.ZoneID)
-	
+
 	updateParams := convertToUpdateParams(ruleTag, params)
-	
+
 	rule, err := c.client.UpdateEmailRoutingRule(ctx, rc, updateParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errUpdateRule)

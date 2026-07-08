@@ -18,28 +18,25 @@ package job
 
 import (
 	"context"
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
 	"github.com/rossigee/provider-cloudflare/apis/logpush/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+	"testing"
+	"time"
 )
 
 // MockLogpushJobAPI implements the LogpushJobAPI interface for testing
 type MockLogpushJobAPI struct {
-	MockAccounts           func(ctx context.Context, params cloudflare.AccountsListParams) ([]cloudflare.Account, cloudflare.ResultInfo, error)
-	MockCreateLogpushJob   func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateLogpushJobParams) (*cloudflare.LogpushJob, error)
-	MockGetLogpushJob      func(ctx context.Context, rc *cloudflare.ResourceContainer, jobID int) (cloudflare.LogpushJob, error)
-	MockUpdateLogpushJob   func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateLogpushJobParams) error
-	MockDeleteLogpushJob   func(ctx context.Context, rc *cloudflare.ResourceContainer, jobID int) error
-	MockListLogpushJobs    func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListLogpushJobsParams) ([]cloudflare.LogpushJob, error)
+	MockAccounts         func(ctx context.Context, params cloudflare.AccountsListParams) ([]cloudflare.Account, cloudflare.ResultInfo, error)
+	MockCreateLogpushJob func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateLogpushJobParams) (*cloudflare.LogpushJob, error)
+	MockGetLogpushJob    func(ctx context.Context, rc *cloudflare.ResourceContainer, jobID int) (cloudflare.LogpushJob, error)
+	MockUpdateLogpushJob func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateLogpushJobParams) error
+	MockDeleteLogpushJob func(ctx context.Context, rc *cloudflare.ResourceContainer, jobID int) error
+	MockListLogpushJobs  func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListLogpushJobsParams) ([]cloudflare.LogpushJob, error)
 }
 
 func (m *MockLogpushJobAPI) Accounts(ctx context.Context, params cloudflare.AccountsListParams) ([]cloudflare.Account, cloudflare.ResultInfo, error) {
@@ -186,7 +183,7 @@ func TestGetAccountID(t *testing.T) {
 				accountID: tc.fields.accountID,
 			}
 			got, err := client.getAccountID(tc.args.ctx)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ngetAccountID(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -379,7 +376,7 @@ func TestCreate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Create(tc.args.ctx, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nCreate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -436,21 +433,21 @@ func TestGet(t *testing.T) {
 						lastComplete := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 						lastError := time.Date(2024, 1, 2, 12, 0, 0, 0, time.UTC)
 						return cloudflare.LogpushJob{
-							ID:                        123,
-							Dataset:                   "http_requests",
-							Name:                      "test-job",
-							DestinationConf:           "s3://bucket/path",
-							Enabled:                   true,
-							Kind:                      "edge",
-							LogpullOptions:            "fields=RayID,EdgeStartTimestamp",
-							Frequency:                 "high",
-							LastComplete:              &lastComplete,
-							LastError:                 &lastError,
-							ErrorMessage:              "test error",
-							MaxUploadBytes:            1000000,
-							MaxUploadRecords:          1000,
-							MaxUploadIntervalSeconds:  300,
-							OwnershipChallenge:        "challenge-token",
+							ID:                       123,
+							Dataset:                  "http_requests",
+							Name:                     "test-job",
+							DestinationConf:          "s3://bucket/path",
+							Enabled:                  true,
+							Kind:                     "edge",
+							LogpullOptions:           "fields=RayID,EdgeStartTimestamp",
+							Frequency:                "high",
+							LastComplete:             &lastComplete,
+							LastError:                &lastError,
+							ErrorMessage:             "test error",
+							MaxUploadBytes:           1000000,
+							MaxUploadRecords:         1000,
+							MaxUploadIntervalSeconds: 300,
+							OwnershipChallenge:       "challenge-token",
 						}, nil
 					},
 				},
@@ -461,21 +458,21 @@ func TestGet(t *testing.T) {
 			},
 			want: want{
 				obs: &v1beta1.JobObservation{
-					ID:                        ptr.To(123),
-					Dataset:                   "http_requests",
-					Name:                      "test-job",
-					DestinationConf:           "s3://bucket/path",
-					Enabled:                   ptr.To(true),
-					Kind:                      ptr.To("edge"),
-					LogpullOptions:            ptr.To("fields=RayID,EdgeStartTimestamp"),
-					Frequency:                 ptr.To("high"),
-					LastComplete:              &metav1.Time{Time: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
-					LastError:                 &metav1.Time{Time: time.Date(2024, 1, 2, 12, 0, 0, 0, time.UTC)},
-					ErrorMessage:              ptr.To("test error"),
-					MaxUploadBytes:            ptr.To(1000000),
-					MaxUploadRecords:          ptr.To(1000),
-					MaxUploadIntervalSeconds:  ptr.To(300),
-					OwnershipChallenge:        ptr.To("challenge-token"),
+					ID:                       ptr.To(123),
+					Dataset:                  "http_requests",
+					Name:                     "test-job",
+					DestinationConf:          "s3://bucket/path",
+					Enabled:                  ptr.To(true),
+					Kind:                     ptr.To("edge"),
+					LogpullOptions:           ptr.To("fields=RayID,EdgeStartTimestamp"),
+					Frequency:                ptr.To("high"),
+					LastComplete:             &metav1.Time{Time: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)},
+					LastError:                &metav1.Time{Time: time.Date(2024, 1, 2, 12, 0, 0, 0, time.UTC)},
+					ErrorMessage:             ptr.To("test error"),
+					MaxUploadBytes:           ptr.To(1000000),
+					MaxUploadRecords:         ptr.To(1000),
+					MaxUploadIntervalSeconds: ptr.To(300),
+					OwnershipChallenge:       ptr.To("challenge-token"),
 				},
 				err: nil,
 			},
@@ -560,7 +557,7 @@ func TestGet(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Get(tc.args.ctx, tc.args.jobID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nGet(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -708,7 +705,7 @@ func TestUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Update(tc.args.ctx, tc.args.jobID, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nUpdate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -840,7 +837,7 @@ func TestDelete(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			err := client.Delete(tc.args.ctx, tc.args.jobID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nDelete(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -1000,7 +997,7 @@ func TestList(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.List(tc.args.ctx)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nList(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -1158,7 +1155,7 @@ func TestIsUpToDate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.IsUpToDate(tc.args.ctx, tc.args.params, tc.args.obs)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nIsUpToDate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -1300,7 +1297,7 @@ func TestParseJobID(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got, err := ParseJobID(tc.args.jobIDStr)
-			
+
 			// For invalid cases, just check that an error occurred
 			if tc.args.jobIDStr == "invalid" || tc.args.jobIDStr == "" {
 				if err == nil {

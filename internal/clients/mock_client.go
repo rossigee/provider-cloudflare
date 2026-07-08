@@ -19,10 +19,9 @@ package clients
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
+	"strings"
 )
 
 // MockCloudflareClient implements CloudflareClient for testing
@@ -346,28 +345,28 @@ func (m *MockCloudflareClient) DeleteRateLimit(ctx context.Context, zoneID, rate
 // Bot Management operations
 func (m *MockCloudflareClient) GetBotManagement(ctx context.Context, rc *cloudflare.ResourceContainer) (cloudflare.BotManagement, error) {
 	return cloudflare.BotManagement{
-		EnableJS:         &[]bool{true}[0],
-		FightMode:        &[]bool{false}[0],
-		AutoUpdateModel:  &[]bool{true}[0],
+		EnableJS:        &[]bool{true}[0],
+		FightMode:       &[]bool{false}[0],
+		AutoUpdateModel: &[]bool{true}[0],
 	}, nil
 }
 
 func (m *MockCloudflareClient) UpdateBotManagement(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateBotManagementParams) (cloudflare.BotManagement, error) {
 	return cloudflare.BotManagement{
-		EnableJS:         params.EnableJS,
-		FightMode:        params.FightMode,
-		AutoUpdateModel:  params.AutoUpdateModel,
+		EnableJS:        params.EnableJS,
+		FightMode:       params.FightMode,
+		AutoUpdateModel: params.AutoUpdateModel,
 	}, nil
 }
 
 // Turnstile operations
 func (m *MockCloudflareClient) CreateTurnstileWidget(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateTurnstileWidgetParams) (cloudflare.TurnstileWidget, error) {
 	return cloudflare.TurnstileWidget{
-		SiteKey:  "test-site-key",
-		Secret:   "test-secret",
-		Name:     params.Name,
-		Domains:  params.Domains,
-		Mode:     params.Mode,
+		SiteKey: "test-site-key",
+		Secret:  "test-secret",
+		Name:    params.Name,
+		Domains: params.Domains,
+		Mode:    params.Mode,
 	}, nil
 }
 
@@ -600,7 +599,7 @@ type MockClient struct {
 // NewMockClient creates a new MockClient
 func NewMockClient() *MockClient {
 	return &MockClient{
-		accountID:   "test-account-id", 
+		accountID:   "test-account-id",
 		calls:       make(map[string][]interface{}),
 		responses:   make(map[string]interface{}),
 		errors:      make(map[string]error),
@@ -772,8 +771,8 @@ func (m *MockClient) ListWorkersKVNamespaces(ctx context.Context, rc *cloudflare
 		switch resp := response.(type) {
 		case []cloudflare.WorkersKVNamespace:
 			return resp, &cloudflare.ResultInfo{}, nil
-		case struct{
-			Result []cloudflare.WorkersKVNamespace
+		case struct {
+			Result     []cloudflare.WorkersKVNamespace
 			ResultInfo *cloudflare.ResultInfo
 		}:
 			return resp.Result, resp.ResultInfo, nil
@@ -852,8 +851,8 @@ func (m *MockClient) CreateWorkerRoute(ctx context.Context, rc *cloudflare.Resou
 	}
 	return cloudflare.WorkerRouteResponse{
 		WorkerRoute: cloudflare.WorkerRoute{
-			ID:      "test-route-id",
-			Pattern: params.Pattern,
+			ID:         "test-route-id",
+			Pattern:    params.Pattern,
 			ScriptName: params.Script,
 		},
 	}, nil
@@ -869,8 +868,8 @@ func (m *MockClient) UpdateWorkerRoute(ctx context.Context, rc *cloudflare.Resou
 	}
 	return cloudflare.WorkerRouteResponse{
 		WorkerRoute: cloudflare.WorkerRoute{
-			ID:      params.ID,
-			Pattern: params.Pattern,
+			ID:         params.ID,
+			Pattern:    params.Pattern,
 			ScriptName: params.Script,
 		},
 	}, nil
@@ -1096,8 +1095,6 @@ func (m *MockClient) DeleteWorkerSubdomain(ctx context.Context, accountID, subdo
 	}
 	return nil
 }
-
-
 
 // NewNotFoundError creates a not found error for testing
 func NewNotFoundError(message string) error {

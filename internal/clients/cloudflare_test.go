@@ -19,28 +19,20 @@ package clients
 import (
 	"context"
 	"encoding/json"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/pkg/errors"
-
-	corev1 "k8s.io/api/core/v1"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
-
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	// metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
-
-	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
-	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
-	v1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"testing"
 )
 
 // testProviderConfigReferencer is a test helper that implements ProviderConfigReferencer

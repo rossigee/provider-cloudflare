@@ -18,17 +18,14 @@ package universalssl
 
 import (
 	"context"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-
-	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/utils/ptr"
+	"testing"
 )
 
 // MockUniversalSSLAPI implements the UniversalSSLAPI interface for testing
@@ -161,7 +158,7 @@ func TestGet(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Get(tc.args.ctx, tc.args.zoneID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nGet(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -285,7 +282,7 @@ func TestUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Update(tc.args.ctx, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nUpdate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -386,7 +383,7 @@ func TestIsUpToDate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.IsUpToDate(tc.args.ctx, tc.args.params, tc.args.obs)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nIsUpToDate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}

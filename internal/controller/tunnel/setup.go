@@ -17,10 +17,9 @@ limitations under the License.
 package tunnel
 
 import (
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
 )
 
 // Setup adds controllers for Tunnel resources.

@@ -18,30 +18,26 @@ package transform
 
 import (
 	"context"
-	"net/http"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-
-	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
-	"github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	transformrule "github.com/rossigee/provider-cloudflare/internal/clients/transform/rule"
-	"github.com/rossigee/provider-cloudflare/internal/clients/transform/rule/fake"
-
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/transform/rule"
+	"github.com/rossigee/provider-cloudflare/internal/clients/transform/rule/fake"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 type ruleModifier func(*v1beta1.Rule)
@@ -67,7 +63,6 @@ func withExpression(expression string) ruleModifier {
 func withConditions(c ...xpv1.Condition) ruleModifier {
 	return func(r *v1beta1.Rule) { r.Status.Conditions = c }
 }
-
 
 func withStatus(s v1beta1.RuleStatus) ruleModifier {
 	return func(r *v1beta1.Rule) { r.Status = s }

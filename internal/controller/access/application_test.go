@@ -18,21 +18,17 @@ package access
 
 import (
 	"context"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
-	"github.com/rossigee/provider-cloudflare/internal/clients/access/application"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	rtmeta "github.com/crossplane/crossplane-runtime/v2/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients/access/application"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -45,8 +41,8 @@ import (
 
 // mockAccessApplicationAPI mocks the application.AccessApplicationAPI interface
 type mockAccessApplicationAPI struct {
-	MockListAccessApplications func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListAccessApplicationsParams) ([]cloudflare.AccessApplication, *cloudflare.ResultInfo, error)
-	MockGetAccessApplication   func(ctx context.Context, rc *cloudflare.ResourceContainer, applicationID string) (cloudflare.AccessApplication, error)
+	MockListAccessApplications  func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListAccessApplicationsParams) ([]cloudflare.AccessApplication, *cloudflare.ResultInfo, error)
+	MockGetAccessApplication    func(ctx context.Context, rc *cloudflare.ResourceContainer, applicationID string) (cloudflare.AccessApplication, error)
 	MockCreateAccessApplication func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateAccessApplicationParams) (cloudflare.AccessApplication, error)
 	MockUpdateAccessApplication func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateAccessApplicationParams) (cloudflare.AccessApplication, error)
 	MockDeleteAccessApplication func(ctx context.Context, rc *cloudflare.ResourceContainer, applicationID string) error
@@ -124,7 +120,7 @@ func TestConnect(t *testing.T) {
 	}
 
 	type fields struct {
-		kube        client.Client
+		kube         client.Client
 		newServiceFn func(api *cloudflare.API) *application.CloudflareAccessApplicationClient
 	}
 
@@ -247,10 +243,10 @@ func TestObserve(t *testing.T) {
 				service: newMockAccessApplicationClient(&mockAccessApplicationAPI{
 					MockGetAccessApplication: func(ctx context.Context, rc *cloudflare.ResourceContainer, applicationID string) (cloudflare.AccessApplication, error) {
 						return cloudflare.AccessApplication{
-							ID:   "test-app-id",
-							Name: "test-app",
+							ID:     "test-app-id",
+							Name:   "test-app",
 							Domain: "test.example.com",
-							Type: "self_hosted",
+							Type:   "self_hosted",
 						}, nil
 					},
 				}),
@@ -273,10 +269,10 @@ func TestObserve(t *testing.T) {
 				service: newMockAccessApplicationClient(&mockAccessApplicationAPI{
 					MockGetAccessApplication: func(ctx context.Context, rc *cloudflare.ResourceContainer, applicationID string) (cloudflare.AccessApplication, error) {
 						return cloudflare.AccessApplication{
-							ID:   "test-app-id",
-							Name: "test-app",
+							ID:     "test-app-id",
+							Name:   "test-app",
 							Domain: "test.example.com",
-							Type: "self_hosted",
+							Type:   "self_hosted",
 						}, nil
 					},
 				}),
@@ -364,10 +360,10 @@ func TestCreate(t *testing.T) {
 				service: newMockAccessApplicationClient(&mockAccessApplicationAPI{
 					MockCreateAccessApplication: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateAccessApplicationParams) (cloudflare.AccessApplication, error) {
 						return cloudflare.AccessApplication{
-							ID:   "new-app-id",
-							Name: params.Name,
+							ID:     "new-app-id",
+							Name:   params.Name,
 							Domain: params.Domain,
-							Type: params.Type,
+							Type:   params.Type,
 						}, nil
 					},
 				}),

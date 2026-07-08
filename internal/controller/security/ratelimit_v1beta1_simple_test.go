@@ -17,12 +17,10 @@ limitations under the License.
 package security
 
 import (
-	"testing"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/controller/testutils"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"testing"
 )
 
 // TestV1Beta1RateLimitCreation tests basic RateLimit v1beta1 creation
@@ -43,7 +41,7 @@ func TestV1Beta1RateLimitCreation(t *testing.T) {
 				},
 				Match: v1beta1.RateLimitTrafficMatcher{
 					Request: &v1beta1.RateLimitMatchRequest{
-						URL: testutils.StringPtr("/api"),
+						URL:     testutils.StringPtr("/api"),
 						Methods: []string{"GET", "POST"},
 					},
 				},
@@ -107,7 +105,7 @@ func TestV1Beta1RateLimitAdvancedFeatures(t *testing.T) {
 				},
 				Match: v1beta1.RateLimitTrafficMatcher{
 					Request: &v1beta1.RateLimitMatchRequest{
-						URL: testutils.StringPtr("/api/v2/"),
+						URL:     testutils.StringPtr("/api/v2/"),
 						Methods: []string{"POST", "PUT", "DELETE"},
 					},
 				},
@@ -134,4 +132,3 @@ func TestV1Beta1RateLimitAdvancedFeatures(t *testing.T) {
 
 	t.Log("v1beta1 RateLimit advanced features tests passed")
 }
-

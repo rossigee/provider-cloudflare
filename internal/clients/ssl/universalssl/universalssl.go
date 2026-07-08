@@ -18,13 +18,11 @@ package universalssl
 
 import (
 	"context"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"strings"
 )
 
 // UniversalSSLAPI defines the interface for Universal SSL operations
@@ -59,7 +57,7 @@ func (c *CloudflareUniversalSSLClient) Get(ctx context.Context, zoneID string) (
 // Update updates Universal SSL settings for a zone.
 func (c *CloudflareUniversalSSLClient) Update(ctx context.Context, params v1beta1.UniversalSSLParameters) (*v1beta1.UniversalSSLObservation, error) {
 	settings := convertParametersToUniversalSSL(params)
-	
+
 	result, err := c.client.EditUniversalSSLSetting(ctx, params.Zone, settings)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot update universal ssl settings")

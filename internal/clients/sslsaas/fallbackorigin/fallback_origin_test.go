@@ -18,32 +18,28 @@ package fallbackorigin
 
 import (
 	"context"
-	"net/http"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	corev1 "k8s.io/api/core/v1"
-	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
-	providerv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/fallbackorigin/fake"
+	"k8s.io/api/core/v1"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 // Error constants from the controller
 const (
-	errNotFallbackOrigin = "managed resource is not a Fallback Origin custom resource"
-	errClientConfig = "error getting client config"
+	errNotFallbackOrigin      = "managed resource is not a Fallback Origin custom resource"
+	errClientConfig           = "error getting client config"
 	errFallbackOriginLookup   = "cannot lookup fallback origin"
 	errFallbackOriginCreation = "cannot create fallback origin"
 	errFallbackOriginUpdate   = "cannot update fallback origin"
@@ -131,7 +127,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	zoneID := *cr.Spec.ForProvider.Zone
 	origin := ParametersToFallbackOrigin(cr.Spec.ForProvider)
-	
+
 	_, err := e.client.UpdateFallbackOrigin(ctx, zoneID, origin)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errFallbackOriginUpdate)
@@ -150,7 +146,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	zoneID := *cr.Spec.ForProvider.Zone
-	
+
 	err := e.client.DeleteFallbackOrigin(ctx, zoneID)
 	if err != nil {
 		return managed.ExternalDelete{}, errors.Wrap(err, errFallbackOriginDeletion)

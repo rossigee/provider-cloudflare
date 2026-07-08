@@ -18,25 +18,22 @@ package sslsaas
 
 import (
 	"context"
-	"time"
-
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	customhostname "github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname"
-	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname"
+	"github.com/rossigee/provider-cloudflare/internal/metrics"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
@@ -62,7 +59,7 @@ func SetupCustomHostname(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedR
 	name := managed.ControllerName(v1beta1.CustomHostnameGroupKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -76,7 +73,7 @@ func SetupCustomHostname(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedR
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		// Do not initialize external-name field.
 		managed.WithInitializers(),

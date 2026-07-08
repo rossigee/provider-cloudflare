@@ -18,26 +18,23 @@ package rule
 
 import (
 	"context"
-	"net/http"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/metrics"
+	"k8s.io/client-go/util/workqueue"
+	"net/http"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
@@ -101,12 +98,12 @@ func (c *clientImpl) CreateFirewallRule(ctx context.Context, zoneID string, rule
 		Filter: cloudflare.Filter{ID: rule.Filter.ID},
 		Action: rule.Action,
 	}}
-	
+
 	rules, err := c.cf.CreateFirewallRules(ctx, rc, params)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if len(rules) == 0 {
 		return nil, errors.New("no rule created")
 	}
@@ -122,7 +119,7 @@ func (c *clientImpl) UpdateFirewallRule(ctx context.Context, zoneID, ruleID stri
 		Filter: cloudflare.Filter{ID: rule.Filter.ID},
 		Action: rule.Action,
 	}
-	
+
 	_, err := c.cf.UpdateFirewallRule(ctx, rc, params)
 	return err
 }
@@ -240,7 +237,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 	name := managed.ControllerName(v1beta1.RuleGroupKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -254,7 +251,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		// Do not initialize external-name field.
 		managed.WithInitializers(),

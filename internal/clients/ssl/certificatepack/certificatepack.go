@@ -18,14 +18,12 @@ package certificatepack
 
 import (
 	"context"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 // CertificatePackAPI defines the interface for Certificate Pack operations
@@ -62,7 +60,7 @@ func (c *CloudflareCertificatePackClient) Get(ctx context.Context, zoneID, certi
 // Create creates a new Certificate Pack.
 func (c *CloudflareCertificatePackClient) Create(ctx context.Context, params v1beta1.CertificatePackParameters) (*v1beta1.CertificatePackObservation, error) {
 	request := convertParametersToCertificatePackRequest(params)
-	
+
 	pack, err := c.client.CreateCertificatePack(ctx, params.Zone, request)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create certificate pack")

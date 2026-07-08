@@ -17,29 +17,27 @@ limitations under the License.
 package controller
 
 import (
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
-
 	"github.com/rossigee/provider-cloudflare/internal/controller/access"
 	"github.com/rossigee/provider-cloudflare/internal/controller/cache"
-	// "github.com/rossigee/provider-cloudflare/internal/controller/config" // Temporarily disabled
-	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
+	"github.com/rossigee/provider-cloudflare/internal/controller/config"
 	"github.com/rossigee/provider-cloudflare/internal/controller/device"
-	emailrouting "github.com/rossigee/provider-cloudflare/internal/controller/emailrouting"
-	loadbalancing "github.com/rossigee/provider-cloudflare/internal/controller/loadbalancing"
-	originssl "github.com/rossigee/provider-cloudflare/internal/controller/originssl"
-	r2 "github.com/rossigee/provider-cloudflare/internal/controller/r2"
-	rulesets "github.com/rossigee/provider-cloudflare/internal/controller/rulesets"
-	security "github.com/rossigee/provider-cloudflare/internal/controller/security"
-	application "github.com/rossigee/provider-cloudflare/internal/controller/spectrum"
-	ssl "github.com/rossigee/provider-cloudflare/internal/controller/ssl"
-	sslsaas "github.com/rossigee/provider-cloudflare/internal/controller/sslsaas"
-	transform "github.com/rossigee/provider-cloudflare/internal/controller/transform"
+	"github.com/rossigee/provider-cloudflare/internal/controller/dns"
+	"github.com/rossigee/provider-cloudflare/internal/controller/emailrouting"
+	"github.com/rossigee/provider-cloudflare/internal/controller/loadbalancing"
+	"github.com/rossigee/provider-cloudflare/internal/controller/originssl"
+	"github.com/rossigee/provider-cloudflare/internal/controller/r2"
+	"github.com/rossigee/provider-cloudflare/internal/controller/rulesets"
+	"github.com/rossigee/provider-cloudflare/internal/controller/security"
+	"github.com/rossigee/provider-cloudflare/internal/controller/spectrum"
+	"github.com/rossigee/provider-cloudflare/internal/controller/ssl"
+	"github.com/rossigee/provider-cloudflare/internal/controller/sslsaas"
+	"github.com/rossigee/provider-cloudflare/internal/controller/transform"
 	"github.com/rossigee/provider-cloudflare/internal/controller/tunnel"
-	workers "github.com/rossigee/provider-cloudflare/internal/controller/workers"
-	zone "github.com/rossigee/provider-cloudflare/internal/controller/zone"
+	"github.com/rossigee/provider-cloudflare/internal/controller/workers"
+	"github.com/rossigee/provider-cloudflare/internal/controller/zone"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
 )
 
 // Setup creates all CloudFlare controllers with the supplied logger and adds them to

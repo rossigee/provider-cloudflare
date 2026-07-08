@@ -18,14 +18,12 @@ package rule
 
 import (
 	"context"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-
 	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
+	"k8s.io/utils/ptr"
+	"testing"
 )
 
 // MockEmailRoutingRuleAPI implements the EmailRoutingRuleAPI interface for testing
@@ -242,7 +240,7 @@ func TestCreate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Create(tc.args.ctx, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, cmp.Comparer(func(x, y error) bool {
 				if x == nil && y == nil {
 					return true
@@ -384,7 +382,7 @@ func TestGet(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Get(tc.args.ctx, tc.args.zoneID, tc.args.ruleTag)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, cmp.Comparer(func(x, y error) bool {
 				if x == nil && y == nil {
 					return true
@@ -530,7 +528,7 @@ func TestUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Update(tc.args.ctx, tc.args.ruleTag, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, cmp.Comparer(func(x, y error) bool {
 				if x == nil && y == nil {
 					return true
@@ -643,7 +641,7 @@ func TestDelete(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			err := client.Delete(tc.args.ctx, tc.args.zoneID, tc.args.ruleTag)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, cmp.Comparer(func(x, y error) bool {
 				if x == nil && y == nil {
 					return true
@@ -775,7 +773,7 @@ func TestList(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.List(tc.args.ctx, tc.args.zoneID)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, cmp.Comparer(func(x, y error) bool {
 				if x == nil && y == nil {
 					return true
@@ -1021,7 +1019,7 @@ func TestIsUpToDate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.IsUpToDate(tc.args.ctx, tc.args.params, tc.args.obs)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, cmp.Comparer(func(x, y error) bool {
 				if x == nil && y == nil {
 					return true

@@ -18,14 +18,12 @@ package tunnel
 
 import (
 	"context"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 // TunnelAPI defines the interface for Tunnel operations
@@ -138,7 +136,7 @@ func convertArgoTunnelToObservation(tunnel cloudflare.ArgoTunnel) *v1beta1.Tunne
 			}
 			// Note: ArgoTunnelConnection only has ColoName, UUID, and IsPendingReconnect
 			// The other fields from our API spec are not available in the current Cloudflare API
-	}
+		}
 	}
 
 	return obs

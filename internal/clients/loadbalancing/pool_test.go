@@ -17,15 +17,12 @@ limitations under the License.
 package loadbalancing
 
 import (
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
+	"testing"
+	"time"
 )
-
 
 func TestGeneratePoolObservation(t *testing.T) {
 	createdOn := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -51,4 +48,3 @@ func TestGeneratePoolObservation(t *testing.T) {
 		t.Errorf("GeneratePoolObservation(...): -want, +got:\n%s", diff)
 	}
 }
-

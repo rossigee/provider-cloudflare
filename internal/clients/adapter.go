@@ -18,7 +18,6 @@ package clients
 
 import (
 	"context"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )
@@ -41,7 +40,7 @@ func (a *CloudflareAPIAdapter) GetAccountID() string {
 	if a.accountID != "" {
 		return a.accountID
 	}
-	
+
 	// Try to get account ID from Cloudflare API by listing accounts
 	// Most users have access to only one account, so we'll use the first one
 	accounts, _, err := a.api.Accounts(context.Background(), cloudflare.AccountsListParams{})
@@ -50,7 +49,7 @@ func (a *CloudflareAPIAdapter) GetAccountID() string {
 		// Log successful account ID retrieval
 		return a.accountID
 	}
-	
+
 	// If API call fails, use the known account ID for this deployment
 	// Log fallback usage for debugging
 	a.accountID = "c1b74f148aee28025816e104a92622c5"
@@ -77,7 +76,7 @@ func (a *CloudflareAPIAdapter) GetWorkersScriptContent(ctx context.Context, rc *
 	return a.api.GetWorkersScriptContent(ctx, rc, scriptName)
 }
 
-// GetWorkersScriptSettings wraps the cloudflare API  
+// GetWorkersScriptSettings wraps the cloudflare API
 func (a *CloudflareAPIAdapter) GetWorkersScriptSettings(ctx context.Context, rc *cloudflare.ResourceContainer, scriptName string) (cloudflare.WorkerScriptSettingsResponse, error) {
 	return a.api.GetWorkersScriptSettings(ctx, rc, scriptName)
 }
@@ -168,7 +167,7 @@ func (a *CloudflareAPIAdapter) WorkersGetSubdomain(ctx context.Context, rc *clou
 // CreateWorkerCronTrigger creates a cron trigger for a worker script
 func (a *CloudflareAPIAdapter) CreateWorkerCronTrigger(ctx context.Context, scriptName string, cron string) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: a.GetAccountID(),
 	}
 
@@ -198,7 +197,7 @@ func (a *CloudflareAPIAdapter) CreateWorkerCronTrigger(ctx context.Context, scri
 // WorkerCronTrigger gets cron triggers for a worker script
 func (a *CloudflareAPIAdapter) WorkerCronTrigger(ctx context.Context, scriptName string) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: a.GetAccountID(),
 	}
 
@@ -227,7 +226,7 @@ func (a *CloudflareAPIAdapter) WorkerCronTrigger(ctx context.Context, scriptName
 // UpdateWorkerCronTrigger updates cron triggers for a worker script
 func (a *CloudflareAPIAdapter) UpdateWorkerCronTrigger(ctx context.Context, scriptName string, cron string) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: a.GetAccountID(),
 	}
 
@@ -257,13 +256,13 @@ func (a *CloudflareAPIAdapter) UpdateWorkerCronTrigger(ctx context.Context, scri
 // DeleteWorkerCronTrigger deletes all cron triggers for a worker script
 func (a *CloudflareAPIAdapter) DeleteWorkerCronTrigger(ctx context.Context, scriptName string) error {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: a.GetAccountID(),
 	}
 
 	params := cloudflare.UpdateWorkerCronTriggersParams{
 		ScriptName: scriptName,
-		Crons: []cloudflare.WorkerCronTrigger{}, // Empty array to remove all triggers
+		Crons:      []cloudflare.WorkerCronTrigger{}, // Empty array to remove all triggers
 	}
 
 	_, err := a.api.UpdateWorkerCronTriggers(ctx, rc, params)
@@ -273,7 +272,7 @@ func (a *CloudflareAPIAdapter) DeleteWorkerCronTrigger(ctx context.Context, scri
 // CreateWorkerDomain attaches a custom domain to workers
 func (a *CloudflareAPIAdapter) CreateWorkerDomain(ctx context.Context, params v1beta1.DomainParameters) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: params.AccountID,
 	}
 
@@ -298,7 +297,7 @@ func (a *CloudflareAPIAdapter) CreateWorkerDomain(ctx context.Context, params v1
 // WorkerDomain gets a workers domain
 func (a *CloudflareAPIAdapter) WorkerDomain(ctx context.Context, accountID, zoneID, domainID string) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: accountID,
 	}
 
@@ -318,7 +317,7 @@ func (a *CloudflareAPIAdapter) WorkerDomain(ctx context.Context, accountID, zone
 func (a *CloudflareAPIAdapter) UpdateWorkerDomain(ctx context.Context, accountID, zoneID, domainID string, params v1beta1.DomainParameters) (interface{}, error) {
 	// First detach the old domain
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: accountID,
 	}
 
@@ -349,7 +348,7 @@ func (a *CloudflareAPIAdapter) UpdateWorkerDomain(ctx context.Context, accountID
 // DeleteWorkerDomain detaches a workers domain
 func (a *CloudflareAPIAdapter) DeleteWorkerDomain(ctx context.Context, accountID, zoneID, domainID string) error {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: accountID,
 	}
 
@@ -359,7 +358,7 @@ func (a *CloudflareAPIAdapter) DeleteWorkerDomain(ctx context.Context, accountID
 // CreateWorkerKVNamespace creates a KV namespace
 func (a *CloudflareAPIAdapter) CreateWorkerKVNamespace(ctx context.Context, params v1beta1.KVNamespaceParameters) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: a.GetAccountID(),
 	}
 
@@ -382,7 +381,7 @@ func (a *CloudflareAPIAdapter) CreateWorkerKVNamespace(ctx context.Context, para
 // WorkerKVNamespace gets a KV namespace
 func (a *CloudflareAPIAdapter) WorkerKVNamespace(ctx context.Context, kvID string) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: a.GetAccountID(),
 	}
 
@@ -406,7 +405,7 @@ func (a *CloudflareAPIAdapter) WorkerKVNamespace(ctx context.Context, kvID strin
 // UpdateWorkerKVNamespace updates a KV namespace
 func (a *CloudflareAPIAdapter) UpdateWorkerKVNamespace(ctx context.Context, kvID string, params v1beta1.KVNamespaceParameters) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: a.GetAccountID(),
 	}
 
@@ -430,7 +429,7 @@ func (a *CloudflareAPIAdapter) UpdateWorkerKVNamespace(ctx context.Context, kvID
 // DeleteWorkerKVNamespace deletes a KV namespace
 func (a *CloudflareAPIAdapter) DeleteWorkerKVNamespace(ctx context.Context, kvID string) error {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: a.GetAccountID(),
 	}
 
@@ -441,7 +440,7 @@ func (a *CloudflareAPIAdapter) DeleteWorkerKVNamespace(ctx context.Context, kvID
 // CreateWorkerSubdomain creates a workers subdomain
 func (a *CloudflareAPIAdapter) CreateWorkerSubdomain(ctx context.Context, params v1beta1.SubdomainParameters) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: params.AccountID,
 	}
 
@@ -463,7 +462,7 @@ func (a *CloudflareAPIAdapter) CreateWorkerSubdomain(ctx context.Context, params
 // WorkerSubdomain gets the workers subdomain
 func (a *CloudflareAPIAdapter) WorkerSubdomain(ctx context.Context, accountID, subdomainName string) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: accountID,
 	}
 
@@ -480,7 +479,7 @@ func (a *CloudflareAPIAdapter) WorkerSubdomain(ctx context.Context, accountID, s
 // UpdateWorkerSubdomain updates the workers subdomain
 func (a *CloudflareAPIAdapter) UpdateWorkerSubdomain(ctx context.Context, accountID, subdomainName string, params v1beta1.SubdomainParameters) (interface{}, error) {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: accountID,
 	}
 
@@ -502,7 +501,7 @@ func (a *CloudflareAPIAdapter) UpdateWorkerSubdomain(ctx context.Context, accoun
 // DeleteWorkerSubdomain deletes the workers subdomain (set to empty)
 func (a *CloudflareAPIAdapter) DeleteWorkerSubdomain(ctx context.Context, accountID, subdomainName string) error {
 	rc := &cloudflare.ResourceContainer{
-		Level: cloudflare.AccountRouteLevel,
+		Level:      cloudflare.AccountRouteLevel,
 		Identifier: accountID,
 	}
 

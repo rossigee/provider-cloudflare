@@ -18,30 +18,27 @@ package tunnel
 
 import (
 	"context"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
-	tunnelv1beta1 "github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/tunnel"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
-	errNotTunnel     = "managed resource is not a Tunnel custom resource"
-	errGetCreds      = "cannot get credentials"
+	errNotTunnel       = "managed resource is not a Tunnel custom resource"
+	errGetCreds        = "cannot get credentials"
 	errNewTunnelClient = "cannot create new Tunnel client"
 )
 
@@ -50,7 +47,7 @@ func SetupTunnel(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimit
 	name := managed.ControllerName(tunnelv1beta1.TunnelKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: 5,
 	}
 
@@ -63,7 +60,7 @@ func SetupTunnel(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimit
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)

@@ -17,11 +17,11 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 )
+
 
 // JobParameters are the configurable fields of a Logpush Job.
 type JobParameters struct {
@@ -237,8 +237,6 @@ type JobList struct {
 	Items           []Job `json:"items"`
 }
 
-func init() {
-	SchemeBuilder.Register(&Job{}, &JobList{})
 }
 
 // Job type metadata.

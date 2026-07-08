@@ -18,7 +18,6 @@ package fake
 
 import (
 	"context"
-
 	"github.com/cloudflare/cloudflare-go"
 )
 

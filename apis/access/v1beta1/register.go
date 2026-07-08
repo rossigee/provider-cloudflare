@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+
 var (
 	// AccessApplicationKind is the kind of the AccessApplication resource.
 	AccessApplicationKind = "AccessApplication"
@@ -34,6 +35,4 @@ var (
 	}
 )
 
-func init() {
-	SchemeBuilder.Register(&AccessApplication{}, &AccessApplicationList{})
 }

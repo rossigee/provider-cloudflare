@@ -17,12 +17,10 @@ limitations under the License.
 package cache
 
 import (
-	"testing"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/controller/testutils"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"testing"
 )
 
 // TestV1Beta1CacheRuleCreation tests basic CacheRule v1beta1 creation
@@ -128,4 +126,3 @@ func TestV1Beta1CacheRuleAdvancedFeatures(t *testing.T) {
 
 	t.Log("v1beta1 CacheRule advanced features tests passed")
 }
-

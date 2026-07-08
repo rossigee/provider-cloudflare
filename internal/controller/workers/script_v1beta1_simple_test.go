@@ -17,12 +17,10 @@ limitations under the License.
 package workers
 
 import (
-	"testing"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/controller/testutils"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"testing"
 )
 
 // TestV1Beta1ScriptCreation tests basic Worker Script v1beta1 creation
@@ -34,9 +32,9 @@ func TestV1Beta1ScriptCreation(t *testing.T) {
 		},
 		Spec: v1beta1.ScriptSpec{
 			ForProvider: v1beta1.ScriptParameters{
-				ScriptName: "my-worker",
-				Script:     "addEventListener('fetch', event => { event.respondWith(new Response('Hello World!')) })",
-				Module:     testutils.BoolPtr(false),
+				ScriptName:        "my-worker",
+				Script:            "addEventListener('fetch', event => { event.respondWith(new Response('Hello World!')) })",
+				Module:            testutils.BoolPtr(false),
 				CompatibilityDate: testutils.StringPtr("2023-01-01"),
 				Bindings: []v1beta1.WorkerBinding{
 					{
@@ -126,9 +124,9 @@ func TestV1Beta1ScriptAdvancedFeatures(t *testing.T) {
 				UsageModel:         testutils.StringPtr("bundled"),
 				Bindings: []v1beta1.WorkerBinding{
 					{
-						Type:  "text_blob",
-						Name:  "CONFIG",
-						Text:  testutils.StringPtr("production-config"),
+						Type: "text_blob",
+						Name: "CONFIG",
+						Text: testutils.StringPtr("production-config"),
 					},
 					{
 						Type: "json_data",

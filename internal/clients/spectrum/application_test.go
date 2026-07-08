@@ -18,35 +18,31 @@ package spectrum
 
 import (
 	"context"
-	"net"
-	"net/http"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
-	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum/fake"
-
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/ptr"
-	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum/fake"
+	"k8s.io/api/core/v1"
+	"k8s.io/utils/ptr"
+	"net"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 // Error constants from the controller
 const (
-	errNotApplication = "managed resource is not a Application custom resource"
-	errClientConfig = "error getting client config"
+	errNotApplication      = "managed resource is not a Application custom resource"
+	errClientConfig        = "error getting client config"
 	errApplicationLookup   = "cannot lookup application"
 	errApplicationCreation = "cannot create application"
 	errApplicationUpdate   = "cannot update application"
@@ -108,14 +104,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// Late initialize any missing fields from the observed application
 	lateInitialized := LateInitialize(&cr.Spec.ForProvider, app)
-	
+
 	// Check if the spec is up to date with the observed application
 	upToDate := UpToDate(&cr.Spec.ForProvider, app)
 
 	// Generate observation data from the application
 	cr.Status.AtProvider = GenerateObservation(app)
 	cr.SetConditions(xpv1.Available())
-	
+
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
@@ -661,7 +657,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{},
+				o:   managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -696,7 +692,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{},
+				o:   managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -729,7 +725,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{},
+				o:   managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -762,7 +758,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{},
+				o:   managed.ExternalCreation{},
 				err: nil,
 			},
 		},
@@ -789,7 +785,7 @@ func TestCreate(t *testing.T) {
 				),
 			},
 			want: want{
-				o: managed.ExternalCreation{},
+				o:   managed.ExternalCreation{},
 				err: nil,
 			},
 		},

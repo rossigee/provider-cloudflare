@@ -18,27 +18,24 @@ package bucket
 
 import (
 	"context"
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
 	"github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+	"testing"
+	"time"
 )
 
 // MockR2BucketAPI implements the R2BucketAPI interface for testing
 type MockR2BucketAPI struct {
-	MockAccounts        func(ctx context.Context, params cloudflare.AccountsListParams) ([]cloudflare.Account, cloudflare.ResultInfo, error)
-	MockCreateR2Bucket  func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateR2BucketParameters) (cloudflare.R2Bucket, error)
-	MockGetR2Bucket     func(ctx context.Context, rc *cloudflare.ResourceContainer, bucketName string) (cloudflare.R2Bucket, error)
-	MockDeleteR2Bucket  func(ctx context.Context, rc *cloudflare.ResourceContainer, bucketName string) error
-	MockListR2Buckets   func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListR2BucketsParams) ([]cloudflare.R2Bucket, error)
+	MockAccounts       func(ctx context.Context, params cloudflare.AccountsListParams) ([]cloudflare.Account, cloudflare.ResultInfo, error)
+	MockCreateR2Bucket func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateR2BucketParameters) (cloudflare.R2Bucket, error)
+	MockGetR2Bucket    func(ctx context.Context, rc *cloudflare.ResourceContainer, bucketName string) (cloudflare.R2Bucket, error)
+	MockDeleteR2Bucket func(ctx context.Context, rc *cloudflare.ResourceContainer, bucketName string) error
+	MockListR2Buckets  func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListR2BucketsParams) ([]cloudflare.R2Bucket, error)
 }
 
 func (m *MockR2BucketAPI) Accounts(ctx context.Context, params cloudflare.AccountsListParams) ([]cloudflare.Account, cloudflare.ResultInfo, error) {
@@ -178,7 +175,7 @@ func TestGetAccountID(t *testing.T) {
 				accountID: tc.fields.accountID,
 			}
 			got, err := client.getAccountID(tc.args.ctx)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ngetAccountID(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -341,7 +338,7 @@ func TestCreate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Create(tc.args.ctx, tc.args.params)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nCreate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -493,7 +490,7 @@ func TestGet(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.Get(tc.args.ctx, tc.args.bucketName)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nGet(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -625,7 +622,7 @@ func TestDelete(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			err := client.Delete(tc.args.ctx, tc.args.bucketName)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nDelete(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -774,7 +771,7 @@ func TestList(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.List(tc.args.ctx)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nList(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
@@ -853,7 +850,7 @@ func TestIsUpToDate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			client := NewClient(tc.fields.client)
 			got, err := client.IsUpToDate(tc.args.ctx, tc.args.params, tc.args.obs)
-			
+
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nIsUpToDate(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}

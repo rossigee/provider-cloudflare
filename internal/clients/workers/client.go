@@ -19,10 +19,9 @@ package workers
 import (
 	"context"
 	"errors"
-	"net/http"
-
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"net/http"
 )
 
 // Client is a Cloudflare API client that implements methods for working

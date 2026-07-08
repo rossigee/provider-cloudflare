@@ -22,36 +22,36 @@ import (
 
 // Package type metadata.
 const (
-	ScriptKind     = "Script"
-	RouteKind      = "Route"
+	ScriptKind      = "Script"
+	RouteKind       = "Route"
 	CronTriggerKind = "CronTrigger"
-	DomainKind     = "Domain"
+	DomainKind      = "Domain"
 	KVNamespaceKind = "KVNamespace"
-	SubdomainKind  = "Subdomain"
+	SubdomainKind   = "Subdomain"
 )
 
 var (
-	ScriptKindAPIVersion     = ScriptKind + "." + GroupVersion.String()
-	ScriptGroupKind          = schema.GroupKind{Group: Group, Kind: ScriptKind}.String()
-	ScriptGroupVersionKind   = GroupVersion.WithKind(ScriptKind)
+	ScriptKindAPIVersion   = ScriptKind + "." + GroupVersion.String()
+	ScriptGroupKind        = schema.GroupKind{Group: Group, Kind: ScriptKind}.String()
+	ScriptGroupVersionKind = GroupVersion.WithKind(ScriptKind)
 
-	RouteKindAPIVersion      = RouteKind + "." + GroupVersion.String()
-	RouteGroupKind           = schema.GroupKind{Group: Group, Kind: RouteKind}.String()
-	RouteGroupVersionKind    = GroupVersion.WithKind(RouteKind)
+	RouteKindAPIVersion   = RouteKind + "." + GroupVersion.String()
+	RouteGroupKind        = schema.GroupKind{Group: Group, Kind: RouteKind}.String()
+	RouteGroupVersionKind = GroupVersion.WithKind(RouteKind)
 
-	CronTriggerKindAPIVersion = CronTriggerKind + "." + GroupVersion.String()
-	CronTriggerGroupKind      = schema.GroupKind{Group: Group, Kind: CronTriggerKind}.String()
+	CronTriggerKindAPIVersion   = CronTriggerKind + "." + GroupVersion.String()
+	CronTriggerGroupKind        = schema.GroupKind{Group: Group, Kind: CronTriggerKind}.String()
 	CronTriggerGroupVersionKind = GroupVersion.WithKind(CronTriggerKind)
 
-	DomainKindAPIVersion     = DomainKind + "." + GroupVersion.String()
-	DomainGroupKind          = schema.GroupKind{Group: Group, Kind: DomainKind}.String()
-	DomainGroupVersionKind   = GroupVersion.WithKind(DomainKind)
+	DomainKindAPIVersion   = DomainKind + "." + GroupVersion.String()
+	DomainGroupKind        = schema.GroupKind{Group: Group, Kind: DomainKind}.String()
+	DomainGroupVersionKind = GroupVersion.WithKind(DomainKind)
 
-	KVNamespaceKindAPIVersion = KVNamespaceKind + "." + GroupVersion.String()
-	KVNamespaceGroupKind      = schema.GroupKind{Group: Group, Kind: KVNamespaceKind}.String()
+	KVNamespaceKindAPIVersion   = KVNamespaceKind + "." + GroupVersion.String()
+	KVNamespaceGroupKind        = schema.GroupKind{Group: Group, Kind: KVNamespaceKind}.String()
 	KVNamespaceGroupVersionKind = GroupVersion.WithKind(KVNamespaceKind)
 
-	SubdomainKindAPIVersion  = SubdomainKind + "." + GroupVersion.String()
-	SubdomainGroupKind       = schema.GroupKind{Group: Group, Kind: SubdomainKind}.String()
+	SubdomainKindAPIVersion   = SubdomainKind + "." + GroupVersion.String()
+	SubdomainGroupKind        = schema.GroupKind{Group: Group, Kind: SubdomainKind}.String()
 	SubdomainGroupVersionKind = GroupVersion.WithKind(SubdomainKind)
 )

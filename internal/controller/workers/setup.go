@@ -17,10 +17,9 @@ limitations under the License.
 package workers
 
 import (
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
 )
 
 // Setup creates all Workers controllers with the supplied logger and adds them to

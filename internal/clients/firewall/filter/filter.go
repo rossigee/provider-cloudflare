@@ -18,26 +18,23 @@ package filter
 
 import (
 	"context"
-	"net/http"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/metrics"
+	"k8s.io/client-go/util/workqueue"
+	"net/http"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
@@ -98,12 +95,12 @@ func (c *clientImpl) CreateFilter(ctx context.Context, zoneID string, filter clo
 		Description: filter.Description,
 		Paused:      filter.Paused,
 	}}
-	
+
 	filters, err := c.cf.CreateFilters(ctx, rc, params)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if len(filters) == 0 {
 		return nil, errors.New("no filter created")
 	}
@@ -120,7 +117,7 @@ func (c *clientImpl) UpdateFilter(ctx context.Context, zoneID, filterID string, 
 		Description: filter.Description,
 		Paused:      filter.Paused,
 	}
-	
+
 	_, err := c.cf.UpdateFilter(ctx, rc, params)
 	return err
 }
@@ -250,7 +247,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		// Do not initialize external-name field.
 		managed.WithInitializers(),

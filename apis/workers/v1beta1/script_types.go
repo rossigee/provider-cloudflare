@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 )
+
 
 // PlacementMode represents the placement mode for a Worker script.
 type PlacementMode string
@@ -191,7 +191,5 @@ type ScriptList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Script `json:"items"`
-}
-func init() {
-	SchemeBuilder.Register(&Script{}, &ScriptList{})
+}, &ScriptList{})
 }

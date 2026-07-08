@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+
 var (
 	// DevicePostureRuleKind is the kind of the DevicePostureRule resource.
 	DevicePostureRuleKind = "DevicePostureRule"
@@ -34,6 +35,4 @@ var (
 	}
 )
 
-func init() {
-	SchemeBuilder.Register(&DevicePostureRule{}, &DevicePostureRuleList{})
 }

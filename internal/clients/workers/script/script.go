@@ -18,16 +18,14 @@ package script
 
 import (
 	"context"
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"math"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
-	"github.com/rossigee/provider-cloudflare/internal/clients"
 )
 
 const (
@@ -37,10 +35,10 @@ const (
 	errDeleteScript      = "cannot delete worker script"
 	errListScripts       = "cannot list worker scripts"
 	errGetScriptSettings = "cannot get worker script settings"
-	
+
 	// Cache TTL for API responses within the same reconcile cycle
 	cacheTimeout = 30 * time.Second
-	
+
 	// Retry configuration for rate limiting
 	maxRetries = 3
 	baseDelay  = 2 * time.Second
@@ -48,10 +46,10 @@ const (
 
 // scriptCache holds cached API responses to avoid duplicate calls within the same reconcile cycle
 type scriptCache struct {
-	mu                    sync.RWMutex
-	workerData           map[string]*cachedWorkerData
-	scriptContent        map[string]*cachedScriptContent
-	scriptSettings       map[string]*cachedScriptSettings
+	mu             sync.RWMutex
+	workerData     map[string]*cachedWorkerData
+	scriptContent  map[string]*cachedScriptContent
+	scriptSettings map[string]*cachedScriptSettings
 }
 
 type cachedWorkerData struct {
@@ -94,14 +92,14 @@ func (c *ScriptClient) getAccountID(ctx context.Context) (string, error) {
 	if c.accountID != "" {
 		return c.accountID, nil
 	}
-	
+
 	// For mock clients, use the GetAccountID method directly
 	accountID := c.client.GetAccountID()
 	if accountID != "" {
 		c.accountID = accountID
 		return c.accountID, nil
 	}
-	
+
 	return "", errors.New("no account ID available")
 }
 
@@ -109,7 +107,7 @@ func (c *ScriptClient) getAccountID(ctx context.Context) (string, error) {
 func (c *ScriptClient) getWorkerDataFromCache(scriptName string) (*cloudflare.WorkerScriptResponse, bool) {
 	c.cache.mu.RLock()
 	defer c.cache.mu.RUnlock()
-	
+
 	cached, exists := c.cache.workerData[scriptName]
 	if !exists || time.Since(cached.timestamp) > cacheTimeout {
 		return nil, false
@@ -120,7 +118,7 @@ func (c *ScriptClient) getWorkerDataFromCache(scriptName string) (*cloudflare.Wo
 func (c *ScriptClient) setWorkerDataInCache(scriptName string, data cloudflare.WorkerScriptResponse) {
 	c.cache.mu.Lock()
 	defer c.cache.mu.Unlock()
-	
+
 	c.cache.workerData[scriptName] = &cachedWorkerData{
 		data:      data,
 		timestamp: time.Now(),
@@ -130,7 +128,7 @@ func (c *ScriptClient) setWorkerDataInCache(scriptName string, data cloudflare.W
 func (c *ScriptClient) getScriptContentFromCache(scriptName string) (string, bool) {
 	c.cache.mu.RLock()
 	defer c.cache.mu.RUnlock()
-	
+
 	cached, exists := c.cache.scriptContent[scriptName]
 	if !exists || time.Since(cached.timestamp) > cacheTimeout {
 		return "", false
@@ -141,7 +139,7 @@ func (c *ScriptClient) getScriptContentFromCache(scriptName string) (string, boo
 func (c *ScriptClient) setScriptContentInCache(scriptName string, content string) {
 	c.cache.mu.Lock()
 	defer c.cache.mu.Unlock()
-	
+
 	c.cache.scriptContent[scriptName] = &cachedScriptContent{
 		content:   content,
 		timestamp: time.Now(),
@@ -151,7 +149,7 @@ func (c *ScriptClient) setScriptContentInCache(scriptName string, content string
 func (c *ScriptClient) getScriptSettingsFromCache(scriptName string) (*cloudflare.WorkerScriptSettingsResponse, bool) {
 	c.cache.mu.RLock()
 	defer c.cache.mu.RUnlock()
-	
+
 	cached, exists := c.cache.scriptSettings[scriptName]
 	if !exists || time.Since(cached.timestamp) > cacheTimeout {
 		return nil, false
@@ -162,7 +160,7 @@ func (c *ScriptClient) getScriptSettingsFromCache(scriptName string) (*cloudflar
 func (c *ScriptClient) setScriptSettingsInCache(scriptName string, settings cloudflare.WorkerScriptSettingsResponse) {
 	c.cache.mu.Lock()
 	defer c.cache.mu.Unlock()
-	
+
 	c.cache.scriptSettings[scriptName] = &cachedScriptSettings{
 		settings:  settings,
 		timestamp: time.Now(),
@@ -175,46 +173,46 @@ func isRateLimitError(err error) bool {
 		return false
 	}
 	errStr := strings.ToLower(err.Error())
-	return strings.Contains(errStr, "rate limit") || 
-		   strings.Contains(errStr, "429") ||
-		   strings.Contains(errStr, "too many requests")
+	return strings.Contains(errStr, "rate limit") ||
+		strings.Contains(errStr, "429") ||
+		strings.Contains(errStr, "too many requests")
 }
 
 // retryWithBackoff executes a function with exponential backoff on rate limit errors
 func (c *ScriptClient) retryWithBackoff(ctx context.Context, operation func() error) error {
 	var lastErr error
-	
+
 	for attempt := 0; attempt <= maxRetries; attempt++ {
 		if attempt > 0 {
 			// Exponential backoff: baseDelay * 2^(attempt-1) with jitter
 			delay := time.Duration(float64(baseDelay) * math.Pow(2, float64(attempt-1)))
 			// Add 10% jitter to avoid thundering herd
-			jitter := time.Duration(float64(delay) * 0.1 * float64(2*time.Now().UnixNano()%2 - 1) / 1e9)
+			jitter := time.Duration(float64(delay) * 0.1 * float64(2*time.Now().UnixNano()%2-1) / 1e9)
 			delay += jitter
-			
+
 			select {
 			case <-time.After(delay):
 			case <-ctx.Done():
 				return ctx.Err()
 			}
 		}
-		
+
 		lastErr = operation()
 		if lastErr == nil {
 			return nil
 		}
-		
+
 		// Only retry on rate limit errors
 		if !isRateLimitError(lastErr) {
 			return lastErr
 		}
-		
+
 		// Don't retry if this was the last attempt
 		if attempt == maxRetries {
 			break
 		}
 	}
-	
+
 	return errors.Wrap(lastErr, "max retries exceeded")
 }
 
@@ -250,7 +248,7 @@ func convertToCloudflareBindings(bindings []v1beta1.WorkerBinding) map[string]cl
 			}
 		}
 	}
-	
+
 	return cfBindings
 }
 
@@ -259,7 +257,7 @@ func convertToCloudflareConsumers(consumers []v1beta1.TailConsumer) *[]cloudflar
 	if len(consumers) == 0 {
 		return nil
 	}
-	
+
 	cfConsumers := make([]cloudflare.WorkersTailConsumer, len(consumers))
 	for i, consumer := range consumers {
 		cfConsumers[i] = cloudflare.WorkersTailConsumer{
@@ -268,7 +266,7 @@ func convertToCloudflareConsumers(consumers []v1beta1.TailConsumer) *[]cloudflar
 			Namespace:   consumer.Namespace,
 		}
 	}
-	
+
 	return &cfConsumers
 }
 
@@ -345,13 +343,13 @@ func convertToObservation(metadata cloudflare.WorkerMetaData, script *cloudflare
 // Create creates a new Worker script.
 func (c *ScriptClient) Create(ctx context.Context, params v1beta1.ScriptParameters) (*v1beta1.ScriptObservation, error) {
 	createParams := convertToCloudflareParams(params)
-	
+
 	accountID, err := c.getAccountID(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get account ID")
 	}
 	rc := cloudflare.AccountIdentifier(accountID)
-	
+
 	// Parameter validation
 	if accountID == "" {
 		return nil, errors.New("accountID is required")
@@ -362,7 +360,7 @@ func (c *ScriptClient) Create(ctx context.Context, params v1beta1.ScriptParamete
 	if createParams.Script == "" {
 		return nil, errors.New("script content is required")
 	}
-	
+
 	resp, err := c.client.UploadWorker(ctx, rc, createParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateScript)
@@ -371,7 +369,7 @@ func (c *ScriptClient) Create(ctx context.Context, params v1beta1.ScriptParamete
 	if resp.ID == "" {
 		return nil, errors.New("Response WorkerMetaData.ID is empty")
 	}
-	
+
 	// Success debug logging - convert and return observation
 	obs := convertToObservation(resp.WorkerMetaData, &resp.WorkerScript)
 	return &obs, nil
@@ -398,7 +396,7 @@ func (c *ScriptClient) Get(ctx context.Context, scriptName string) (*v1beta1.Scr
 		return nil, errors.Wrap(err, "failed to get account ID")
 	}
 	rc := cloudflare.AccountIdentifier(accountID)
-	
+
 	// Get script content and metadata (only if not cached)
 	var scriptResp cloudflare.WorkerScriptResponse
 	if cachedWorkerData, ok := c.getWorkerDataFromCache(scriptName); ok {
@@ -444,13 +442,13 @@ func (c *ScriptClient) Get(ctx context.Context, scriptName string) (*v1beta1.Scr
 // Update updates an existing Worker script.
 func (c *ScriptClient) Update(ctx context.Context, params v1beta1.ScriptParameters) (*v1beta1.ScriptObservation, error) {
 	createParams := convertToCloudflareParams(params)
-	
+
 	accountID, err := c.getAccountID(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get account ID")
 	}
 	rc := cloudflare.AccountIdentifier(accountID)
-	
+
 	// Use UploadWorker which handles both create and update
 	resp, err := c.client.UploadWorker(ctx, rc, createParams)
 	if err != nil {
@@ -488,9 +486,9 @@ func (c *ScriptClient) List(ctx context.Context) ([]v1beta1.ScriptObservation, e
 		return nil, errors.Wrap(err, "failed to get account ID")
 	}
 	rc := cloudflare.AccountIdentifier(accountID)
-	
+
 	listParams := cloudflare.ListWorkersParams{}
-	
+
 	resp, _, err := c.client.ListWorkers(ctx, rc, listParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errListScripts)
@@ -517,7 +515,7 @@ func (c *ScriptClient) IsUpToDate(ctx context.Context, params v1beta1.ScriptPara
 			return false, errors.Wrap(err, "failed to get account ID")
 		}
 		rc := cloudflare.AccountIdentifier(accountID)
-		
+
 		err = c.retryWithBackoff(ctx, func() error {
 			currentScript, err = c.client.GetWorkersScriptContent(ctx, rc, params.ScriptName)
 			return err
@@ -545,7 +543,7 @@ func (c *ScriptClient) IsUpToDate(ctx context.Context, params v1beta1.ScriptPara
 			return false, errors.Wrap(err, "failed to get account ID")
 		}
 		rc := cloudflare.AccountIdentifier(accountID)
-		
+
 		err = c.retryWithBackoff(ctx, func() error {
 			settingsResp, err = c.client.GetWorkersScriptSettings(ctx, rc, params.ScriptName)
 			return err
@@ -575,13 +573,13 @@ func (c *ScriptClient) IsUpToDate(ctx context.Context, params v1beta1.ScriptPara
 	// Compare placement mode
 	if params.Placement != nil {
 		if settingsResp.Placement == nil ||
-		   string(settingsResp.Placement.Mode) != string(*params.Placement) {
+			string(settingsResp.Placement.Mode) != string(*params.Placement) {
 			return false, nil
 		}
 	}
 
 	// For comprehensive comparison, we could compare bindings, compatibility flags, etc.
 	// For now, we'll consider it up to date if script content and key settings match
-	
+
 	return true, nil
 }

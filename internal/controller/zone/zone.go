@@ -18,28 +18,24 @@ package zone
 
 import (
 	"context"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
-
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	zones "github.com/rossigee/provider-cloudflare/internal/clients/zones"
-	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/zones"
+	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
@@ -135,7 +131,11 @@ func (e *external) Observe(ctx context.Context,
 
 	_, span := tracing.StartSpan(ctx, "zone.observe",
 		tracing.SpanAttrs("zone", cr.GetName(), "observe")...)
-	defer func() { if span != nil { span.End() } }()
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	// Zone does not exist if we dont have an ID stored in external-name
 	zid := meta.GetExternalName(cr)
@@ -178,7 +178,11 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, span := tracing.StartSpan(ctx, "zone.create",
 		tracing.SpanAttrs("zone", cr.GetName(), "create")...)
-	defer func() { if span != nil { span.End() } }()
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	var (
 		account cloudflare.Account
@@ -225,7 +229,11 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, span := tracing.StartSpan(ctx, "zone.update",
 		tracing.SpanAttrs("zone", cr.GetName(), "update")...)
-	defer func() { if span != nil { span.End() } }()
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	zid := meta.GetExternalName(cr)
 	// Update should never be called on a nonexistent resource
@@ -251,7 +259,11 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, span := tracing.StartSpan(ctx, "zone.delete",
 		tracing.SpanAttrs("zone", cr.GetName(), "delete")...)
-	defer func() { if span != nil { span.End() } }()
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	zid := meta.GetExternalName(cr)
 

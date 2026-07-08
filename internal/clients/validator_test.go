@@ -17,9 +17,8 @@ limitations under the License.
 package clients
 
 import (
-	"testing"
-
 	"github.com/pkg/errors"
+	"testing"
 )
 
 func TestValidateSRVRecord(t *testing.T) {

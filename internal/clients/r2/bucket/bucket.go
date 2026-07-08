@@ -18,12 +18,10 @@ package bucket
 
 import (
 	"context"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // R2BucketAPI defines the interface for R2 Bucket operations
@@ -62,18 +60,18 @@ func (c *BucketClient) getAccountID(ctx context.Context) (string, error) {
 	if c.accountID != "" {
 		return c.accountID, nil
 	}
-	
+
 	// Get account ID from Cloudflare API by listing accounts
 	// Most users have access to only one account, so we'll use the first one
 	accounts, _, err := c.client.Accounts(ctx, cloudflare.AccountsListParams{})
 	if err != nil {
 		return "", errors.Wrap(err, "failed to list accounts")
 	}
-	
+
 	if len(accounts) == 0 {
 		return "", errors.New("no accounts found")
 	}
-	
+
 	// Use the first account (most common case for users)
 	c.accountID = accounts[0].ID
 	return c.accountID, nil
@@ -113,9 +111,9 @@ func (c *BucketClient) Create(ctx context.Context, params v1beta1.BucketParamete
 		return nil, errors.Wrap(err, "failed to get account ID")
 	}
 	rc := cloudflare.AccountIdentifier(accountID)
-	
+
 	createParams := convertToCloudflareParams(params)
-	
+
 	bucket, err := c.client.CreateR2Bucket(ctx, rc, createParams)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateBucket)

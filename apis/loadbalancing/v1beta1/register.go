@@ -22,21 +22,21 @@ import (
 
 // Package type metadata.
 const (
-	LoadBalancerKind     = "LoadBalancer"
+	LoadBalancerKind        = "LoadBalancer"
 	LoadBalancerMonitorKind = "LoadBalancerMonitor"
-	LoadBalancerPoolKind = "LoadBalancerPool"
+	LoadBalancerPoolKind    = "LoadBalancerPool"
 )
 
 var (
-	LoadBalancerKindAPIVersion     = LoadBalancerKind + "." + GroupVersion.String()
-	LoadBalancerGroupKind          = schema.GroupKind{Group: Group, Kind: LoadBalancerKind}.String()
-	LoadBalancerGroupVersionKind   = GroupVersion.WithKind(LoadBalancerKind)
+	LoadBalancerKindAPIVersion   = LoadBalancerKind + "." + GroupVersion.String()
+	LoadBalancerGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerKind}.String()
+	LoadBalancerGroupVersionKind = GroupVersion.WithKind(LoadBalancerKind)
 
-	LoadBalancerMonitorKindAPIVersion = LoadBalancerMonitorKind + "." + GroupVersion.String()
-	LoadBalancerMonitorGroupKind      = schema.GroupKind{Group: Group, Kind: LoadBalancerMonitorKind}.String()
+	LoadBalancerMonitorKindAPIVersion   = LoadBalancerMonitorKind + "." + GroupVersion.String()
+	LoadBalancerMonitorGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerMonitorKind}.String()
 	LoadBalancerMonitorGroupVersionKind = GroupVersion.WithKind(LoadBalancerMonitorKind)
 
-	LoadBalancerPoolKindAPIVersion = LoadBalancerPoolKind + "." + GroupVersion.String()
-	LoadBalancerPoolGroupKind      = schema.GroupKind{Group: Group, Kind: LoadBalancerPoolKind}.String()
+	LoadBalancerPoolKindAPIVersion   = LoadBalancerPoolKind + "." + GroupVersion.String()
+	LoadBalancerPoolGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerPoolKind}.String()
 	LoadBalancerPoolGroupVersionKind = GroupVersion.WithKind(LoadBalancerPoolKind)
 )

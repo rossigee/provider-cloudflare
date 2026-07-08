@@ -18,21 +18,17 @@ package cache
 
 import (
 	"context"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	"github.com/rossigee/provider-cloudflare/internal/clients/cache"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -68,7 +64,6 @@ func (m *mockCacheRuleClient) DeleteCacheRule(ctx context.Context, rulesetID, ru
 
 type cacheRuleModifier func(*v1beta1.CacheRule)
 
-
 func withRuleID(id string) cacheRuleModifier {
 	return func(cr *v1beta1.CacheRule) { cr.Status.AtProvider.ID = id }
 }
@@ -92,7 +87,6 @@ func cacheRule(m ...cacheRuleModifier) *v1beta1.CacheRule {
 	}
 	return cr
 }
-
 
 func boolPtr(b bool) *bool {
 	return &b
@@ -233,12 +227,12 @@ func TestObserve(t *testing.T) {
 				service: &mockCacheRuleClient{
 					MockGetCacheRule: func(ctx context.Context, rulesetID, ruleID string, params v1beta1.CacheRuleParameters) (*cloudflare.RulesetRule, *cloudflare.Ruleset, error) {
 						return &cloudflare.RulesetRule{
-							ID:         "test-rule-id",
-							Expression: "(http.request.uri.path contains \"/images/\")",
-							Enabled:    boolPtr(true),
-						}, &cloudflare.Ruleset{
-							ID: "test-ruleset-id",
-						}, nil
+								ID:         "test-rule-id",
+								Expression: "(http.request.uri.path contains \"/images/\")",
+								Enabled:    boolPtr(true),
+							}, &cloudflare.Ruleset{
+								ID: "test-ruleset-id",
+							}, nil
 					},
 				},
 			},
@@ -266,12 +260,12 @@ func TestObserve(t *testing.T) {
 				service: &mockCacheRuleClient{
 					MockGetCacheRule: func(ctx context.Context, rulesetID, ruleID string, params v1beta1.CacheRuleParameters) (*cloudflare.RulesetRule, *cloudflare.Ruleset, error) {
 						return &cloudflare.RulesetRule{
-							ID:         "test-rule-id",
-							Expression: "(http.request.uri.path contains \"/css/\")",
-							Enabled:    boolPtr(true),
-						}, &cloudflare.Ruleset{
-							ID: "test-ruleset-id",
-						}, nil
+								ID:         "test-rule-id",
+								Expression: "(http.request.uri.path contains \"/css/\")",
+								Enabled:    boolPtr(true),
+							}, &cloudflare.Ruleset{
+								ID: "test-ruleset-id",
+							}, nil
 					},
 				},
 			},
@@ -358,10 +352,10 @@ func TestCreate(t *testing.T) {
 				service: &mockCacheRuleClient{
 					MockCreateCacheRule: func(ctx context.Context, params v1beta1.CacheRuleParameters) (*cloudflare.RulesetRule, *cloudflare.Ruleset, error) {
 						return &cloudflare.RulesetRule{
-							ID: "test-rule-id",
-						}, &cloudflare.Ruleset{
-							ID: "test-ruleset-id",
-						}, nil
+								ID: "test-rule-id",
+							}, &cloudflare.Ruleset{
+								ID: "test-ruleset-id",
+							}, nil
 					},
 				},
 			},
@@ -445,10 +439,10 @@ func TestUpdate(t *testing.T) {
 				service: &mockCacheRuleClient{
 					MockUpdateCacheRule: func(ctx context.Context, rulesetID, ruleID string, params v1beta1.CacheRuleParameters) (*cloudflare.RulesetRule, *cloudflare.Ruleset, error) {
 						return &cloudflare.RulesetRule{
-							ID: "test-rule-id",
-						}, &cloudflare.Ruleset{
-							ID: "test-ruleset-id",
-						}, nil
+								ID: "test-rule-id",
+							}, &cloudflare.Ruleset{
+								ID: "test-ruleset-id",
+							}, nil
 					},
 				},
 			},

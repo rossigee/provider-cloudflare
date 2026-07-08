@@ -18,17 +18,15 @@ package v1beta1
 
 import (
 	"context"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/pkg/errors"
-
-	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 )
+
 
 // RouteParameters are the configurable fields of a DNS Route.
 type RouteParameters struct {
@@ -94,9 +92,7 @@ type RouteList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Route `json:"items"`
-}
-func init() {
-	SchemeBuilder.Register(&Route{}, &RouteList{})
+}, &RouteList{})
 }
 
 // RoutePattern resolves the pattern field out of a Worker Route's

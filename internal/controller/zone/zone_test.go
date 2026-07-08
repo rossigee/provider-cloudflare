@@ -18,30 +18,25 @@ package zone
 
 import (
 	"context"
-	"net/http"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-
-	"github.com/pkg/errors"
-
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/ptr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
-	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
-	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	zones "github.com/rossigee/provider-cloudflare/internal/clients/zones"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/zones"
 	"github.com/rossigee/provider-cloudflare/internal/clients/zones/fake"
+	"k8s.io/api/core/v1"
+	"k8s.io/utils/ptr"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 type zoneModifier func(*zonev1beta1.Zone)
@@ -429,7 +424,7 @@ func TestCreate(t *testing.T) {
 				mg: zone(withPaused(ptr.To(false)), withType(ptr.To("full"))),
 			},
 			want: want{
-				o: managed.ExternalCreation{},
+				o:   managed.ExternalCreation{},
 				err: nil,
 			},
 		},

@@ -17,13 +17,11 @@ limitations under the License.
 package loadbalancing
 
 import (
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
+	"testing"
+	"time"
 )
 
 func stringPtr(s string) *string {
@@ -91,13 +89,13 @@ func TestIsLoadBalancerUpToDate(t *testing.T) {
 					SessionAffinity: stringPtr("cookie"),
 				},
 				lb: &cloudflare.LoadBalancer{
-					Name:         "test-lb",
-					Description:  "Test load balancer",
-					TTL:          300,
-					Proxied:      true,
-					Enabled:      boolPtr(true),
-					Persistence:  "cookie",
-					DefaultPools: []string{"pool1", "pool2"},
+					Name:           "test-lb",
+					Description:    "Test load balancer",
+					TTL:            300,
+					Proxied:        true,
+					Enabled:        boolPtr(true),
+					Persistence:    "cookie",
+					DefaultPools:   []string{"pool1", "pool2"},
 					SteeringPolicy: "geo",
 				},
 			},
@@ -179,21 +177,21 @@ func TestIsLoadBalancerUpToDate(t *testing.T) {
 
 func TestConvertSessionAffinityAttributesToCloudflare(t *testing.T) {
 	attrs := v1beta1.SessionAffinityAttributes{
-		SameSite:              stringPtr("lax"),
-		Secure:                stringPtr("auto"),
-		DrainDuration:         intPtr(100),
-		ZeroDowntimeFailover:  stringPtr("temporary"),
-		Headers:               []string{"CF-IPCountry"},
-		RequireAllHeaders:     boolPtr(true),
+		SameSite:             stringPtr("lax"),
+		Secure:               stringPtr("auto"),
+		DrainDuration:        intPtr(100),
+		ZeroDowntimeFailover: stringPtr("temporary"),
+		Headers:              []string{"CF-IPCountry"},
+		RequireAllHeaders:    boolPtr(true),
 	}
 
 	expected := &cloudflare.SessionAffinityAttributes{
-		SameSite:              "lax",
-		Secure:                "auto",
-		DrainDuration:         100,
-		ZeroDowntimeFailover:  "temporary",
-		Headers:               []string{"CF-IPCountry"},
-		RequireAllHeaders:     true,
+		SameSite:             "lax",
+		Secure:               "auto",
+		DrainDuration:        100,
+		ZeroDowntimeFailover: "temporary",
+		Headers:              []string{"CF-IPCountry"},
+		RequireAllHeaders:    true,
 	}
 
 	result := convertSessionAffinityAttributesToCloudflare(attrs)
@@ -245,8 +243,8 @@ func TestConvertAdaptiveRoutingToCloudflare(t *testing.T) {
 
 func TestConvertLocationStrategyToCloudflare(t *testing.T) {
 	strategy := v1beta1.LocationStrategy{
-		Mode:             stringPtr("resolver_ip"),
-		PreferECSRegion:  stringPtr("closest"),
+		Mode:            stringPtr("resolver_ip"),
+		PreferECSRegion: stringPtr("closest"),
 	}
 
 	expected := &cloudflare.LocationStrategy{

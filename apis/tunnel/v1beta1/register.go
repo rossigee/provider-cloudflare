@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+
 var (
 	// TunnelKind is the kind of the Tunnel resource.
 	TunnelKind = "Tunnel"
@@ -34,6 +35,4 @@ var (
 	}
 )
 
-func init() {
-	SchemeBuilder.Register(&Tunnel{}, &TunnelList{})
 }

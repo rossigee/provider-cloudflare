@@ -17,11 +17,11 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 )
+
 
 // TotalTLSParameters define the desired state of Cloudflare Total TLS for a zone.
 type TotalTLSParameters struct {
@@ -95,9 +95,6 @@ type TotalTLSList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []TotalTLS `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&TotalTLS{}, &TotalTLSList{})
 }
 
 // GetCondition of this TotalTLS.

@@ -19,9 +19,9 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
+
 
 // BucketParameters are the configurable fields of a Bucket.
 type BucketParameters struct {
@@ -84,10 +84,6 @@ type BucketList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:",inline"`
 	Items           []Bucket `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&Bucket{}, &BucketList{})
 }
 
 // Bucket type metadata.

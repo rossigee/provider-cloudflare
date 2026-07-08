@@ -18,11 +18,10 @@ package clients
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // recordValidator implements DNSRecordValidator interface

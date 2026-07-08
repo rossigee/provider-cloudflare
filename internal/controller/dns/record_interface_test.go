@@ -18,24 +18,21 @@ package record
 
 import (
 	"context"
-	"io"
-	"net/http"
-	"strings"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
-
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"io"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/http"
+	"strings"
+	"testing"
 )
 
 // Using error constants from main record controller
@@ -78,12 +75,12 @@ func (e *interfaceExternal) Observe(ctx context.Context, mg resource.Managed) (m
 
 	// Update status with observed values
 	cr.Status.AtProvider = v1beta1.RecordObservation{
-		Proxiable:  record.Proxiable,
-		FQDN:       record.Name,
-		Zone:       "", // Zone name not available in new API response
-		Locked:     false, // Locked field not available in new API response
+		Proxiable: record.Proxiable,
+		FQDN:      record.Name,
+		Zone:      "",    // Zone name not available in new API response
+		Locked:    false, // Locked field not available in new API response
 	}
-	
+
 	// Only set timestamps if they are not zero
 	if !record.CreatedOn.IsZero() {
 		cr.Status.AtProvider.CreatedOn = &metav1.Time{Time: record.CreatedOn}
@@ -117,7 +114,7 @@ func (e *interfaceExternal) Create(ctx context.Context, mg resource.Managed) (ma
 			p := int(*cr.Spec.ForProvider.Priority)
 			priority = &p
 		}
-		
+
 		if err := e.validator.ValidateRecord(*cr.Spec.ForProvider.Type, cr.Spec.ForProvider.Content, priority); err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, "ValidationFailed")
 		}
@@ -159,7 +156,7 @@ func (e *interfaceExternal) Update(ctx context.Context, mg resource.Managed) (ma
 			p := int(*cr.Spec.ForProvider.Priority)
 			priority = &p
 		}
-		
+
 		if err := e.validator.ValidateRecord(*cr.Spec.ForProvider.Type, cr.Spec.ForProvider.Content, priority); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, "ValidationFailed")
 		}
@@ -215,7 +212,6 @@ func getStringValue(s *string) string {
 	return *s
 }
 
-
 func getInt64Value(i *int64) int64 {
 	if i == nil {
 		return 0
@@ -230,7 +226,7 @@ func withInterfaceConditions(c ...xpv1.Condition) interfaceRecordModifier {
 }
 
 func withInterfaceExternalName(name string) interfaceRecordModifier {
-	return func(r *v1beta1.Record) { 
+	return func(r *v1beta1.Record) {
 		meta.SetExternalName(r, name)
 	}
 }
@@ -240,7 +236,7 @@ func withInterfaceSpec(s v1beta1.RecordSpec) interfaceRecordModifier {
 }
 
 func withInterfaceStatus(s v1beta1.RecordStatus) interfaceRecordModifier {
-	return func(r *v1beta1.Record) { 
+	return func(r *v1beta1.Record) {
 		// Preserve existing conditions and only update AtProvider
 		r.Status.AtProvider = s.AtProvider
 		if len(s.Conditions) > 0 {
@@ -311,10 +307,10 @@ func TestInterfaceObserve(t *testing.T) {
 					withInterfaceConditions(xpv1.Available()),
 					withInterfaceStatus(v1beta1.RecordStatus{
 						AtProvider: v1beta1.RecordObservation{
-							Proxiable:  false,
-							FQDN:       testRecordName,
-							Zone:       "",
-							Locked:     false,
+							Proxiable: false,
+							FQDN:      testRecordName,
+							Zone:      "",
+							Locked:    false,
 						},
 					}),
 				),
@@ -358,10 +354,10 @@ func TestInterfaceObserve(t *testing.T) {
 					withInterfaceConditions(xpv1.Available()),
 					withInterfaceStatus(v1beta1.RecordStatus{
 						AtProvider: v1beta1.RecordObservation{
-							Proxiable:  false,
-							FQDN:       testRecordName,
-							Zone:       "",
-							Locked:     false,
+							Proxiable: false,
+							FQDN:      testRecordName,
+							Zone:      "",
+							Locked:    false,
 						},
 					}),
 				),
@@ -452,7 +448,7 @@ func TestInterfaceCreate(t *testing.T) {
 						return &cloudflare.DNSRecordResponse{
 							Result: cloudflare.DNSRecord{
 								ID:      testRecordID,
-									Name:    rr.Name,
+								Name:    rr.Name,
 								Type:    rr.Type,
 								Content: rr.Content,
 								TTL:     rr.TTL,
@@ -462,9 +458,8 @@ func TestInterfaceCreate(t *testing.T) {
 				},
 			},
 			want: want{
-				cr: interfaceRecord(withInterfaceExternalName(testRecordID)),
-				result: managed.ExternalCreation{
-				},
+				cr:     interfaceRecord(withInterfaceExternalName(testRecordID)),
+				result: managed.ExternalCreation{},
 			},
 		},
 		"FailedSRVValidation": {
@@ -511,7 +506,7 @@ func TestInterfaceCreate(t *testing.T) {
 						return &cloudflare.DNSRecordResponse{
 							Result: cloudflare.DNSRecord{
 								ID:      testRecordID,
-									Name:    rr.Name,
+								Name:    rr.Name,
 								Type:    rr.Type,
 								Content: rr.Content,
 								TTL:     rr.TTL,
@@ -533,8 +528,7 @@ func TestInterfaceCreate(t *testing.T) {
 						},
 					}),
 				),
-				result: managed.ExternalCreation{
-				},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"FailedARecordValidation": {
@@ -816,4 +810,3 @@ func (m *MockRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 func stringPtr(s string) *string {
 	return &s
 }
-

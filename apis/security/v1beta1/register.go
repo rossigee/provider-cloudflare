@@ -28,15 +28,15 @@ const (
 )
 
 var (
-	RateLimitKindAPIVersion     = RateLimitKind + "." + GroupVersion.String()
-	RateLimitGroupKind          = schema.GroupKind{Group: Group, Kind: RateLimitKind}.String()
-	RateLimitGroupVersionKind   = GroupVersion.WithKind(RateLimitKind)
+	RateLimitKindAPIVersion   = RateLimitKind + "." + GroupVersion.String()
+	RateLimitGroupKind        = schema.GroupKind{Group: Group, Kind: RateLimitKind}.String()
+	RateLimitGroupVersionKind = GroupVersion.WithKind(RateLimitKind)
 
-	BotManagementKindAPIVersion = BotManagementKind + "." + GroupVersion.String()
-	BotManagementGroupKind      = schema.GroupKind{Group: Group, Kind: BotManagementKind}.String()
+	BotManagementKindAPIVersion   = BotManagementKind + "." + GroupVersion.String()
+	BotManagementGroupKind        = schema.GroupKind{Group: Group, Kind: BotManagementKind}.String()
 	BotManagementGroupVersionKind = GroupVersion.WithKind(BotManagementKind)
 
-	TurnstileKindAPIVersion     = TurnstileKind + "." + GroupVersion.String()
-	TurnstileGroupKind          = schema.GroupKind{Group: Group, Kind: TurnstileKind}.String()
-	TurnstileGroupVersionKind   = GroupVersion.WithKind(TurnstileKind)
+	TurnstileKindAPIVersion   = TurnstileKind + "." + GroupVersion.String()
+	TurnstileGroupKind        = schema.GroupKind{Group: Group, Kind: TurnstileKind}.String()
+	TurnstileGroupVersionKind = GroupVersion.WithKind(TurnstileKind)
 )

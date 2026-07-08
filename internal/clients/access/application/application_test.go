@@ -19,12 +19,10 @@ package application
 import (
 	"context"
 	"errors"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
+	"testing"
 )
 
 func stringPtr(s string) *string {
@@ -54,18 +52,18 @@ func TestIsUpToDate(t *testing.T) {
 			reason: "Should return true when all fields match",
 			args: args{
 				params: v1beta1.AccessApplicationParameters{
-					AccountID:       "test-account-id",
-					Name:            "test-app",
-					Domain:          "test.example.com",
-					Type:            "self_hosted",
-					SessionDuration: stringPtr("24h"),
+					AccountID:        "test-account-id",
+					Name:             "test-app",
+					Domain:           "test.example.com",
+					Type:             "self_hosted",
+					SessionDuration:  stringPtr("24h"),
 					SkipInterstitial: boolPtr(true),
 				},
 				obs: v1beta1.AccessApplicationObservation{
-					Name:            "test-app",
-					Domain:          "test.example.com",
-					Type:            "self_hosted",
-					SessionDuration: "24h",
+					Name:             "test-app",
+					Domain:           "test.example.com",
+					Type:             "self_hosted",
+					SessionDuration:  "24h",
 					SkipInterstitial: true,
 				},
 			},
@@ -122,12 +120,12 @@ func TestConvertParametersToCreateAccessApplication(t *testing.T) {
 			reason: "Should convert basic parameters correctly",
 			args: args{
 				params: v1beta1.AccessApplicationParameters{
-					AccountID:       "test-account-id",
-					Name:            "test-app",
-					Domain:          "test.example.com",
-					Type:            "self_hosted",
-					SessionDuration: stringPtr("24h"),
-					AllowedIdps:     []string{"idp-1", "idp-2"},
+					AccountID:        "test-account-id",
+					Name:             "test-app",
+					Domain:           "test.example.com",
+					Type:             "self_hosted",
+					SessionDuration:  stringPtr("24h"),
+					AllowedIdps:      []string{"idp-1", "idp-2"},
 					SkipInterstitial: boolPtr(true),
 				},
 			},

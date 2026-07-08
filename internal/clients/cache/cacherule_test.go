@@ -17,19 +17,16 @@ limitations under the License.
 package cache
 
 import (
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
+	"testing"
+	"time"
 )
 
 func stringPtr(s string) *string {
 	return &s
 }
-
 
 func int64Ptr(i int64) *int64 {
 	return &i
@@ -46,7 +43,7 @@ func uintPtr(u uint) *uint {
 func TestGenerateCacheRuleObservation(t *testing.T) {
 	lastUpdated := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 	version := "1"
-	
+
 	rule := &cloudflare.RulesetRule{
 		ID:          "test-rule-id",
 		Version:     &version,
@@ -142,10 +139,10 @@ func TestIsCacheRuleUpToDate(t *testing.T) {
 			reason: "Should return false when expression differs",
 			args: args{
 				params: &v1beta1.CacheRuleParameters{
-					Zone:        "test-zone-id",
-					Name:        "test-cache-rule",
-					Expression:  "(http.request.uri.path contains \"/css/\")",
-					Enabled:     boolPtr(true),
+					Zone:       "test-zone-id",
+					Name:       "test-cache-rule",
+					Expression: "(http.request.uri.path contains \"/css/\")",
+					Enabled:    boolPtr(true),
 				},
 				rule: &cloudflare.RulesetRule{
 					Expression: "(http.request.uri.path contains \"/images/\")",

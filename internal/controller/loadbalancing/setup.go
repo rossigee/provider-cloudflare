@@ -17,10 +17,9 @@ limitations under the License.
 package loadbalancing
 
 import (
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
 )
 
 // Setup Load Balancer controllers.
@@ -40,4 +39,3 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 
 	return nil
 }
-

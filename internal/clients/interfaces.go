@@ -18,7 +18,6 @@ package clients
 
 import (
 	"context"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )

@@ -18,27 +18,24 @@ package security
 
 import (
 	"context"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
-	securityv1beta1 "github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	botmanagement "github.com/rossigee/provider-cloudflare/internal/clients/security/botmanagement"
-	ratelimit "github.com/rossigee/provider-cloudflare/internal/clients/security/ratelimit"
-	turnstile "github.com/rossigee/provider-cloudflare/internal/clients/security/turnstile"
+	"github.com/rossigee/provider-cloudflare/internal/clients/security/botmanagement"
+	"github.com/rossigee/provider-cloudflare/internal/clients/security/ratelimit"
+	"github.com/rossigee/provider-cloudflare/internal/clients/security/turnstile"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
@@ -56,7 +53,7 @@ func SetupRateLimit(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 	name := managed.ControllerName(securityv1beta1.RateLimitKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: 5,
 	}
 
@@ -69,7 +66,7 @@ func SetupRateLimit(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)
@@ -209,7 +206,7 @@ func SetupBotManagement(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRa
 	name := managed.ControllerName(securityv1beta1.BotManagementKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: 5,
 	}
 
@@ -222,7 +219,7 @@ func SetupBotManagement(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRa
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)
@@ -364,7 +361,7 @@ func SetupTurnstile(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 	name := managed.ControllerName(securityv1beta1.TurnstileKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: 5,
 	}
 
@@ -377,7 +374,7 @@ func SetupTurnstile(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)

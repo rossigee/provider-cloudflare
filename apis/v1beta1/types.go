@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 )
+
 
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
@@ -89,7 +89,5 @@ type ProviderConfigUsageList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []ProviderConfigUsage `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&ProviderConfig{}, &ProviderConfigList{}, &ProviderConfigUsage{}, &ProviderConfigUsageList{})
+, &ProviderConfigList{}, &ProviderConfigUsage{}, &ProviderConfigUsageList{})
 }

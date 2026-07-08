@@ -18,22 +18,20 @@ package script
 
 import (
 	"context"
-	"testing"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
-
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/utils/ptr"
+	"testing"
+	"time"
 )
 
 const (
-	testAccountID = "test-account-id"
+	testAccountID  = "test-account-id"
 	testScriptName = "test-script"
-	testScript = `
+	testScript     = `
 		addEventListener('fetch', event => {
 			event.respondWith(new Response('Hello World!'))
 		})
@@ -54,9 +52,9 @@ func TestCreate(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		args        args
-		mockClient  func() clients.ClientInterface
-		want        want
+		args       args
+		mockClient func() clients.ClientInterface
+		want       want
 	}{
 		"CreateSuccess": {
 			args: args{
@@ -70,8 +68,8 @@ func TestCreate(t *testing.T) {
 			mockClient: func() clients.ClientInterface {
 				client := clients.NewMockClient()
 				client.On("GetAccountID").Return(testAccountID)
-				client.On("UploadWorker", 
-					context.Background(), 
+				client.On("UploadWorker",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					cloudflare.CreateWorkerParams{
 						ScriptName: testScriptName,
@@ -129,8 +127,8 @@ func TestCreate(t *testing.T) {
 			mockClient: func() clients.ClientInterface {
 				client := clients.NewMockClient()
 				client.On("GetAccountID").Return(testAccountID)
-				client.On("UploadWorker", 
-					context.Background(), 
+				client.On("UploadWorker",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					cloudflare.CreateWorkerParams{
 						ScriptName: testScriptName,
@@ -173,8 +171,8 @@ func TestCreate(t *testing.T) {
 			mockClient: func() clients.ClientInterface {
 				client := clients.NewMockClient()
 				client.On("GetAccountID").Return(testAccountID)
-				client.On("UploadWorker", 
-					context.Background(), 
+				client.On("UploadWorker",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					cloudflare.CreateWorkerParams{
 						ScriptName: testScriptName,
@@ -236,8 +234,8 @@ func TestGet(t *testing.T) {
 			mockClient: func() clients.ClientInterface {
 				client := clients.NewMockClient()
 				client.On("GetAccountID").Return(testAccountID)
-				client.On("GetWorker", 
-					context.Background(), 
+				client.On("GetWorker",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					testScriptName,
 				).Return(cloudflare.WorkerScriptResponse{
@@ -246,8 +244,8 @@ func TestGet(t *testing.T) {
 						UsageModel: "standard",
 					},
 				}, nil)
-				client.On("GetWorkersScriptSettings", 
-					context.Background(), 
+				client.On("GetWorkersScriptSettings",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					testScriptName,
 				).Return(cloudflare.WorkerScriptSettingsResponse{
@@ -279,8 +277,8 @@ func TestGet(t *testing.T) {
 			mockClient: func() clients.ClientInterface {
 				client := clients.NewMockClient()
 				client.On("GetAccountID").Return(testAccountID)
-				client.On("GetWorker", 
-					context.Background(), 
+				client.On("GetWorker",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					testScriptName,
 				).Return(cloudflare.WorkerScriptResponse{}, errors.New("not found"))
@@ -418,13 +416,13 @@ func TestIsUpToDate(t *testing.T) {
 			mockClient: func() clients.ClientInterface {
 				client := clients.NewMockClient()
 				client.On("GetAccountID").Return(testAccountID)
-				client.On("GetWorkersScriptContent", 
-					context.Background(), 
+				client.On("GetWorkersScriptContent",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					testScriptName,
 				).Return(testScript, nil)
-				client.On("GetWorkersScriptSettings", 
-					context.Background(), 
+				client.On("GetWorkersScriptSettings",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					testScriptName,
 				).Return(cloudflare.WorkerScriptSettingsResponse{
@@ -451,8 +449,8 @@ func TestIsUpToDate(t *testing.T) {
 			mockClient: func() clients.ClientInterface {
 				client := clients.NewMockClient()
 				client.On("GetAccountID").Return(testAccountID)
-				client.On("GetWorkersScriptContent", 
-					context.Background(), 
+				client.On("GetWorkersScriptContent",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					testScriptName,
 				).Return("different script content", nil)
@@ -476,13 +474,13 @@ func TestIsUpToDate(t *testing.T) {
 			mockClient: func() clients.ClientInterface {
 				client := clients.NewMockClient()
 				client.On("GetAccountID").Return(testAccountID)
-				client.On("GetWorkersScriptContent", 
-					context.Background(), 
+				client.On("GetWorkersScriptContent",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					testScriptName,
 				).Return(testScript, nil)
-				client.On("GetWorkersScriptSettings", 
-					context.Background(), 
+				client.On("GetWorkersScriptSettings",
+					context.Background(),
 					cloudflare.AccountIdentifier(testAccountID),
 					testScriptName,
 				).Return(cloudflare.WorkerScriptSettingsResponse{

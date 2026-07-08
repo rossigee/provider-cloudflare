@@ -21,16 +21,10 @@ limitations under the License.
 package v1beta1
 
 import (
+	"emailrouting.cloudflare.m.crossplane.io"
+	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
-
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
-)
-
-// Package type metadata.
-const (
-	Group   = "emailrouting.cloudflare.m.crossplane.io"
-	Version = "v1beta1"
+	"v1beta1"
 )
 
 var (
@@ -38,10 +32,8 @@ var (
 	GroupVersion = schema.GroupVersion{Group: Group, Version: Version}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion} //nolint:staticcheck
-
-	// AddToScheme adds the types in this group-version to the given scheme.
-	AddToScheme = SchemeBuilder.AddToScheme
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
 // Rule type metadata.
@@ -52,6 +44,10 @@ var (
 	RuleGroupVersionKind = GroupVersion.WithKind(RuleKind)
 )
 
-func init() {
-	SchemeBuilder.Register(&Rule{}, &RuleList{})
+func addKnownTypes(s *runtime.Scheme) error {
+	s.AddKnownTypes(SchemeGroupVersion,
+		&Rule{},
+		&RuleList{},
+	)
+	return nil
 }

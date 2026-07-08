@@ -18,14 +18,12 @@ package certificate
 
 import (
 	"context"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 // OriginCACertificateAPI defines the interface for Origin CA Certificate operations
@@ -67,7 +65,7 @@ func (c *CloudflareOriginCertificateClient) Get(ctx context.Context, certificate
 // Create creates a new Origin CA certificate.
 func (c *CloudflareOriginCertificateClient) Create(ctx context.Context, params v1beta1.CertificateParameters) (*v1beta1.CertificateObservation, error) {
 	createParams := convertParametersToCreate(params)
-	
+
 	cert, err := c.client.CreateOriginCACertificate(ctx, createParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create origin ca certificate")
@@ -99,19 +97,19 @@ func (c *CloudflareOriginCertificateClient) IsUpToDate(ctx context.Context, para
 	if len(params.Hostnames) != len(obs.Hostnames) {
 		return false, nil
 	}
-	
+
 	// Check if all requested hostnames are present
 	requestedMap := make(map[string]bool)
 	for _, hostname := range params.Hostnames {
 		requestedMap[hostname] = true
 	}
-	
+
 	for _, hostname := range obs.Hostnames {
 		if !requestedMap[hostname] {
 			return false, nil
 		}
 	}
-	
+
 	return true, nil
 }
 
@@ -120,19 +118,19 @@ func convertParametersToCreate(params v1beta1.CertificateParameters) cloudflare.
 	createParams := cloudflare.CreateOriginCertificateParams{
 		Hostnames: params.Hostnames,
 	}
-	
+
 	if params.RequestType != nil {
 		createParams.RequestType = *params.RequestType
 	}
-	
+
 	if params.RequestValidity != nil {
 		createParams.RequestValidity = *params.RequestValidity
 	}
-	
+
 	if params.CSR != nil {
 		createParams.CSR = *params.CSR
 	}
-	
+
 	return createParams
 }
 
@@ -146,15 +144,15 @@ func convertCertificateToObservation(cert *cloudflare.OriginCACertificate) *v1be
 		RequestValidity: cert.RequestValidity,
 		CSR:             cert.CSR,
 	}
-	
+
 	if !cert.ExpiresOn.IsZero() {
 		obs.ExpiresOn = &metav1.Time{Time: cert.ExpiresOn}
 	}
-	
+
 	if !cert.RevokedAt.IsZero() {
 		obs.RevokedAt = &metav1.Time{Time: cert.RevokedAt}
 	}
-	
+
 	return obs
 }
 
@@ -163,7 +161,7 @@ func isNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	
+
 	errStr := strings.ToLower(err.Error())
 	return strings.Contains(errStr, "not found") ||
 		strings.Contains(errStr, "resource not found") ||

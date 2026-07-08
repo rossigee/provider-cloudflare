@@ -17,11 +17,11 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 )
+
 
 // UniversalSSLParameters define the desired state of Cloudflare Universal SSL for a zone.
 type UniversalSSLParameters struct {
@@ -75,9 +75,6 @@ type UniversalSSLList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []UniversalSSL `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&UniversalSSL{}, &UniversalSSLList{})
 }
 
 // GetCondition of this UniversalSSL.

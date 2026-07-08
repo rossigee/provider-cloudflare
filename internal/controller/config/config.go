@@ -17,16 +17,14 @@ limitations under the License.
 package config
 
 import (
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/providerconfig"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
 	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 )
 
 // Setup adds a controller that reconciles ProviderConfigs using v2 patterns.
@@ -49,5 +47,5 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 		// Removed ProviderConfigUsage watch for v2 compatibility
 		Complete(providerconfig.NewReconciler(mgr, of,
 			providerconfig.WithLogger(l.WithValues("controller", name)),
-			providerconfig.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))))) 
+			providerconfig.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name)))))
 }

@@ -18,28 +18,27 @@ limitations under the License.
 package apis
 
 import (
+	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/logpush/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	accessv1beta1 "github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
-	cachev1beta1 "github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
-	devicev1beta1 "github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
-	dnsv1beta1 "github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
-	emailroutingv1beta1 "github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
-	firewallv1beta1 "github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
-	loadbalancingv1beta1 "github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
-	logpushv1beta1 "github.com/rossigee/provider-cloudflare/apis/logpush/v1beta1"
-	originsslv1beta1 "github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
-	r2v1beta1 "github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
-	rulesetsv1beta1 "github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
-	securityv1beta1 "github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
-	spectrumv1beta1 "github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
-	sslv1beta1 "github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
-	sslsaasv1beta1 "github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
-	transformv1beta1 "github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
-	tunnelv1beta1 "github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
-	cloudflarev1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
-	workersv1beta1 "github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
-	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 )
 
 // AddToSchemes may be used to add all resources defined in the project to a Scheme
@@ -80,11 +79,11 @@ func AddToScheme(s *runtime.Scheme) error {
 func VerifySchemeRegistration() error {
 	// Create a test scheme
 	scheme := runtime.NewScheme()
-	
+
 	// Try to add all types to the scheme
 	if err := AddToScheme(scheme); err != nil {
 		return err
 	}
-	
+
 	return nil
 }

@@ -17,16 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
-
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
-)
-
-// Package type metadata.
-const (
-	CRDGroup   = "ssl.cloudflare.m.crossplane.io"
-	CRDVersion = "sslv1alpha1"
+	"ssl.cloudflare.m.crossplane.io"
+	"sslv1alpha1"
 )
 
 var (
@@ -34,10 +28,8 @@ var (
 	CRDGroupVersion = schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = &scheme.Builder{GroupVersion: CRDGroupVersion} //nolint:staticcheck
-
-	// AddToScheme adds the types in this group-version to the given scheme.
-	AddToScheme = SchemeBuilder.AddToScheme
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
 // UniversalSSL type metadata.
@@ -64,6 +56,14 @@ var (
 	CertificatePackGroupVersionKind = CRDGroupVersion.WithKind(CertificatePackKind)
 )
 
-func init() {
-	SchemeBuilder.Register(&UniversalSSL{}, &UniversalSSLList{}, &TotalTLS{}, &TotalTLSList{}, &CertificatePack{}, &CertificatePackList{})
+func addKnownTypes(s *runtime.Scheme) error {
+	s.AddKnownTypes(SchemeGroupVersion,
+		&UniversalSSL{},
+		&UniversalSSLList{},
+		&TotalTLS{},
+		&TotalTLSList{},
+		&CertificatePack{},
+		&CertificatePackList{},
+	)
+	return nil
 }

@@ -18,21 +18,17 @@ package rulesets
 
 import (
 	"context"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	ruleset "github.com/rossigee/provider-cloudflare/internal/clients/rulesets"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/rulesets"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -71,7 +67,6 @@ type rulesetModifier func(*v1beta1.Ruleset)
 func withZone(zone string) rulesetModifier {
 	return func(rs *v1beta1.Ruleset) { rs.Spec.ForProvider.Zone = &zone }
 }
-
 
 func withRulesetID(id string) rulesetModifier {
 	return func(rs *v1beta1.Ruleset) { rs.Status.AtProvider.ID = id }

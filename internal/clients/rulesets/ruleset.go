@@ -18,13 +18,11 @@ package ruleset
 
 import (
 	"context"
-	"net/http"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-
 	"github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"net/http"
 )
 
 const (
@@ -187,8 +185,6 @@ func convertRulesToCloudflare(rules []v1beta1.RulesetRule) []cloudflare.RulesetR
 	return cfRules
 }
 
-
-
 // GenerateObservation creates observation from Cloudflare ruleset
 func GenerateObservation(ruleset *cloudflare.Ruleset) v1beta1.RulesetObservation {
 	observation := v1beta1.RulesetObservation{
@@ -198,8 +194,6 @@ func GenerateObservation(ruleset *cloudflare.Ruleset) v1beta1.RulesetObservation
 	if ruleset.Version != nil && *ruleset.Version != "" {
 		observation.Version = *ruleset.Version
 	}
-
-
 
 	return observation
 }

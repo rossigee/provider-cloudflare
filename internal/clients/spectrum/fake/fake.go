@@ -18,10 +18,8 @@ package fake
 
 import (
 	"context"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
 )
 
@@ -48,7 +46,7 @@ func (m MockClient) CreateSpectrumApplication(ctx context.Context, zoneID string
 			}
 		}
 	}
-	
+
 	// Convert ApplicationParameters to SpectrumApplication for the mock
 	appDetails := cloudflare.SpectrumApplication{}
 	return m.MockCreateSpectrumApplication(ctx, zoneID, appDetails)
@@ -64,7 +62,7 @@ func (m MockClient) UpdateSpectrumApplication(ctx context.Context, zoneID, appli
 			}
 		}
 	}
-	
+
 	// Convert ApplicationParameters to SpectrumApplication for the mock
 	appDetails := cloudflare.SpectrumApplication{}
 	_, err := m.MockUpdateSpectrumApplication(ctx, zoneID, applicationID, appDetails)

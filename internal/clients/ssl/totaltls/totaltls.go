@@ -18,13 +18,11 @@ package totaltls
 
 import (
 	"context"
-	"strings"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"strings"
 )
 
 // TotalTLSAPI defines the interface for Total TLS operations
@@ -67,7 +65,7 @@ func (c *CloudflareTotalTLSClient) Update(ctx context.Context, params v1beta1.To
 	}
 
 	settings := convertParametersToTotalTLS(params)
-	
+
 	result, err := c.client.SetTotalTLS(ctx, rc, settings)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot update total tls settings")

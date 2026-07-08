@@ -18,14 +18,12 @@ package loadbalancing
 
 import (
 	"context"
-	"net/http"
-	"strconv"
-
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
-
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"net/http"
+	"strconv"
 )
 
 const (
@@ -1196,10 +1194,10 @@ func convertOriginsToCloudflare(origins []v1beta1.LoadBalancerOrigin) []cloudfla
 // Note: Commented out as OriginSteering may not be supported in current cloudflare-go version
 // func convertOriginSteeringToCloudflare(steering v1beta1.OriginSteering) *cloudflare.OriginSteering {
 //     cfSteering := &cloudflare.OriginSteering{}
-// 
+//
 //     if steering.Policy != nil {
 //         cfSteering.Policy = *steering.Policy
 //     }
-// 
+//
 //     return cfSteering
 // }

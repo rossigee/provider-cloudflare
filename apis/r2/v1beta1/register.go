@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+
 // Package type metadata.
 const (
 	CRDGroup   = "r2.cloudflare.m.crossplane.io"
@@ -33,7 +34,3 @@ var (
 	// SchemeGroupVersion is group version used to register these objects
 	SchemeGroupVersion = CRDGroupVersion
 )
-
-func init() {
-	SchemeBuilder.Register(&Bucket{}, &BucketList{})
-}

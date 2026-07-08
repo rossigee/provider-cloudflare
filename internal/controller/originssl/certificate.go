@@ -18,35 +18,32 @@ package originssl
 
 import (
 	"context"
-	"time"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
-	originsslv1beta1 "github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
-	v1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	certificate "github.com/rossigee/provider-cloudflare/internal/clients/originssl/certificate"
+	"github.com/rossigee/provider-cloudflare/internal/clients/originssl/certificate"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
-	errNotCertificate    = "managed resource is not a Certificate custom resource"
-	errTrackPCUsage      = "cannot track ProviderConfig usage"
-	errGetPC             = "cannot get ProviderConfig"
-	errGetCreds          = "cannot get credentials"
-	errNewCertClient     = "cannot create new Certificate client"
+	errNotCertificate = "managed resource is not a Certificate custom resource"
+	errTrackPCUsage   = "cannot track ProviderConfig usage"
+	errGetPC          = "cannot get ProviderConfig"
+	errGetCreds       = "cannot get credentials"
+	errNewCertClient  = "cannot create new Certificate client"
 )
 
 // SetupCertificate adds a controller that reconciles Certificate managed resources.
@@ -66,7 +63,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRate
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)

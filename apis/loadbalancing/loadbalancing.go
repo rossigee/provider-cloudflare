@@ -18,9 +18,8 @@ limitations under the License.
 package loadbalancing
 
 import (
+	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	v1beta1 "github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 )
 
 func init() {

@@ -18,18 +18,14 @@ package zones
 
 import (
 	"context"
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"strings"
-
-	"github.com/google/go-cmp/cmp"
-
-	"github.com/pkg/errors"
-
-	"github.com/cloudflare/cloudflare-go"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
 )
 
 const (

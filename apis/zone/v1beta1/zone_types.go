@@ -17,11 +17,11 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 )
+
 
 // Zone type metadata.
 var (
@@ -438,6 +438,4 @@ type ZoneList struct {
 	Items           []Zone `json:"items"`
 }
 
-func init() {
-	SchemeBuilder.Register(&Zone{}, &ZoneList{})
 }

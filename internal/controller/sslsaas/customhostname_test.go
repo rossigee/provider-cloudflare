@@ -18,29 +18,25 @@ package sslsaas
 
 import (
 	"context"
-	"net/http"
-	"testing"
-
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
-	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
-	clients "github.com/rossigee/provider-cloudflare/internal/clients"
-	customhostname "github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname"
-	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname/fake"
-
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
+	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname"
+	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname/fake"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing
@@ -58,7 +54,7 @@ func withExternalName(name string) customHostnameModifier {
 }
 
 func withZone(zoneID string) customHostnameModifier {
-	return func(ch *v1beta1.CustomHostname) { 
+	return func(ch *v1beta1.CustomHostname) {
 		if zoneID == "" {
 			ch.Spec.ForProvider.Zone = nil
 		} else {
@@ -68,7 +64,7 @@ func withZone(zoneID string) customHostnameModifier {
 }
 
 func withSSLMethod(method string) customHostnameModifier {
-	return func(ch *v1beta1.CustomHostname) { 
+	return func(ch *v1beta1.CustomHostname) {
 		if method == "" {
 			ch.Spec.ForProvider.SSL.Method = nil
 		} else {
@@ -246,7 +242,7 @@ func TestCustomHostnameObserve(t *testing.T) {
 			},
 			want: want{
 				cr: customHostname(),
-				o: managed.ExternalObservation{ResourceExists: false},
+				o:  managed.ExternalObservation{ResourceExists: false},
 			},
 		},
 		"ErrCustomHostnameNoZone": {
@@ -394,7 +390,7 @@ func TestCustomHostnameObserve(t *testing.T) {
 			if diff := cmp.Diff(tc.want.o, got); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want, +got:\n%s\n", tc.reason, diff)
 			}
-			// Verify AtProvider is set for successful cases  
+			// Verify AtProvider is set for successful cases
 			if tc.want.cr != nil {
 				wantCH := tc.want.cr.(*v1beta1.CustomHostname)
 				actualCH := tc.args.mg.(*v1beta1.CustomHostname)
