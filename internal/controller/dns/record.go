@@ -132,11 +132,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr, ok := mg.(*v1beta1.Record)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRecord)
-		_, span := tracing.StartSpan(ctx, "record.observe",
-			tracing.SpanAttrs("record", cr.GetName(), "observe")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "record.observe",
+		tracing.SpanAttrs("record", cr.GetName(), "observe")...)
+	defer span.End()
 
 	// Record does not exist if we dont have an ID stored in external-name
 	rid := meta.GetExternalName(cr)
@@ -171,11 +170,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Record)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRecord)
-		_, span := tracing.StartSpan(ctx, "record.create",
-			tracing.SpanAttrs("record", cr.GetName(), "create")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "record.create",
+		tracing.SpanAttrs("record", cr.GetName(), "create")...)
+	defer span.End()
 
 	if cr.Spec.ForProvider.Zone == nil {
 		return managed.ExternalCreation{},
@@ -267,11 +265,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Record)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRecord)
-		_, span := tracing.StartSpan(ctx, "record.update",
-			tracing.SpanAttrs("record", cr.GetName(), "update")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "record.update",
+		tracing.SpanAttrs("record", cr.GetName(), "update")...)
+	defer span.End()
 
 	if cr.Spec.ForProvider.Zone == nil {
 		return managed.ExternalUpdate{}, errors.Wrap(errors.New(errRecordNoZone), errRecordUpdate)
@@ -295,11 +292,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Record)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotRecord)
-		_, span := tracing.StartSpan(ctx, "record.delete",
-			tracing.SpanAttrs("record", cr.GetName(), "delete")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "record.delete",
+		tracing.SpanAttrs("record", cr.GetName(), "delete")...)
+	defer span.End()
 
 	if cr.Spec.ForProvider.Zone == nil {
 		return managed.ExternalDelete{}, errors.Wrap(errors.New(errRecordNoZone), errRecordDeletion)

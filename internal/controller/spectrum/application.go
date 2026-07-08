@@ -125,11 +125,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr, ok := mg.(*v1beta1.Application)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotApplication)
-		_, span := tracing.StartSpan(ctx, "application.observe",
-			tracing.SpanAttrs("application", cr.GetName(), "observe")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "application.observe",
+		tracing.SpanAttrs("application", cr.GetName(), "observe")...)
+	defer span.End()
 
 	// Application does not exist if we dont have an ID stored in external-name
 	aid := meta.GetExternalName(cr)
@@ -165,11 +164,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Application)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotApplication)
-		_, span := tracing.StartSpan(ctx, "application.create",
-			tracing.SpanAttrs("application", cr.GetName(), "create")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "application.create",
+		tracing.SpanAttrs("application", cr.GetName(), "create")...)
+	defer span.End()
 
 	if cr.Spec.ForProvider.Zone == nil {
 		return managed.ExternalCreation{},
@@ -196,11 +194,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Application)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotApplication)
-		_, span := tracing.StartSpan(ctx, "application.update",
-			tracing.SpanAttrs("application", cr.GetName(), "update")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "application.update",
+		tracing.SpanAttrs("application", cr.GetName(), "update")...)
+	defer span.End()
 
 	if cr.Spec.ForProvider.Zone == nil {
 		return managed.ExternalUpdate{}, errors.Wrap(errors.New(errApplicationNoZone), errApplicationUpdate)
@@ -225,11 +222,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Application)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotApplication)
-		_, span := tracing.StartSpan(ctx, "application.delete",
-			tracing.SpanAttrs("application", cr.GetName(), "delete")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "application.delete",
+		tracing.SpanAttrs("application", cr.GetName(), "delete")...)
+	defer span.End()
 
 	aid := meta.GetExternalName(cr)
 

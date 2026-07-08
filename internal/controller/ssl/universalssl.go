@@ -121,11 +121,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotUniversalSSL)
-		_, span := tracing.StartSpan(ctx, "universalssl.observe",
-			tracing.SpanAttrs("universalssl", cr.GetName(), "observe")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "universalssl.observe",
+		tracing.SpanAttrs("universalssl", cr.GetName(), "observe")...)
+	defer span.End()
 
 	// Universal SSL settings always exist for a zone, so we never create them
 	// We only observe and update the configuration
@@ -158,11 +157,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotUniversalSSL)
-		_, span := tracing.StartSpan(ctx, "universalssl.create",
-			tracing.SpanAttrs("universalssl", cr.GetName(), "create")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "universalssl.create",
+		tracing.SpanAttrs("universalssl", cr.GetName(), "create")...)
+	defer span.End()
 
 	// Universal SSL settings always exist for a zone, so we treat "create" as "update"
 	cr.Status.SetConditions(rtv1.Creating())
@@ -181,11 +179,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotUniversalSSL)
-		_, span := tracing.StartSpan(ctx, "universalssl.update",
-			tracing.SpanAttrs("universalssl", cr.GetName(), "update")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "universalssl.update",
+		tracing.SpanAttrs("universalssl", cr.GetName(), "update")...)
+	defer span.End()
 
 	observation, err := c.service.Update(ctx, cr.Spec.ForProvider)
 	if err != nil {
@@ -201,11 +198,10 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotUniversalSSL)
-		_, span := tracing.StartSpan(ctx, "universalssl.delete",
-			tracing.SpanAttrs("universalssl", cr.GetName(), "delete")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "universalssl.delete",
+		tracing.SpanAttrs("universalssl", cr.GetName(), "delete")...)
+	defer span.End()
 
 	cr.Status.SetConditions(rtv1.Deleting())
 

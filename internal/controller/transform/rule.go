@@ -126,11 +126,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRule)
-		_, span := tracing.StartSpan(ctx, "rule.observe",
-			tracing.SpanAttrs("rule", cr.GetName(), "observe")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "rule.observe",
+		tracing.SpanAttrs("rule", cr.GetName(), "observe")...)
+	defer span.End()
 
 	// Rule does not exist if we don't have an ID stored in external-name
 	rid := meta.GetExternalName(cr)
@@ -163,11 +162,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRule)
-		_, span := tracing.StartSpan(ctx, "rule.create",
-			tracing.SpanAttrs("rule", cr.GetName(), "create")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "rule.create",
+		tracing.SpanAttrs("rule", cr.GetName(), "create")...)
+	defer span.End()
 
 	if cr.Spec.ForProvider.Zone == nil {
 		return managed.ExternalCreation{}, errors.Wrap(errors.New(errRuleNoZone), errRuleCreation)
@@ -191,11 +189,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRule)
-		_, span := tracing.StartSpan(ctx, "rule.update",
-			tracing.SpanAttrs("rule", cr.GetName(), "update")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "rule.update",
+		tracing.SpanAttrs("rule", cr.GetName(), "update")...)
+	defer span.End()
 
 	rid := meta.GetExternalName(cr)
 	if rid == "" {
@@ -220,11 +217,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotRule)
-		_, span := tracing.StartSpan(ctx, "rule.delete",
-			tracing.SpanAttrs("rule", cr.GetName(), "delete")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "rule.delete",
+		tracing.SpanAttrs("rule", cr.GetName(), "delete")...)
+	defer span.End()
 
 	if cr.Spec.ForProvider.Zone == nil {
 		return managed.ExternalDelete{}, errors.Wrap(errors.New(errRuleNoZone), errRuleDeletion)

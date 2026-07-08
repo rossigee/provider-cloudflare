@@ -109,11 +109,13 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRule)
-		_, span := tracing.StartSpan(ctx, "emailroutingrule.observe",
-			tracing.SpanAttrs("emailroutingrule", cr.GetName(), "observe")...)
-		defer span.End()
-
 	}
+
+	_, span := tracing.StartSpan(ctx, "emailroutingrule.observe",
+		tracing.SpanAttrs("emailroutingrule", cr.GetName(), "observe")...)
+	defer func() { if span != nil { span.End() } }()
+
+
 
 	ruleTag := meta.GetExternalName(cr)
 	if ruleTag == "" {
@@ -148,11 +150,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRule)
-		_, span := tracing.StartSpan(ctx, "emailroutingrule.create",
-			tracing.SpanAttrs("emailroutingrule", cr.GetName(), "create")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "emailroutingrule.create",
+		tracing.SpanAttrs("emailroutingrule", cr.GetName(), "create")...)
+	defer span.End()
 
 	obs, err := c.service.Create(ctx, cr.Spec.ForProvider)
 	if err != nil {
@@ -173,11 +174,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRule)
-		_, span := tracing.StartSpan(ctx, "emailroutingrule.update",
-			tracing.SpanAttrs("emailroutingrule", cr.GetName(), "update")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "emailroutingrule.update",
+		tracing.SpanAttrs("emailroutingrule", cr.GetName(), "update")...)
+	defer span.End()
 
 	ruleTag := meta.GetExternalName(cr)
 	obs, err := c.service.Update(ctx, ruleTag, cr.Spec.ForProvider)
@@ -198,11 +198,10 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotRule)
-		_, span := tracing.StartSpan(ctx, "emailroutingrule.delete",
-			tracing.SpanAttrs("emailroutingrule", cr.GetName(), "delete")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "emailroutingrule.delete",
+		tracing.SpanAttrs("emailroutingrule", cr.GetName(), "delete")...)
+	defer span.End()
 
 	ruleTag := meta.GetExternalName(cr)
 	if ruleTag == "" {

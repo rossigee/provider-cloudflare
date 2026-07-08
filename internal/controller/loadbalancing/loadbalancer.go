@@ -127,11 +127,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr, ok := mg.(*v1beta1.LoadBalancer)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotLoadBalancer)
-		_, span := tracing.StartSpan(ctx, "loadbalancer.observe",
-			tracing.SpanAttrs("loadbalancer", cr.GetName(), "observe")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "loadbalancer.observe",
+		tracing.SpanAttrs("loadbalancer", cr.GetName(), "observe")...)
+	defer span.End()
 
 	if cr.Status.AtProvider.ID == "" {
 		return managed.ExternalObservation{
@@ -168,11 +167,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.LoadBalancer)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotLoadBalancer)
-		_, span := tracing.StartSpan(ctx, "loadbalancer.create",
-			tracing.SpanAttrs("loadbalancer", cr.GetName(), "create")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "loadbalancer.create",
+		tracing.SpanAttrs("loadbalancer", cr.GetName(), "create")...)
+	defer span.End()
 
 	// Resolve references before making API call
 	if err := c.resolveReferences(ctx, cr); err != nil {
@@ -195,11 +193,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.LoadBalancer)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotLoadBalancer)
-		_, span := tracing.StartSpan(ctx, "loadbalancer.update",
-			tracing.SpanAttrs("loadbalancer", cr.GetName(), "update")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "loadbalancer.update",
+		tracing.SpanAttrs("loadbalancer", cr.GetName(), "update")...)
+	defer span.End()
 
 	// Resolve references before making API call
 	if err := c.resolveReferences(ctx, cr); err != nil {
@@ -220,11 +217,10 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1beta1.LoadBalancer)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotLoadBalancer)
-		_, span := tracing.StartSpan(ctx, "loadbalancer.delete",
-			tracing.SpanAttrs("loadbalancer", cr.GetName(), "delete")...)
-		defer span.End()
-
 	}
+	_, span := tracing.StartSpan(ctx, "loadbalancer.delete",
+		tracing.SpanAttrs("loadbalancer", cr.GetName(), "delete")...)
+	defer span.End()
 
 	err := c.service.DeleteLoadBalancer(ctx, cr.Status.AtProvider.ID, cr.Spec.ForProvider)
 	if err != nil && !loadbalancing.IsLoadBalancerNotFound(err) {
