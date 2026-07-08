@@ -152,14 +152,14 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	_, span := tracing.StartSpan(ctx, "cacherule.create",
-		tracing.SpanAttrs("cacherule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "create")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.CacheRule)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotCacheRule)
 	}
+
+	_, span := tracing.StartSpan(ctx, "cacherule.create",
+		tracing.SpanAttrs("cacherule", cr.GetName(), "create")...)
+	defer func() { if span != nil { span.End() } }()
 
 	rule, ruleset, err := c.service.CreateCacheRule(ctx, cr.Spec.ForProvider)
 	if err != nil {
