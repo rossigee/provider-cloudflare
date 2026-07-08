@@ -38,13 +38,13 @@ import (
 )
 
 const (
-	errNotRule       = "managed resource is not a Rule custom resource"
-	errClientConfig  = "error getting client config"
-	errNewClient     = "cannot create new Service"
-	errCreateRule    = "cannot create email routing rule"
-	errUpdateRule    = "cannot update email routing rule"
-	errDeleteRule    = "cannot delete email routing rule"
-	errGetRule       = "cannot get email routing rule"
+	errNotRule      = "managed resource is not a Rule custom resource"
+	errClientConfig = "error getting client config"
+	errNewClient    = "cannot create new Service"
+	errCreateRule   = "cannot create email routing rule"
+	errUpdateRule   = "cannot update email routing rule"
+	errDeleteRule   = "cannot delete email routing rule"
+	errGetRule      = "cannot get email routing rule"
 )
 
 // SetupRule adds a controller that reconciles Rule managed resources.
@@ -58,7 +58,7 @@ func SetupRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter
 			newServiceFn: emailroutingruleclient.NewClientFromAPI,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name)))) 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -106,13 +106,13 @@ type external struct {
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	_, span := tracing.StartSpan(ctx, "emailroutingrule.observe",
-		tracing.SpanAttrs("emailroutingrule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "observe")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRule)
+		_, span := tracing.StartSpan(ctx, "emailroutingrule.observe",
+			tracing.SpanAttrs("emailroutingrule", cr.GetName(), "observe")...)
+		defer span.End()
+
 	}
 
 	ruleTag := meta.GetExternalName(cr)
@@ -145,13 +145,13 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	_, span := tracing.StartSpan(ctx, "emailroutingrule.create",
-		tracing.SpanAttrs("emailroutingrule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "create")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRule)
+		_, span := tracing.StartSpan(ctx, "emailroutingrule.create",
+			tracing.SpanAttrs("emailroutingrule", cr.GetName(), "create")...)
+		defer span.End()
+
 	}
 
 	obs, err := c.service.Create(ctx, cr.Spec.ForProvider)
@@ -170,13 +170,13 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	_, span := tracing.StartSpan(ctx, "emailroutingrule.update",
-		tracing.SpanAttrs("emailroutingrule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "update")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRule)
+		_, span := tracing.StartSpan(ctx, "emailroutingrule.update",
+			tracing.SpanAttrs("emailroutingrule", cr.GetName(), "update")...)
+		defer span.End()
+
 	}
 
 	ruleTag := meta.GetExternalName(cr)
@@ -195,13 +195,13 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
-	_, span := tracing.StartSpan(ctx, "emailroutingrule.delete",
-		tracing.SpanAttrs("emailroutingrule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "delete")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotRule)
+		_, span := tracing.StartSpan(ctx, "emailroutingrule.delete",
+			tracing.SpanAttrs("emailroutingrule", cr.GetName(), "delete")...)
+		defer span.End()
+
 	}
 
 	ruleTag := meta.GetExternalName(cr)

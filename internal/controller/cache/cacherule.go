@@ -175,14 +175,14 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	_, span := tracing.StartSpan(ctx, "cacherule.update",
-		tracing.SpanAttrs("cacherule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "update")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.CacheRule)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotCacheRule)
 	}
+
+	_, span := tracing.StartSpan(ctx, "cacherule.update",
+		tracing.SpanAttrs("cacherule", cr.GetName(), "update")...)
+	defer func() { if span != nil { span.End() } }()
 
 	rulesetID := cr.Status.AtProvider.RulesetID
 	ruleID := cr.Status.AtProvider.ID
@@ -200,14 +200,14 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
-	_, span := tracing.StartSpan(ctx, "cacherule.delete",
-		tracing.SpanAttrs("cacherule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "delete")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.CacheRule)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotCacheRule)
 	}
+
+	_, span := tracing.StartSpan(ctx, "cacherule.delete",
+		tracing.SpanAttrs("cacherule", cr.GetName(), "delete")...)
+	defer func() { if span != nil { span.End() } }()
 
 	rulesetID := cr.Status.AtProvider.RulesetID
 	ruleID := cr.Status.AtProvider.ID

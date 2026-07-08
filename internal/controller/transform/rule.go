@@ -26,12 +26,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
+	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 	"github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
@@ -59,7 +59,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 	name := managed.ControllerName(v1beta1.RuleGroupKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: maxConcurrency,
 	}
 
@@ -74,7 +74,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 		}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		// Do not initialize external-name field.
 		managed.WithInitializers(),
@@ -123,13 +123,13 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	_, span := tracing.StartSpan(ctx, "rule.observe",
-		tracing.SpanAttrs("rule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "observe")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRule)
+		_, span := tracing.StartSpan(ctx, "rule.observe",
+			tracing.SpanAttrs("rule", cr.GetName(), "observe")...)
+		defer span.End()
+
 	}
 
 	// Rule does not exist if we don't have an ID stored in external-name
@@ -160,13 +160,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	_, span := tracing.StartSpan(ctx, "rule.create",
-		tracing.SpanAttrs("rule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "create")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRule)
+		_, span := tracing.StartSpan(ctx, "rule.create",
+			tracing.SpanAttrs("rule", cr.GetName(), "create")...)
+		defer span.End()
+
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {
@@ -188,13 +188,13 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	_, span := tracing.StartSpan(ctx, "rule.update",
-		tracing.SpanAttrs("rule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "update")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRule)
+		_, span := tracing.StartSpan(ctx, "rule.update",
+			tracing.SpanAttrs("rule", cr.GetName(), "update")...)
+		defer span.End()
+
 	}
 
 	rid := meta.GetExternalName(cr)
@@ -217,13 +217,13 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
-	_, span := tracing.StartSpan(ctx, "rule.delete",
-		tracing.SpanAttrs("rule", func() string { if mg == nil { return "" }; return mg.GetName() }(), "delete")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotRule)
+		_, span := tracing.StartSpan(ctx, "rule.delete",
+			tracing.SpanAttrs("rule", cr.GetName(), "delete")...)
+		defer span.End()
+
 	}
 
 	if cr.Spec.ForProvider.Zone == nil {

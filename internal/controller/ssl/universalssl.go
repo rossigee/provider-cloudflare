@@ -27,11 +27,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
+	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
@@ -64,7 +64,7 @@ func SetupUniversalSSLController(mgr ctrl.Manager, l logging.Logger, rl workqueu
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)
@@ -118,13 +118,13 @@ type external struct {
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	_, span := tracing.StartSpan(ctx, "universalssl.observe",
-		tracing.SpanAttrs("universalssl", func() string { if mg == nil { return "" }; return mg.GetName() }(), "observe")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotUniversalSSL)
+		_, span := tracing.StartSpan(ctx, "universalssl.observe",
+			tracing.SpanAttrs("universalssl", cr.GetName(), "observe")...)
+		defer span.End()
+
 	}
 
 	// Universal SSL settings always exist for a zone, so we never create them
@@ -155,13 +155,13 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	_, span := tracing.StartSpan(ctx, "universalssl.create",
-		tracing.SpanAttrs("universalssl", func() string { if mg == nil { return "" }; return mg.GetName() }(), "create")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotUniversalSSL)
+		_, span := tracing.StartSpan(ctx, "universalssl.create",
+			tracing.SpanAttrs("universalssl", cr.GetName(), "create")...)
+		defer span.End()
+
 	}
 
 	// Universal SSL settings always exist for a zone, so we treat "create" as "update"
@@ -178,13 +178,13 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	_, span := tracing.StartSpan(ctx, "universalssl.update",
-		tracing.SpanAttrs("universalssl", func() string { if mg == nil { return "" }; return mg.GetName() }(), "update")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotUniversalSSL)
+		_, span := tracing.StartSpan(ctx, "universalssl.update",
+			tracing.SpanAttrs("universalssl", cr.GetName(), "update")...)
+		defer span.End()
+
 	}
 
 	observation, err := c.service.Update(ctx, cr.Spec.ForProvider)
@@ -198,13 +198,13 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
-	_, span := tracing.StartSpan(ctx, "universalssl.delete",
-		tracing.SpanAttrs("universalssl", func() string { if mg == nil { return "" }; return mg.GetName() }(), "delete")...)
-	defer span.End()
-
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotUniversalSSL)
+		_, span := tracing.StartSpan(ctx, "universalssl.delete",
+			tracing.SpanAttrs("universalssl", cr.GetName(), "delete")...)
+		defer span.End()
+
 	}
 
 	cr.Status.SetConditions(rtv1.Deleting())
