@@ -64,7 +64,7 @@ func SetupCertificatePackController(mgr ctrl.Manager, l logging.Logger, rl workq
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))), //nolint:staticcheck
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)

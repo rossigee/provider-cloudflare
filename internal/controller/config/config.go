@@ -49,5 +49,5 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 		// Removed ProviderConfigUsage watch for v2 compatibility
 		Complete(providerconfig.NewReconciler(mgr, of,
 			providerconfig.WithLogger(l.WithValues("controller", name)),
-			providerconfig.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))))) //nolint:staticcheck
+			providerconfig.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))))) 
 }

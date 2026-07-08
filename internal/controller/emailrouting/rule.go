@@ -18,7 +18,6 @@ package emailrouting
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
@@ -58,7 +57,7 @@ func SetupRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter
 			newServiceFn: emailroutingruleclient.NewClientFromAPI,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))) //nolint:staticcheck
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name)))) 
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -111,9 +110,6 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotRule)
 	}
 
-	// These fmt statements should be removed in the real implementation.
-	fmt.Printf("Observing: %+v", cr)
-
 	ruleTag := meta.GetExternalName(cr)
 	if ruleTag == "" {
 		// Rule doesn't exist yet
@@ -149,8 +145,6 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotRule)
 	}
 
-	fmt.Printf("Creating: %+v", cr)
-
 	obs, err := c.service.Create(ctx, cr.Spec.ForProvider)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateRule)
@@ -172,8 +166,6 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errNotRule)
 	}
 
-	fmt.Printf("Updating: %+v", cr)
-
 	ruleTag := meta.GetExternalName(cr)
 	obs, err := c.service.Update(ctx, ruleTag, cr.Spec.ForProvider)
 	if err != nil {
@@ -194,8 +186,6 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotRule)
 	}
-
-	fmt.Printf("Deleting: %+v", cr)
 
 	ruleTag := meta.GetExternalName(cr)
 	if ruleTag == "" {

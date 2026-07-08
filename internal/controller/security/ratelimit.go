@@ -69,7 +69,7 @@ func SetupRateLimit(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))), //nolint:staticcheck
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)
@@ -222,7 +222,7 @@ func SetupBotManagement(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRa
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))), //nolint:staticcheck
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)
@@ -377,7 +377,7 @@ func SetupTurnstile(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLi
 			},
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))), //nolint:staticcheck
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)
