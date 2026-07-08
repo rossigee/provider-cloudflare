@@ -36,6 +36,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/cache"
 	"github.com/rossigee/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/internal/tracing"
 )
 
 const (
@@ -112,6 +113,10 @@ type external struct {
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	_, span := tracing.StartSpan(ctx, "cacherule.observe",
+		tracing.SpanAttrs("cacherule", mg.GetName(), "observe")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.CacheRule)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotCacheRule)
@@ -147,6 +152,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	_, span := tracing.StartSpan(ctx, "cacherule.create",
+		tracing.SpanAttrs("cacherule", mg.GetName(), "create")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.CacheRule)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotCacheRule)
@@ -166,6 +175,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	_, span := tracing.StartSpan(ctx, "cacherule.update",
+		tracing.SpanAttrs("cacherule", mg.GetName(), "update")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.CacheRule)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotCacheRule)
@@ -187,6 +200,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
+	_, span := tracing.StartSpan(ctx, "cacherule.delete",
+		tracing.SpanAttrs("cacherule", mg.GetName(), "delete")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.CacheRule)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotCacheRule)

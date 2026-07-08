@@ -36,6 +36,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/ssl/universalssl"
+	"github.com/rossigee/provider-cloudflare/internal/tracing"
 )
 
 const (
@@ -117,6 +118,10 @@ type external struct {
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	_, span := tracing.StartSpan(ctx, "universalssl.observe",
+		tracing.SpanAttrs("universalssl", mg.GetName(), "observe")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotUniversalSSL)
@@ -150,6 +155,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	_, span := tracing.StartSpan(ctx, "universalssl.create",
+		tracing.SpanAttrs("universalssl", mg.GetName(), "create")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotUniversalSSL)
@@ -169,6 +178,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	_, span := tracing.StartSpan(ctx, "universalssl.update",
+		tracing.SpanAttrs("universalssl", mg.GetName(), "update")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotUniversalSSL)
@@ -185,6 +198,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
+	_, span := tracing.StartSpan(ctx, "universalssl.delete",
+		tracing.SpanAttrs("universalssl", mg.GetName(), "delete")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.UniversalSSL)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotUniversalSSL)

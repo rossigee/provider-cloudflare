@@ -39,6 +39,7 @@ import (
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
 	zones "github.com/rossigee/provider-cloudflare/internal/clients/zones"
 	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/internal/tracing"
 )
 
 const (
@@ -127,6 +128,9 @@ type external struct {
 
 func (e *external) Observe(ctx context.Context,
 	mg resource.Managed) (managed.ExternalObservation, error) {
+	_, span := tracing.StartSpan(ctx, "zone.observe",
+		tracing.SpanAttrs("zone", mg.GetName(), "observe")...)
+	defer span.End()
 
 	cr, ok := mg.(*v1beta1.Zone)
 	if !ok {
@@ -167,6 +171,10 @@ func (e *external) Observe(ctx context.Context,
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	_, span := tracing.StartSpan(ctx, "zone.create",
+		tracing.SpanAttrs("zone", mg.GetName(), "create")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Zone)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotZone)
@@ -210,6 +218,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	_, span := tracing.StartSpan(ctx, "zone.update",
+		tracing.SpanAttrs("zone", mg.GetName(), "update")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Zone)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotZone)
@@ -232,6 +244,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
+	_, span := tracing.StartSpan(ctx, "zone.delete",
+		tracing.SpanAttrs("zone", mg.GetName(), "delete")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Zone)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotZone)

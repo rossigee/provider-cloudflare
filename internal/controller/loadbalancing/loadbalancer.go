@@ -39,6 +39,7 @@ import (
 	apisv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing"
+	"github.com/rossigee/provider-cloudflare/internal/tracing"
 )
 
 const (
@@ -124,6 +125,10 @@ type external struct {
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	_, span := tracing.StartSpan(ctx, "loadbalancer.observe",
+		tracing.SpanAttrs("loadbalancer", mg.GetName(), "observe")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.LoadBalancer)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotLoadBalancer)
@@ -161,6 +166,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	_, span := tracing.StartSpan(ctx, "loadbalancer.create",
+		tracing.SpanAttrs("loadbalancer", mg.GetName(), "create")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.LoadBalancer)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotLoadBalancer)
@@ -184,6 +193,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	_, span := tracing.StartSpan(ctx, "loadbalancer.update",
+		tracing.SpanAttrs("loadbalancer", mg.GetName(), "update")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.LoadBalancer)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotLoadBalancer)
@@ -205,6 +218,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
+	_, span := tracing.StartSpan(ctx, "loadbalancer.delete",
+		tracing.SpanAttrs("loadbalancer", mg.GetName(), "delete")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.LoadBalancer)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotLoadBalancer)

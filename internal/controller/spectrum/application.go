@@ -37,6 +37,7 @@ import (
 	clients "github.com/rossigee/provider-cloudflare/internal/clients"
 	applications "github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
 	metrics "github.com/rossigee/provider-cloudflare/internal/metrics"
+	"github.com/rossigee/provider-cloudflare/internal/tracing"
 )
 
 const (
@@ -121,6 +122,10 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	_, span := tracing.StartSpan(ctx, "application.observe",
+		tracing.SpanAttrs("application", mg.GetName(), "observe")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Application)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotApplication)
@@ -157,6 +162,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	_, span := tracing.StartSpan(ctx, "application.create",
+		tracing.SpanAttrs("application", mg.GetName(), "create")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Application)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotApplication)
@@ -184,6 +193,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	_, span := tracing.StartSpan(ctx, "application.update",
+		tracing.SpanAttrs("application", mg.GetName(), "update")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Application)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotApplication)
@@ -209,6 +222,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
+	_, span := tracing.StartSpan(ctx, "application.delete",
+		tracing.SpanAttrs("application", mg.GetName(), "delete")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Application)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotApplication)

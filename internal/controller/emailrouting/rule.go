@@ -34,6 +34,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	emailroutingruleclient "github.com/rossigee/provider-cloudflare/internal/clients/emailrouting/rule"
+	"github.com/rossigee/provider-cloudflare/internal/tracing"
 )
 
 const (
@@ -105,6 +106,10 @@ type external struct {
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	_, span := tracing.StartSpan(ctx, "emailroutingrule.observe",
+		tracing.SpanAttrs("emailroutingrule", mg.GetName(), "observe")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRule)
@@ -140,6 +145,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	_, span := tracing.StartSpan(ctx, "emailroutingrule.create",
+		tracing.SpanAttrs("emailroutingrule", mg.GetName(), "create")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRule)
@@ -161,6 +170,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	_, span := tracing.StartSpan(ctx, "emailroutingrule.update",
+		tracing.SpanAttrs("emailroutingrule", mg.GetName(), "update")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRule)
@@ -182,6 +195,10 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
+	_, span := tracing.StartSpan(ctx, "emailroutingrule.delete",
+		tracing.SpanAttrs("emailroutingrule", mg.GetName(), "delete")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Rule)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotRule)
