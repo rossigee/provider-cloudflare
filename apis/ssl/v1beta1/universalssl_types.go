@@ -17,9 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 
@@ -42,13 +43,13 @@ type UniversalSSLObservation struct {
 
 // UniversalSSLSpec defines the desired state of Universal SSL.
 type UniversalSSLSpec struct {
-	rtv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       UniversalSSLParameters `json:"forProvider"`
 }
 
 // UniversalSSLStatus defines the observed state of Universal SSL.
 type UniversalSSLStatus struct {
-	rtv1.ManagedResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          UniversalSSLObservation `json:"atProvider,omitempty"`
 }
 
@@ -75,55 +76,54 @@ type UniversalSSLList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []UniversalSSL `json:"items"`
 }
-}
 
 // GetCondition of this UniversalSSL.
-func (mg *UniversalSSL) GetCondition(ct rtv1.ConditionType) rtv1.Condition {
+func (mg *UniversalSSL) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this UniversalSSL.
-func (mg *UniversalSSL) GetDeletionPolicy() rtv1.DeletionPolicy {
+func (mg *UniversalSSL) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this UniversalSSL.
-func (mg *UniversalSSL) GetManagementPolicies() rtv1.ManagementPolicies {
+func (mg *UniversalSSL) GetManagementPolicies() xpv1.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this UniversalSSL.
-func (mg *UniversalSSL) GetProviderConfigReference() *rtv1.Reference {
+func (mg *UniversalSSL) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this UniversalSSL.
-func (mg *UniversalSSL) GetWriteConnectionSecretToReference() *rtv1.SecretReference {
+func (mg *UniversalSSL) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this UniversalSSL.
-func (mg *UniversalSSL) SetConditions(c ...rtv1.Condition) {
+func (mg *UniversalSSL) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this UniversalSSL.
-func (mg *UniversalSSL) SetDeletionPolicy(r rtv1.DeletionPolicy) {
+func (mg *UniversalSSL) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this UniversalSSL.
-func (mg *UniversalSSL) SetManagementPolicies(r rtv1.ManagementPolicies) {
+func (mg *UniversalSSL) SetManagementPolicies(r xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this UniversalSSL.
-func (mg *UniversalSSL) SetProviderConfigReference(r *rtv1.Reference) {
+func (mg *UniversalSSL) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this UniversalSSL.
-func (mg *UniversalSSL) SetWriteConnectionSecretToReference(r *rtv1.SecretReference) {
+func (mg *UniversalSSL) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 

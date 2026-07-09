@@ -23,12 +23,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
@@ -131,7 +131,7 @@ func (e *subdomainExternal) Observe(ctx context.Context,
 	// Convert the subdomain observation
 	obs := generateSubdomainObservation(subdomainObs)
 	cr.Status.AtProvider = obs
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	// Check if up to date
 	upToDate := isSubdomainUpToDate(cr.Spec.ForProvider, obs)

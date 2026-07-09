@@ -17,42 +17,25 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
-	"sslsaas.cloudflare.m.crossplane.io"
-	"sslsaasv1alpha1"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// CustomHostnameSSLValidationErrors type metadata.
 var (
-	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: Group, Version: Version}
+	CustomHostnameSSLValidationErrorsKind             = reflect.TypeOf(CustomHostnameSSLValidationErrors{}).Name()
+	CustomHostnameSSLValidationErrorsGroupKind        = schema.GroupKind{Group: Group, Kind: CustomHostnameSSLValidationErrorsKind}
+	CustomHostnameSSLValidationErrorsKindAPIVersion   = CustomHostnameSSLValidationErrorsKind + "." + SchemeGroupVersion.String()
+	CustomHostnameSSLValidationErrorsGroupVersionKind = SchemeGroupVersion.WithKind(CustomHostnameSSLValidationErrorsKind)
 
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-)
+	CustomHostnameKind             = reflect.TypeOf(CustomHostname{}).Name()
+	CustomHostnameGroupKind        = schema.GroupKind{Group: Group, Kind: CustomHostnameKind}
+	CustomHostnameKindAPIVersion   = CustomHostnameKind + "." + SchemeGroupVersion.String()
+	CustomHostnameGroupVersionKind = SchemeGroupVersion.WithKind(CustomHostnameKind)
 
-// FallbackOrigin type metadata.
-var (
 	FallbackOriginKind             = reflect.TypeOf(FallbackOrigin{}).Name()
-	FallbackOriginGroupKind        = schema.GroupKind{Group: Group, Kind: FallbackOriginKind}.String()
+	FallbackOriginGroupKind        = schema.GroupKind{Group: Group, Kind: FallbackOriginKind}
 	FallbackOriginKindAPIVersion   = FallbackOriginKind + "." + SchemeGroupVersion.String()
 	FallbackOriginGroupVersionKind = SchemeGroupVersion.WithKind(FallbackOriginKind)
 )
-
-// CustomHostname type metadata.
-var (
-	CustomHostnameKind             = reflect.TypeOf(CustomHostname{}).Name()
-	CustomHostnameGroupKind        = schema.GroupKind{Group: Group, Kind: CustomHostnameKind}.String()
-	CustomHostnameKindAPIVersion   = CustomHostnameKind + "." + SchemeGroupVersion.String()
-	CustomHostnameGroupVersionKind = SchemeGroupVersion.WithKind(CustomHostnameKind)
-)
-
-func addKnownTypes(s *runtime.Scheme) error {
-	s.AddKnownTypes(SchemeGroupVersion,
-		&CustomHostname{},
-		&CustomHostnameList{},
-		&FallbackOrigin{},
-		&FallbackOriginList{},
-	)
-	return nil
-}

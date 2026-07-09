@@ -21,15 +21,17 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/providerconfig"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+
+	v1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 )
 
 // Setup adds a controller that reconciles ProviderConfigs using v2 patterns.
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	name := providerconfig.ControllerName(v1beta1.ProviderConfigGroupKind)
+	name := providerconfig.ControllerName(v1beta1.ProviderConfigGroupKind.String())
 
 	o := controller.Options{
 		RateLimiter: nil, // Use default rate limiter
@@ -44,7 +46,6 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any
 		Named(name).
 		WithOptions(o).
 		For(&v1beta1.ProviderConfig{}).
-		// Removed ProviderConfigUsage watch for v2 compatibility
 		Complete(providerconfig.NewReconciler(mgr, of,
 			providerconfig.WithLogger(l.WithValues("controller", name)),
 			providerconfig.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name)))))

@@ -89,7 +89,7 @@ type devicePostureRuleModifier func(*v1beta1.DevicePostureRule)
 func withDevicePostureRuleID(id string) devicePostureRuleModifier {
 	return func(dpr *v1beta1.DevicePostureRule) {
 		dpr.Status.AtProvider.ID = id
-		rtmeta.SetExternalName(dpr, id)
+		meta.SetExternalName(dpr, id)
 	}
 }
 

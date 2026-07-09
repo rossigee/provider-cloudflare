@@ -17,9 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 
@@ -27,8 +27,8 @@ import (
 var (
 	ZoneKind             = "Zone"
 	ZoneGroupKind        = schema.GroupKind{Group: Group, Kind: ZoneKind}
-	ZoneKindAPIVersion   = ZoneKind + "." + GroupVersion.String()
-	ZoneGroupVersionKind = GroupVersion.WithKind(ZoneKind)
+	ZoneKindAPIVersion   = ZoneKind + "." + SchemeGroupVersion.String()
+	ZoneGroupVersionKind = SchemeGroupVersion.WithKind(ZoneKind)
 )
 
 // MinifySettings represents the minify settings on a Zone
@@ -436,6 +436,4 @@ type ZoneList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Zone `json:"items"`
-}
-
 }

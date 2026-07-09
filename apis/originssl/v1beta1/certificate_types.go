@@ -17,9 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 
@@ -76,13 +76,13 @@ type CertificateObservation struct {
 
 // CertificateSpec defines the desired state of a Certificate.
 type CertificateSpec struct {
-	rtv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       CertificateParameters `json:"forProvider"`
 }
 
 // CertificateStatus defines the observed state of a Certificate.
 type CertificateStatus struct {
-	rtv1.ManagedResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          CertificateObservation `json:"atProvider,omitempty"`
 }
 
@@ -113,55 +113,54 @@ type CertificateList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Certificate `json:"items"`
 }
-}
 
 // GetCondition of this Certificate.
-func (mg *Certificate) GetCondition(ct rtv1.ConditionType) rtv1.Condition {
+func (mg *Certificate) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this Certificate.
-func (mg *Certificate) GetDeletionPolicy() rtv1.DeletionPolicy {
+func (mg *Certificate) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this Certificate.
-func (mg *Certificate) GetManagementPolicies() rtv1.ManagementPolicies {
+func (mg *Certificate) GetManagementPolicies() xpv1.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this Certificate.
-func (mg *Certificate) GetProviderConfigReference() *rtv1.Reference {
+func (mg *Certificate) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this Certificate.
-func (mg *Certificate) GetWriteConnectionSecretToReference() *rtv1.SecretReference {
+func (mg *Certificate) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Certificate.
-func (mg *Certificate) SetConditions(c ...rtv1.Condition) {
+func (mg *Certificate) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this Certificate.
-func (mg *Certificate) SetDeletionPolicy(r rtv1.DeletionPolicy) {
+func (mg *Certificate) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this Certificate.
-func (mg *Certificate) SetManagementPolicies(r rtv1.ManagementPolicies) {
+func (mg *Certificate) SetManagementPolicies(r xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this Certificate.
-func (mg *Certificate) SetProviderConfigReference(r *rtv1.Reference) {
+func (mg *Certificate) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Certificate.
-func (mg *Certificate) SetWriteConnectionSecretToReference(r *rtv1.SecretReference) {
+func (mg *Certificate) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
@@ -169,3 +168,5 @@ func (mg *Certificate) SetWriteConnectionSecretToReference(r *rtv1.SecretReferen
 func (mg *Certificate) GetGroupVersionKind() schema.GroupVersionKind {
 	return CertificateGroupVersionKind
 }
+
+

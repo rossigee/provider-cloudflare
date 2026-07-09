@@ -23,14 +23,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/fallbackorigin"
 	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -48,7 +48,7 @@ const (
 
 // SetupFallbackOrigin adds a controller that reconciles FallbackOrigin managed resources.
 func SetupFallbackOrigin(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(v1beta1.FallbackOriginGroupKind)
+	name := managed.ControllerName(v1beta1.FallbackOriginGroupKind.String())
 
 	o := controller.Options{
 		RateLimiter:             nil, // Use default rate limiter
@@ -136,7 +136,7 @@ func (e *fallbackOriginExternal) Observe(ctx context.Context, mg resource.Manage
 	}
 
 	cr.Status.AtProvider = fallbackorigin.GenerateObservation(origin)
-	cr.SetConditions(rtv1.Available())
+	cr.SetConditions(xpv1.Available())
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
@@ -154,7 +154,7 @@ func (e *fallbackOriginExternal) Create(ctx context.Context, mg resource.Managed
 		return managed.ExternalCreation{}, errors.New(errFallbackOriginNoZone)
 	}
 
-	cr.SetConditions(rtv1.Creating())
+	cr.SetConditions(xpv1.Creating())
 
 	zoneID := *cr.Spec.ForProvider.Zone
 	origin := fallbackorigin.ParametersToFallbackOrigin(cr.Spec.ForProvider)

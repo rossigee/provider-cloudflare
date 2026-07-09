@@ -17,41 +17,40 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Package type metadata.
-const (
-	ScriptKind      = "Script"
-	RouteKind       = "Route"
-	CronTriggerKind = "CronTrigger"
-	DomainKind      = "Domain"
-	KVNamespaceKind = "KVNamespace"
-	SubdomainKind   = "Subdomain"
-)
-
+// Route type metadata.
 var (
-	ScriptKindAPIVersion   = ScriptKind + "." + GroupVersion.String()
-	ScriptGroupKind        = schema.GroupKind{Group: Group, Kind: ScriptKind}.String()
-	ScriptGroupVersionKind = GroupVersion.WithKind(ScriptKind)
-
+	RouteKind             = reflect.TypeOf(Route{}).Name()
+	RouteGroupKind        = schema.GroupKind{Group: Group, Kind: RouteKind}
 	RouteKindAPIVersion   = RouteKind + "." + GroupVersion.String()
-	RouteGroupKind        = schema.GroupKind{Group: Group, Kind: RouteKind}.String()
 	RouteGroupVersionKind = GroupVersion.WithKind(RouteKind)
 
+	CronTriggerKind             = reflect.TypeOf(CronTrigger{}).Name()
+	CronTriggerGroupKind        = schema.GroupKind{Group: Group, Kind: CronTriggerKind}
 	CronTriggerKindAPIVersion   = CronTriggerKind + "." + GroupVersion.String()
-	CronTriggerGroupKind        = schema.GroupKind{Group: Group, Kind: CronTriggerKind}.String()
 	CronTriggerGroupVersionKind = GroupVersion.WithKind(CronTriggerKind)
 
+	DomainKind             = reflect.TypeOf(Domain{}).Name()
+	DomainGroupKind        = schema.GroupKind{Group: Group, Kind: DomainKind}
 	DomainKindAPIVersion   = DomainKind + "." + GroupVersion.String()
-	DomainGroupKind        = schema.GroupKind{Group: Group, Kind: DomainKind}.String()
 	DomainGroupVersionKind = GroupVersion.WithKind(DomainKind)
 
+	KVNamespaceKind             = reflect.TypeOf(KVNamespace{}).Name()
+	KVNamespaceGroupKind        = schema.GroupKind{Group: Group, Kind: KVNamespaceKind}
 	KVNamespaceKindAPIVersion   = KVNamespaceKind + "." + GroupVersion.String()
-	KVNamespaceGroupKind        = schema.GroupKind{Group: Group, Kind: KVNamespaceKind}.String()
 	KVNamespaceGroupVersionKind = GroupVersion.WithKind(KVNamespaceKind)
 
+	ScriptKind             = reflect.TypeOf(Script{}).Name()
+	ScriptGroupKind        = schema.GroupKind{Group: Group, Kind: ScriptKind}
+	ScriptKindAPIVersion   = ScriptKind + "." + GroupVersion.String()
+	ScriptGroupVersionKind = GroupVersion.WithKind(ScriptKind)
+
+	SubdomainKind             = reflect.TypeOf(Subdomain{}).Name()
+	SubdomainGroupKind        = schema.GroupKind{Group: Group, Kind: SubdomainKind}
 	SubdomainKindAPIVersion   = SubdomainKind + "." + GroupVersion.String()
-	SubdomainGroupKind        = schema.GroupKind{Group: Group, Kind: SubdomainKind}.String()
 	SubdomainGroupVersionKind = GroupVersion.WithKind(SubdomainKind)
 )

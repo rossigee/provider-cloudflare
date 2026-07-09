@@ -93,7 +93,7 @@ type accessApplicationModifier func(*v1beta1.AccessApplication)
 func withAccessAppID(id string) accessApplicationModifier {
 	return func(aa *v1beta1.AccessApplication) {
 		aa.Status.AtProvider.ID = id
-		rtmeta.SetExternalName(aa, id)
+		meta.SetExternalName(aa, id)
 	}
 }
 

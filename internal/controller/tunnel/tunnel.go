@@ -24,13 +24,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
-	"github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
+	tunnelv1beta1 "github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/tunnel"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -131,7 +131,7 @@ func (c *tunnelExternal) Observe(ctx context.Context, mg resource.Managed) (mana
 
 	cr.Status.AtProvider = *obs
 
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	upToDate, err := c.service.IsUpToDate(ctx, cr.Spec.ForProvider, *obs)
 	if err != nil {
@@ -150,7 +150,7 @@ func (c *tunnelExternal) Create(ctx context.Context, mg resource.Managed) (manag
 		return managed.ExternalCreation{}, errors.New(errNotTunnel)
 	}
 
-	cr.Status.SetConditions(rtv1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 
 	obs, err := c.service.Create(ctx, cr.Spec.ForProvider)
 	if err != nil {
@@ -185,7 +185,7 @@ func (c *tunnelExternal) Delete(ctx context.Context, mg resource.Managed) (manag
 		return managed.ExternalDelete{}, errors.New(errNotTunnel)
 	}
 
-	cr.Status.SetConditions(rtv1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	return managed.ExternalDelete{}, c.service.Delete(ctx, cr.Spec.ForProvider.AccountID, meta.GetExternalName(cr))
 }

@@ -17,26 +17,30 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Package type metadata.
-const (
-	RateLimitKind     = "RateLimit"
-	BotManagementKind = "BotManagement"
-	TurnstileKind     = "Turnstile"
-)
-
+// RateLimitTrafficMatcher type metadata.
 var (
-	RateLimitKindAPIVersion   = RateLimitKind + "." + GroupVersion.String()
-	RateLimitGroupKind        = schema.GroupKind{Group: Group, Kind: RateLimitKind}.String()
-	RateLimitGroupVersionKind = GroupVersion.WithKind(RateLimitKind)
+	RateLimitTrafficMatcherKind             = reflect.TypeOf(RateLimitTrafficMatcher{}).Name()
+	RateLimitTrafficMatcherGroupKind        = schema.GroupKind{Group: Group, Kind: RateLimitTrafficMatcherKind}
+	RateLimitTrafficMatcherKindAPIVersion   = RateLimitTrafficMatcherKind + "." + SchemeGroupVersion.String()
+	RateLimitTrafficMatcherGroupVersionKind = SchemeGroupVersion.WithKind(RateLimitTrafficMatcherKind)
 
-	BotManagementKindAPIVersion   = BotManagementKind + "." + GroupVersion.String()
-	BotManagementGroupKind        = schema.GroupKind{Group: Group, Kind: BotManagementKind}.String()
-	BotManagementGroupVersionKind = GroupVersion.WithKind(BotManagementKind)
+	RateLimitKind             = reflect.TypeOf(RateLimit{}).Name()
+	RateLimitGroupKind        = schema.GroupKind{Group: Group, Kind: RateLimitKind}
+	RateLimitKindAPIVersion   = RateLimitKind + "." + SchemeGroupVersion.String()
+	RateLimitGroupVersionKind = SchemeGroupVersion.WithKind(RateLimitKind)
 
-	TurnstileKindAPIVersion   = TurnstileKind + "." + GroupVersion.String()
-	TurnstileGroupKind        = schema.GroupKind{Group: Group, Kind: TurnstileKind}.String()
-	TurnstileGroupVersionKind = GroupVersion.WithKind(TurnstileKind)
+	BotManagementKind             = reflect.TypeOf(BotManagement{}).Name()
+	BotManagementGroupKind        = schema.GroupKind{Group: Group, Kind: BotManagementKind}
+	BotManagementKindAPIVersion   = BotManagementKind + "." + SchemeGroupVersion.String()
+	BotManagementGroupVersionKind = SchemeGroupVersion.WithKind(BotManagementKind)
+
+	TurnstileKind             = reflect.TypeOf(Turnstile{}).Name()
+	TurnstileGroupKind        = schema.GroupKind{Group: Group, Kind: TurnstileKind}
+	TurnstileKindAPIVersion   = TurnstileKind + "." + SchemeGroupVersion.String()
+	TurnstileGroupVersionKind = SchemeGroupVersion.WithKind(TurnstileKind)
 )

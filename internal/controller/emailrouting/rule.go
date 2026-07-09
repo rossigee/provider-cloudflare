@@ -27,10 +27,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"github.com/rossigee/provider-cloudflare/internal/clients/emailrouting/rule"
+	emailroutingruleclient "github.com/rossigee/provider-cloudflare/internal/clients/emailrouting/rule"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

@@ -17,32 +17,20 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
-	"spectrum.cloudflare.m.crossplane.io"
-	"spectrumv1alpha1"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// SpectrumApplicationDNS type metadata.
 var (
-	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: Group, Version: Version}
+	SpectrumApplicationDNSKind             = reflect.TypeOf(SpectrumApplicationDNS{}).Name()
+	SpectrumApplicationDNSGroupKind        = schema.GroupKind{Group: Group, Kind: SpectrumApplicationDNSKind}
+	SpectrumApplicationDNSKindAPIVersion   = SpectrumApplicationDNSKind + "." + SchemeGroupVersion.String()
+	SpectrumApplicationDNSGroupVersionKind = SchemeGroupVersion.WithKind(SpectrumApplicationDNSKind)
 
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-)
-
-// Application type metadata.
-var (
 	ApplicationKind             = reflect.TypeOf(Application{}).Name()
-	ApplicationGroupKind        = schema.GroupKind{Group: Group, Kind: ApplicationKind}.String()
+	ApplicationGroupKind        = schema.GroupKind{Group: Group, Kind: ApplicationKind}
 	ApplicationKindAPIVersion   = ApplicationKind + "." + SchemeGroupVersion.String()
 	ApplicationGroupVersionKind = SchemeGroupVersion.WithKind(ApplicationKind)
 )
-
-func addKnownTypes(s *runtime.Scheme) error {
-	s.AddKnownTypes(SchemeGroupVersion,
-		&Application{},
-		&ApplicationList{},
-	)
-	return nil
-}

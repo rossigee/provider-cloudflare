@@ -17,22 +17,17 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-
-// Package type metadata.
-const (
-	CRDGroup   = "logpush.cloudflare.m.crossplane.io"
-	CRDVersion = "logpushv1alpha1"
-)
-
+// Job type metadata.
 var (
-	// CRDGroupVersion is the API Group Version used to register the objects
-	CRDGroupVersion = schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
-
-	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = CRDGroupVersion
+	JobKind             = reflect.TypeOf(Job{}).Name()
+	JobGroupKind        = schema.GroupKind{Group: Group, Kind: JobKind}
+	JobKindAPIVersion   = JobKind + "." + SchemeGroupVersion.String()
+	JobGroupVersionKind = SchemeGroupVersion.WithKind(JobKind)
 )
 
-}
+// (metadata declared here; remove any duplicate in types.go if present)

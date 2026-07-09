@@ -17,26 +17,30 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Package type metadata.
-const (
-	LoadBalancerKind        = "LoadBalancer"
-	LoadBalancerMonitorKind = "LoadBalancerMonitor"
-	LoadBalancerPoolKind    = "LoadBalancerPool"
-)
-
+// SessionAffinityAttributes type metadata.
 var (
-	LoadBalancerKindAPIVersion   = LoadBalancerKind + "." + GroupVersion.String()
-	LoadBalancerGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerKind}.String()
-	LoadBalancerGroupVersionKind = GroupVersion.WithKind(LoadBalancerKind)
+	SessionAffinityAttributesKind             = reflect.TypeOf(SessionAffinityAttributes{}).Name()
+	SessionAffinityAttributesGroupKind        = schema.GroupKind{Group: Group, Kind: SessionAffinityAttributesKind}
+	SessionAffinityAttributesKindAPIVersion   = SessionAffinityAttributesKind + "." + SchemeGroupVersion.String()
+	SessionAffinityAttributesGroupVersionKind = SchemeGroupVersion.WithKind(SessionAffinityAttributesKind)
 
-	LoadBalancerMonitorKindAPIVersion   = LoadBalancerMonitorKind + "." + GroupVersion.String()
-	LoadBalancerMonitorGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerMonitorKind}.String()
-	LoadBalancerMonitorGroupVersionKind = GroupVersion.WithKind(LoadBalancerMonitorKind)
+	LoadBalancerKind             = reflect.TypeOf(LoadBalancer{}).Name()
+	LoadBalancerGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerKind}
+	LoadBalancerKindAPIVersion   = LoadBalancerKind + "." + SchemeGroupVersion.String()
+	LoadBalancerGroupVersionKind = SchemeGroupVersion.WithKind(LoadBalancerKind)
 
-	LoadBalancerPoolKindAPIVersion   = LoadBalancerPoolKind + "." + GroupVersion.String()
-	LoadBalancerPoolGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerPoolKind}.String()
-	LoadBalancerPoolGroupVersionKind = GroupVersion.WithKind(LoadBalancerPoolKind)
+	LoadBalancerMonitorKind             = reflect.TypeOf(LoadBalancerMonitor{}).Name()
+	LoadBalancerMonitorGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerMonitorKind}
+	LoadBalancerMonitorKindAPIVersion   = LoadBalancerMonitorKind + "." + SchemeGroupVersion.String()
+	LoadBalancerMonitorGroupVersionKind = SchemeGroupVersion.WithKind(LoadBalancerMonitorKind)
+
+	LoadBalancerPoolKind             = reflect.TypeOf(LoadBalancerPool{}).Name()
+	LoadBalancerPoolGroupKind        = schema.GroupKind{Group: Group, Kind: LoadBalancerPoolKind}
+	LoadBalancerPoolKindAPIVersion   = LoadBalancerPoolKind + "." + SchemeGroupVersion.String()
+	LoadBalancerPoolGroupVersionKind = SchemeGroupVersion.WithKind(LoadBalancerPoolKind)
 )

@@ -17,53 +17,25 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
-	"ssl.cloudflare.m.crossplane.io"
-	"sslv1alpha1"
-)
 
-var (
-	// CRDGroupVersion is the API Group Version used to register the objects
-	CRDGroupVersion = schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
-
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-	AddToScheme   = SchemeBuilder.AddToScheme
-)
-
-// UniversalSSL type metadata.
-var (
-	UniversalSSLKind             = reflect.TypeOf(UniversalSSL{}).Name()
-	UniversalSSLGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: UniversalSSLKind}
-	UniversalSSLKindAPIVersion   = UniversalSSLKind + "." + CRDGroupVersion.String()
-	UniversalSSLGroupVersionKind = CRDGroupVersion.WithKind(UniversalSSLKind)
-)
-
-// TotalTLS type metadata.
-var (
-	TotalTLSKind             = reflect.TypeOf(TotalTLS{}).Name()
-	TotalTLSGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: TotalTLSKind}
-	TotalTLSKindAPIVersion   = TotalTLSKind + "." + CRDGroupVersion.String()
-	TotalTLSGroupVersionKind = CRDGroupVersion.WithKind(TotalTLSKind)
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // CertificatePack type metadata.
 var (
 	CertificatePackKind             = reflect.TypeOf(CertificatePack{}).Name()
-	CertificatePackGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: CertificatePackKind}
-	CertificatePackKindAPIVersion   = CertificatePackKind + "." + CRDGroupVersion.String()
-	CertificatePackGroupVersionKind = CRDGroupVersion.WithKind(CertificatePackKind)
-)
+	CertificatePackGroupKind        = schema.GroupKind{Group: Group, Kind: CertificatePackKind}
+	CertificatePackKindAPIVersion   = CertificatePackKind + "." + SchemeGroupVersion.String()
+	CertificatePackGroupVersionKind = SchemeGroupVersion.WithKind(CertificatePackKind)
 
-func addKnownTypes(s *runtime.Scheme) error {
-	s.AddKnownTypes(SchemeGroupVersion,
-		&UniversalSSL{},
-		&UniversalSSLList{},
-		&TotalTLS{},
-		&TotalTLSList{},
-		&CertificatePack{},
-		&CertificatePackList{},
-	)
-	return nil
-}
+	TotalTLSKind             = reflect.TypeOf(TotalTLS{}).Name()
+	TotalTLSGroupKind        = schema.GroupKind{Group: Group, Kind: TotalTLSKind}
+	TotalTLSKindAPIVersion   = TotalTLSKind + "." + SchemeGroupVersion.String()
+	TotalTLSGroupVersionKind = SchemeGroupVersion.WithKind(TotalTLSKind)
+
+	UniversalSSLKind             = reflect.TypeOf(UniversalSSL{}).Name()
+	UniversalSSLGroupKind        = schema.GroupKind{Group: Group, Kind: UniversalSSLKind}
+	UniversalSSLKindAPIVersion   = UniversalSSLKind + "." + SchemeGroupVersion.String()
+	UniversalSSLGroupVersionKind = SchemeGroupVersion.WithKind(UniversalSSLKind)
+)

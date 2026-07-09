@@ -28,7 +28,7 @@ func TestVerifySchemeRegistration(t *testing.T) {
 
 	err := VerifySchemeRegistration()
 	if err != nil {
-		t.Fatalf("CRITICAL: Scheme registration verification failed - TESTING FAILURE: %v\nThis indicates that some API types are not properly registered with the scheme.\nCheck that all API packages have init() functions that call SchemeBuilder.Register()", err)
+		t.Fatalf("CRITICAL: Scheme registration verification failed - TESTING FAILURE: %vnThis indicates that some API types are not properly registered with the scheme.nCheck that all API packages have init() functions that call SchemeBuilder.Register()", err)
 	}
 }
 

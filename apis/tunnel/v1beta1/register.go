@@ -14,25 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1beta1 contains the core resources of the Cloudflare Tunnel provider.
-// +kubebuilder:object:generate=true
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-
+// Tunnel type metadata.
 var (
-	// TunnelKind is the kind of the Tunnel resource.
-	TunnelKind = "Tunnel"
-
-	// TunnelGroupVersionKind is the GroupVersionKind of the Tunnel resource.
-	TunnelGroupVersionKind = schema.GroupVersionKind{
-		Group:   Group,
-		Version: Version,
-		Kind:    TunnelKind,
-	}
+	TunnelKind             = reflect.TypeOf(Tunnel{}).Name()
+	TunnelGroupKind        = schema.GroupKind{Group: Group, Kind: TunnelKind}
+	TunnelKindAPIVersion   = TunnelKind + "." + SchemeGroupVersion.String()
+	TunnelGroupVersionKind = SchemeGroupVersion.WithKind(TunnelKind)
 )
-
-}

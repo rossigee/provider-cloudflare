@@ -8,7 +8,7 @@ You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
+distributed under the License is distributed on an "AS IS" BASIS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
@@ -17,8 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 
@@ -93,13 +94,13 @@ type TurnstileObservation struct {
 
 // TurnstileSpec defines the desired state of Turnstile.
 type TurnstileSpec struct {
-	rtv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       TurnstileParameters `json:"forProvider"`
 }
 
 // TurnstileStatus defines the observed state of Turnstile.
 type TurnstileStatus struct {
-	rtv1.ManagedResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          TurnstileObservation `json:"atProvider,omitempty"`
 }
 
@@ -126,5 +127,5 @@ type TurnstileList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Turnstile `json:"items"`
-}, &TurnstileList{})
 }
+

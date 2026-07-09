@@ -24,15 +24,15 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
-	"github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
+	securityv1beta1 "github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/security/botmanagement"
 	"github.com/rossigee/provider-cloudflare/internal/clients/security/ratelimit"
 	"github.com/rossigee/provider-cloudflare/internal/clients/security/turnstile"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -137,7 +137,7 @@ func (c *rateLimitExternal) Observe(ctx context.Context, mg resource.Managed) (m
 
 	cr.Status.AtProvider = *obs
 
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	upToDate, err := c.service.IsUpToDate(ctx, cr.Spec.ForProvider, *obs)
 	if err != nil {
@@ -156,7 +156,7 @@ func (c *rateLimitExternal) Create(ctx context.Context, mg resource.Managed) (ma
 		return managed.ExternalCreation{}, errors.New(errNotRateLimit)
 	}
 
-	cr.Status.SetConditions(rtv1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 
 	obs, err := c.service.Create(ctx, cr.Spec.ForProvider)
 	if err != nil {
@@ -191,7 +191,7 @@ func (c *rateLimitExternal) Delete(ctx context.Context, mg resource.Managed) (ma
 		return managed.ExternalDelete{}, errors.New(errNotRateLimit)
 	}
 
-	cr.Status.SetConditions(rtv1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	return managed.ExternalDelete{}, c.service.Delete(ctx, cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
 }
@@ -286,7 +286,7 @@ func (c *botManagementExternal) Observe(ctx context.Context, mg resource.Managed
 
 	cr.Status.AtProvider = *obs
 
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	upToDate, err := c.service.IsUpToDate(ctx, cr.Spec.ForProvider, *obs)
 	if err != nil {
@@ -305,7 +305,7 @@ func (c *botManagementExternal) Create(ctx context.Context, mg resource.Managed)
 		return managed.ExternalCreation{}, errors.New(errNotBotManagement)
 	}
 
-	cr.Status.SetConditions(rtv1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 
 	// Bot Management is a configuration, not a created resource, so we just update it
 	obs, err := c.service.Update(ctx, cr.Spec.ForProvider)
@@ -345,7 +345,7 @@ func (c *botManagementExternal) Delete(ctx context.Context, mg resource.Managed)
 		return managed.ExternalDelete{}, errors.New(errNotBotManagement)
 	}
 
-	cr.Status.SetConditions(rtv1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	// Successfully "delete" by doing nothing - the configuration remains
 	return managed.ExternalDelete{}, nil
@@ -445,7 +445,7 @@ func (c *turnstileExternal) Observe(ctx context.Context, mg resource.Managed) (m
 
 	cr.Status.AtProvider = *obs
 
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	upToDate, err := c.service.IsUpToDate(ctx, cr.Spec.ForProvider, *obs)
 	if err != nil {
@@ -464,7 +464,7 @@ func (c *turnstileExternal) Create(ctx context.Context, mg resource.Managed) (ma
 		return managed.ExternalCreation{}, errors.New(errNotTurnstile)
 	}
 
-	cr.Status.SetConditions(rtv1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 
 	obs, err := c.service.Create(ctx, cr.Spec.ForProvider)
 	if err != nil {
@@ -501,7 +501,7 @@ func (c *turnstileExternal) Delete(ctx context.Context, mg resource.Managed) (ma
 		return managed.ExternalDelete{}, errors.New(errNotTurnstile)
 	}
 
-	cr.Status.SetConditions(rtv1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	return managed.ExternalDelete{}, c.service.Delete(ctx, cr.Spec.ForProvider.AccountID, meta.GetExternalName(cr))
 }

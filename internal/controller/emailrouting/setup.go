@@ -19,7 +19,7 @@ package emailrouting
 import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // Setup Email Routing controllers.

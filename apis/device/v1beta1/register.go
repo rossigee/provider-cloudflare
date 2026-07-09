@@ -14,25 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1beta1 contains the core resources of the Cloudflare Device provider.
-// +kubebuilder:object:generate=true
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-
+// DevicePostureRuleMatch type metadata.
 var (
-	// DevicePostureRuleKind is the kind of the DevicePostureRule resource.
-	DevicePostureRuleKind = "DevicePostureRule"
+	DevicePostureRuleMatchKind             = reflect.TypeOf(DevicePostureRuleMatch{}).Name()
+	DevicePostureRuleMatchGroupKind        = schema.GroupKind{Group: Group, Kind: DevicePostureRuleMatchKind}
+	DevicePostureRuleMatchKindAPIVersion   = DevicePostureRuleMatchKind + "." + SchemeGroupVersion.String()
+	DevicePostureRuleMatchGroupVersionKind = SchemeGroupVersion.WithKind(DevicePostureRuleMatchKind)
 
-	// DevicePostureRuleGroupVersionKind is the GroupVersionKind of the DevicePostureRule resource.
-	DevicePostureRuleGroupVersionKind = schema.GroupVersionKind{
-		Group:   Group,
-		Version: Version,
-		Kind:    DevicePostureRuleKind,
-	}
+	DevicePostureRuleKind             = reflect.TypeOf(DevicePostureRule{}).Name()
+	DevicePostureRuleGroupKind        = schema.GroupKind{Group: Group, Kind: DevicePostureRuleKind}
+	DevicePostureRuleKindAPIVersion   = DevicePostureRuleKind + "." + SchemeGroupVersion.String()
+	DevicePostureRuleGroupVersionKind = SchemeGroupVersion.WithKind(DevicePostureRuleKind)
 )
-
-}

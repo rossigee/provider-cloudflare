@@ -17,33 +17,15 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
-	"originssl.cloudflare.m.crossplane.io"
-	"originsslv1alpha1"
 	"reflect"
-)
 
-var (
-	// CRDGroupVersion is the API Group Version used to register the objects
-	CRDGroupVersion = schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
-
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-	AddToScheme   = SchemeBuilder.AddToScheme
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // Certificate type metadata.
 var (
 	CertificateKind             = reflect.TypeOf(Certificate{}).Name()
-	CertificateGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: CertificateKind}
-	CertificateKindAPIVersion   = CertificateKind + "." + CRDGroupVersion.String()
-	CertificateGroupVersionKind = CRDGroupVersion.WithKind(CertificateKind)
+	CertificateGroupKind        = schema.GroupKind{Group: Group, Kind: CertificateKind}
+	CertificateKindAPIVersion   = CertificateKind + "." + SchemeGroupVersion.String()
+	CertificateGroupVersionKind = SchemeGroupVersion.WithKind(CertificateKind)
 )
-
-func addKnownTypes(s *runtime.Scheme) error {
-	s.AddKnownTypes(SchemeGroupVersion,
-		&Certificate{},
-		&CertificateList{},
-	)
-	return nil
-}

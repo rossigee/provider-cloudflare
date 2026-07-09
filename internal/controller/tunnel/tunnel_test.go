@@ -93,7 +93,7 @@ type tunnelModifier func(*v1beta1.Tunnel)
 func withTunnelID(id string) tunnelModifier {
 	return func(t *v1beta1.Tunnel) {
 		t.Status.AtProvider.ID = id
-		rtmeta.SetExternalName(t, id)
+		meta.SetExternalName(t, id)
 	}
 }
 

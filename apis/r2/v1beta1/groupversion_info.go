@@ -43,5 +43,9 @@ var (
 )
 
 func addKnownTypes(s *runtime.Scheme) error {
+	s.AddKnownTypes(GroupVersion,
+		&Bucket{},
+		&BucketList{},
+	)
 	return nil
 }

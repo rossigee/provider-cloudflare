@@ -17,16 +17,20 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Package type metadata.
-const (
-	CacheRuleKind = "CacheRule"
-)
-
+// CacheKey type metadata.
 var (
-	CacheRuleKindAPIVersion   = CacheRuleKind + "." + GroupVersion.String()
-	CacheRuleGroupKind        = schema.GroupKind{Group: Group, Kind: CacheRuleKind}.String()
-	CacheRuleGroupVersionKind = GroupVersion.WithKind(CacheRuleKind)
+	CacheKeyKind             = reflect.TypeOf(CacheKey{}).Name()
+	CacheKeyGroupKind        = schema.GroupKind{Group: Group, Kind: CacheKeyKind}
+	CacheKeyKindAPIVersion   = CacheKeyKind + "." + SchemeGroupVersion.String()
+	CacheKeyGroupVersionKind = SchemeGroupVersion.WithKind(CacheKeyKind)
+
+	CacheRuleKind             = reflect.TypeOf(CacheRule{}).Name()
+	CacheRuleGroupKind        = schema.GroupKind{Group: Group, Kind: CacheRuleKind}
+	CacheRuleKindAPIVersion   = CacheRuleKind + "." + SchemeGroupVersion.String()
+	CacheRuleGroupVersionKind = SchemeGroupVersion.WithKind(CacheRuleKind)
 )

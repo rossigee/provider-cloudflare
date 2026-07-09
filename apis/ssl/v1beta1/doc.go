@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package sslv1alpha1 contains the sslv1alpha1 group SSL resources of the Cloudflare provider.
+// Package v1beta1 contains the v1beta1 group SSL resources of the Cloudflare provider.
 // +kubebuilder:object:generate=true
 // +groupName=ssl.cloudflare.m.crossplane.io
-// +versionName=sslv1alpha1
+// +versionName=v1beta1
 package v1beta1

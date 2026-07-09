@@ -18,12 +18,12 @@ package v1beta1
 
 import (
 	"context"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/pkg/errors"
-	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 )
 
 
@@ -96,7 +96,6 @@ type FilterList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Filter `json:"items"`
-}
 }
 
 // ResolveReferences of this Filter

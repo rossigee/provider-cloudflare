@@ -30,7 +30,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -44,7 +44,7 @@ const (
 
 // SetupCacheRule adds a controller that reconciles CacheRule managed resources.
 func SetupCacheRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(v1beta1.CacheRuleGroupKind)
+	name := managed.ControllerName(v1beta1.CacheRuleGroupKind.String())
 
 	o := controller.Options{
 		RateLimiter:             nil, // Use default rate limiter

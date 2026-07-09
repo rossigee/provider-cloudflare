@@ -24,7 +24,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
@@ -32,7 +32,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -152,9 +152,9 @@ func (e *external) Observe(ctx context.Context,
 	cr.Status.AtProvider = zones.GenerateObservation(z)
 
 	if cr.Status.AtProvider.Status == zoneStatusActive {
-		cr.Status.SetConditions(rtv1.Available())
+		cr.Status.SetConditions(xpv1.Available())
 	} else {
-		cr.Status.SetConditions(rtv1.Unavailable())
+		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 
 	observedSettings := &v1beta1.ZoneSettings{}

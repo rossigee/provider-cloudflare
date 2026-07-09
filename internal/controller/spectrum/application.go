@@ -23,15 +23,15 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
+	applications "github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
 	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -53,7 +53,7 @@ const (
 
 // Setup adds a controller that reconciles Spectrum managed resources.
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(v1beta1.ApplicationGroupKind)
+	name := managed.ControllerName(v1beta1.ApplicationGroupKind.String())
 
 	o := controller.Options{
 		RateLimiter:             nil, // Use default rate limiter
@@ -148,7 +148,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	cr.Status.AtProvider = applications.GenerateObservation(application)
 
-	cr.SetConditions(rtv1.Available())
+	cr.SetConditions(xpv1.Available())
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
@@ -171,7 +171,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 			errors.Wrap(errors.New(errApplicationNoZone), errApplicationCreation)
 	}
 
-	cr.SetConditions(rtv1.Creating())
+	cr.SetConditions(xpv1.Creating())
 
 	application, err := e.client.CreateSpectrumApplication(ctx, *cr.Spec.ForProvider.Zone, &cr.Spec.ForProvider)
 

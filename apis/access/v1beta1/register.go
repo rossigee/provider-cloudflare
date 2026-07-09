@@ -14,25 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1beta1 contains the core resources of the Cloudflare Access provider.
-// +kubebuilder:object:generate=true
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-
+// AccessApplication type metadata.
 var (
-	// AccessApplicationKind is the kind of the AccessApplication resource.
-	AccessApplicationKind = "AccessApplication"
-
-	// AccessApplicationGroupVersionKind is the GroupVersionKind of the AccessApplication resource.
-	AccessApplicationGroupVersionKind = schema.GroupVersionKind{
-		Group:   Group,
-		Version: Version,
-		Kind:    AccessApplicationKind,
-	}
+	AccessApplicationKind             = reflect.TypeOf(AccessApplication{}).Name()
+	AccessApplicationGroupKind        = schema.GroupKind{Group: Group, Kind: AccessApplicationKind}
+	AccessApplicationKindAPIVersion   = AccessApplicationKind + "." + SchemeGroupVersion.String()
+	AccessApplicationGroupVersionKind = SchemeGroupVersion.WithKind(AccessApplicationKind)
 )
 
-}
+// NOTE: if SchemeGroupVersion undefined here, ensure groupversion_info.go exports SchemeGroupVersion (not GroupVersion).

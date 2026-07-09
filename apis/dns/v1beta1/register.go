@@ -17,16 +17,15 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Package type metadata.
-const (
-	RecordKind = "Record"
-)
-
+// Record type metadata.
 var (
+	RecordKind             = reflect.TypeOf(Record{}).Name()
+	RecordGroupKind        = schema.GroupKind{Group: Group, Kind: RecordKind}
 	RecordKindAPIVersion   = RecordKind + "." + GroupVersion.String()
-	RecordGroupKind        = schema.GroupKind{Group: Group, Kind: RecordKind}.String()
 	RecordGroupVersionKind = GroupVersion.WithKind(RecordKind)
 )

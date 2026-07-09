@@ -17,9 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 
@@ -201,13 +200,13 @@ type JobObservation struct {
 
 // A JobSpec defines the desired state of a Logpush Job.
 type JobSpec struct {
-	rtv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       JobParameters `json:"forProvider"`
 }
 
 // A JobStatus represents the observed state of a Logpush Job.
 type JobStatus struct {
-	rtv1.ManagedResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          JobObservation `json:"atProvider,omitempty"`
 }
 
@@ -217,7 +216,7 @@ type JobStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane.io/external-name"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:resource:scope=Namespaced,categories={crossplane,managed,cloudflare}
 type Job struct {
@@ -237,12 +236,4 @@ type JobList struct {
 	Items           []Job `json:"items"`
 }
 
-}
 
-// Job type metadata.
-var (
-	JobKind             = "Job"
-	JobGroupKind        = schema.GroupKind{Group: Group, Kind: JobKind}
-	JobKindAPIVersion   = JobKind + "." + GroupVersion.String()
-	JobGroupVersionKind = GroupVersion.WithKind(JobKind)
-)

@@ -250,10 +250,10 @@ func TestCreate(t *testing.T) {
 				}
 				return x.Error() == y.Error()
 			})); diff != "" {
-				t.Errorf("\n%s\nCreate(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snCreate(...): -want error, +got error:n%sn", tc.reason, diff)
 			}
 			if diff := cmp.Diff(tc.want.obs, got); diff != "" {
-				t.Errorf("\n%s\nCreate(...): -want, +got:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snCreate(...): -want, +got:n%sn", tc.reason, diff)
 			}
 		})
 	}
@@ -392,10 +392,10 @@ func TestGet(t *testing.T) {
 				}
 				return x.Error() == y.Error()
 			})); diff != "" {
-				t.Errorf("\n%s\nGet(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snGet(...): -want error, +got error:n%sn", tc.reason, diff)
 			}
 			if diff := cmp.Diff(tc.want.obs, got); diff != "" {
-				t.Errorf("\n%s\nGet(...): -want, +got:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snGet(...): -want, +got:n%sn", tc.reason, diff)
 			}
 		})
 	}
@@ -464,7 +464,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Type:  "regex",
 							Field: "from",
-							Value: ".*@partner\\.com",
+							Value: ".*@partner.com",
 						},
 					},
 					Actions: []v1beta1.RuleAction{
@@ -485,7 +485,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Type:  "regex",
 							Field: "from",
-							Value: ".*@partner\\.com",
+							Value: ".*@partner.com",
 						},
 					},
 					Actions: []v1beta1.RuleAction{
@@ -538,10 +538,10 @@ func TestUpdate(t *testing.T) {
 				}
 				return x.Error() == y.Error()
 			})); diff != "" {
-				t.Errorf("\n%s\nUpdate(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snUpdate(...): -want error, +got error:n%sn", tc.reason, diff)
 			}
 			if diff := cmp.Diff(tc.want.obs, got); diff != "" {
-				t.Errorf("\n%s\nUpdate(...): -want, +got:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snUpdate(...): -want, +got:n%sn", tc.reason, diff)
 			}
 		})
 	}
@@ -651,7 +651,7 @@ func TestDelete(t *testing.T) {
 				}
 				return x.Error() == y.Error()
 			})); diff != "" {
-				t.Errorf("\n%s\nDelete(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snDelete(...): -want error, +got error:n%sn", tc.reason, diff)
 			}
 		})
 	}
@@ -783,10 +783,10 @@ func TestList(t *testing.T) {
 				}
 				return x.Error() == y.Error()
 			})); diff != "" {
-				t.Errorf("\n%s\nList(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snList(...): -want error, +got error:n%sn", tc.reason, diff)
 			}
 			if diff := cmp.Diff(tc.want.obs, got); diff != "" {
-				t.Errorf("\n%s\nList(...): -want, +got:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snList(...): -want, +got:n%sn", tc.reason, diff)
 			}
 		})
 	}
@@ -1029,10 +1029,10 @@ func TestIsUpToDate(t *testing.T) {
 				}
 				return x.Error() == y.Error()
 			})); diff != "" {
-				t.Errorf("\n%s\nIsUpToDate(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snIsUpToDate(...): -want error, +got error:n%sn", tc.reason, diff)
 			}
 			if diff := cmp.Diff(tc.want.upToDate, got); diff != "" {
-				t.Errorf("\n%s\nIsUpToDate(...): -want, +got:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snIsUpToDate(...): -want, +got:n%sn", tc.reason, diff)
 			}
 		})
 	}
@@ -1103,7 +1103,7 @@ func TestIsRuleNotFound(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			got := IsRuleNotFound(tc.args.err)
 			if diff := cmp.Diff(tc.want.isNotFound, got); diff != "" {
-				t.Errorf("\n%s\nIsRuleNotFound(...): -want, +got:\n%s\n", tc.reason, diff)
+				t.Errorf("n%snIsRuleNotFound(...): -want, +got:n%sn", tc.reason, diff)
 			}
 		})
 	}

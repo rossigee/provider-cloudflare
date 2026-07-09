@@ -21,6 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -42,7 +43,7 @@ var (
 )
 
 func addKnownTypes(s *runtime.Scheme) error {
-	s.AddKnownTypes(SchemeGroupVersion,
+	s.AddKnownTypes(GroupVersion,
 		&SubdomainList{},
 		&DomainList{},
 		&RouteList{},

@@ -21,6 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -34,6 +35,9 @@ var (
 	// GroupVersion is group version used to register these objects
 	GroupVersion = schema.GroupVersion{Group: Group, Version: Version}
 
+	// SchemeGroupVersion is alias for compatibility in addKnownTypes.
+	SchemeGroupVersion = GroupVersion
+
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 
@@ -43,9 +47,9 @@ var (
 
 func addKnownTypes(s *runtime.Scheme) error {
 	s.AddKnownTypes(SchemeGroupVersion,
-		&RateLimitList{},
-		&BotManagementList{},
-		&TurnstileList{},
+		&RateLimit{}, &RateLimitList{},
+		&BotManagement{}, &BotManagementList{},
+		&Turnstile{}, &TurnstileList{},
 	)
 	return nil
 }

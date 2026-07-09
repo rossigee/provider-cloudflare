@@ -26,7 +26,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
+	applications "github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"testing"
 )

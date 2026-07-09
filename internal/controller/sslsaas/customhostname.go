@@ -23,14 +23,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname"
 	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -56,7 +56,7 @@ const (
 
 // SetupCustomHostname adds a controller that reconciles CustomHostname managed resources.
 func SetupCustomHostname(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(v1beta1.CustomHostnameGroupKind)
+	name := managed.ControllerName(v1beta1.CustomHostnameGroupKind.String())
 
 	o := controller.Options{
 		RateLimiter:             nil, // Use default rate limiter
@@ -160,7 +160,7 @@ func (e *customHostnameExternal) Observe(ctx context.Context, mg resource.Manage
 	// readinessCheck in a Composition.
 
 	if cr.Status.AtProvider.Status == customHostnameStatusActive {
-		cr.Status.SetConditions(rtv1.Available())
+		cr.Status.SetConditions(xpv1.Available())
 	}
 
 	return managed.ExternalObservation{
@@ -183,7 +183,7 @@ func (e *customHostnameExternal) Create(ctx context.Context, mg resource.Managed
 		return managed.ExternalCreation{}, errors.New(errCustomHostnameCreation)
 	}
 
-	cr.SetConditions(rtv1.Creating())
+	cr.SetConditions(xpv1.Creating())
 
 	rch, err := e.client.CreateCustomHostname(
 		ctx,

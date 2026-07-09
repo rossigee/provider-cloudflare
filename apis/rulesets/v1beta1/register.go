@@ -17,16 +17,15 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// Package type metadata.
-const (
-	RulesetKind = "Ruleset"
-)
-
+// Ruleset type metadata.
 var (
+	RulesetKind             = reflect.TypeOf(Ruleset{}).Name()
+	RulesetGroupKind        = schema.GroupKind{Group: Group, Kind: RulesetKind}
 	RulesetKindAPIVersion   = RulesetKind + "." + GroupVersion.String()
-	RulesetGroupKind        = schema.GroupKind{Group: Group, Kind: RulesetKind}.String()
 	RulesetGroupVersionKind = GroupVersion.WithKind(RulesetKind)
 )

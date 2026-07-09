@@ -17,20 +17,17 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-
-// Package type metadata.
-const (
-	CRDGroup   = "r2.cloudflare.m.crossplane.io"
-	CRDVersion = "r2v1alpha1"
-)
-
+// Bucket type metadata.
 var (
-	// CRDGroupVersion is the API Group Version used to register the objects
-	CRDGroupVersion = schema.GroupVersion{Group: CRDGroup, Version: CRDVersion}
-
-	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = CRDGroupVersion
+	BucketKind             = reflect.TypeOf(Bucket{}).Name()
+	BucketGroupKind        = schema.GroupKind{Group: Group, Kind: BucketKind}
+	BucketKindAPIVersion   = BucketKind + "." + GroupVersion.String()
+	BucketGroupVersionKind = GroupVersion.WithKind(BucketKind)
 )
+
+// Note: ProviderConfig lives in the parent cloudflare group (apis/v1beta1), not here.

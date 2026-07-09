@@ -23,13 +23,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"github.com/rossigee/provider-cloudflare/internal/clients/workers/script"
+	workerscript "github.com/rossigee/provider-cloudflare/internal/clients/workers/script"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"strings"
@@ -141,7 +141,7 @@ func (e *scriptExternal) Observe(ctx context.Context,
 	}
 
 	cr.Status.AtProvider = *scriptObs
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	upToDate, err := e.client.IsUpToDate(ctx, cr.Spec.ForProvider, *scriptObs)
 	if err != nil {

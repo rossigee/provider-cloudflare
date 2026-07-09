@@ -17,32 +17,20 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
-	"transform.cloudflare.m.crossplane.io"
-	"transformv1alpha1"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// URITransform type metadata.
 var (
-	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: Group, Version: Version}
+	URITransformKind             = reflect.TypeOf(URITransform{}).Name()
+	URITransformGroupKind        = schema.GroupKind{Group: Group, Kind: URITransformKind}
+	URITransformKindAPIVersion   = URITransformKind + "." + SchemeGroupVersion.String()
+	URITransformGroupVersionKind = SchemeGroupVersion.WithKind(URITransformKind)
 
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-)
-
-// Rule type metadata.
-var (
 	RuleKind             = reflect.TypeOf(Rule{}).Name()
-	RuleGroupKind        = schema.GroupKind{Group: Group, Kind: RuleKind}.String()
+	RuleGroupKind        = schema.GroupKind{Group: Group, Kind: RuleKind}
 	RuleKindAPIVersion   = RuleKind + "." + SchemeGroupVersion.String()
 	RuleGroupVersionKind = SchemeGroupVersion.WithKind(RuleKind)
 )
-
-func addKnownTypes(s *runtime.Scheme) error {
-	s.AddKnownTypes(SchemeGroupVersion,
-		&Rule{},
-		&RuleList{},
-	)
-	return nil
-}

@@ -21,12 +21,14 @@ import (
 	"encoding/json"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
-	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+
 	"k8s.io/apimachinery/pkg/types"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	v1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 )
 
 const (
@@ -115,7 +117,7 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		return nil, errors.Wrap(err, errGetPC)
 	}
 
-	// Use no-op tracker for v2.0.0 compatibility
+	// Use no-op tracker for xpv1.0.0 compatibility
 	t := resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil })
 	if err := t.Track(ctx, mg); err != nil {
 		return nil, errors.Wrap(err, errTrackPCUsage)

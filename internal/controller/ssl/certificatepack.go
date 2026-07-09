@@ -24,13 +24,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/ssl/certificatepack"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -136,7 +136,7 @@ func (c *certificatePackExternal) Observe(ctx context.Context, mg resource.Manag
 
 	cr.Status.AtProvider = *observation
 
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
@@ -150,7 +150,7 @@ func (c *certificatePackExternal) Create(ctx context.Context, mg resource.Manage
 		return managed.ExternalCreation{}, errors.New(errNotCertificatePack)
 	}
 
-	cr.Status.SetConditions(rtv1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 
 	observation, err := c.service.Create(ctx, cr.Spec.ForProvider)
 	if err != nil {
@@ -192,7 +192,7 @@ func (c *certificatePackExternal) Delete(ctx context.Context, mg resource.Manage
 		return managed.ExternalDelete{}, errors.New(errNotCertificatePack)
 	}
 
-	cr.Status.SetConditions(rtv1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	err := c.service.Delete(ctx, cr.Spec.ForProvider.Zone, meta.GetExternalName(cr))
 	if err != nil {

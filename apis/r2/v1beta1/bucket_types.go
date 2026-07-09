@@ -17,9 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	rtv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 
@@ -50,13 +49,13 @@ type BucketObservation struct {
 
 // A BucketSpec defines the desired state of a Bucket.
 type BucketSpec struct {
-	rtv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ClusterManagedResourceSpec `json:",inline"`
 	ForProvider       BucketParameters `json:"forProvider"`
 }
 
 // A BucketStatus represents the observed state of a Bucket.
 type BucketStatus struct {
-	rtv1.ManagedResourceStatus `json:",inline"`
+	xpv1.ManagedResourceStatus `json:",inline"`
 	AtProvider          BucketObservation `json:"atProvider,omitempty"`
 }
 
@@ -66,7 +65,7 @@ type BucketStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane.io/external-name"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:resource:scope=Namespaced,categories={crossplane,managed,cloudflare}
 type Bucket struct {
@@ -86,10 +85,4 @@ type BucketList struct {
 	Items           []Bucket `json:"items"`
 }
 
-// Bucket type metadata.
-var (
-	BucketKind             = "Bucket"
-	BucketGroupKind        = schema.GroupKind{Group: Group, Kind: BucketKind}
-	BucketKindAPIVersion   = BucketKind + "." + GroupVersion.String()
-	BucketGroupVersionKind = GroupVersion.WithKind(BucketKind)
-)
+

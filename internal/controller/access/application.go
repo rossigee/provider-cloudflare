@@ -24,13 +24,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
-	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
+	accessv1beta1 "github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/access/application"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -132,7 +132,7 @@ func (c *accessApplicationExternal) Observe(ctx context.Context, mg resource.Man
 
 	cr.Status.AtProvider = *obs
 
-	cr.Status.SetConditions(rtv1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	upToDate, err := c.service.IsUpToDate(ctx, cr.Spec.ForProvider, *obs)
 	if err != nil {
@@ -151,7 +151,7 @@ func (c *accessApplicationExternal) Create(ctx context.Context, mg resource.Mana
 		return managed.ExternalCreation{}, errors.New(errNotAccessApplication)
 	}
 
-	cr.Status.SetConditions(rtv1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 
 	obs, err := c.service.Create(ctx, cr.Spec.ForProvider)
 	if err != nil {
@@ -186,7 +186,7 @@ func (c *accessApplicationExternal) Delete(ctx context.Context, mg resource.Mana
 		return managed.ExternalDelete{}, errors.New(errNotAccessApplication)
 	}
 
-	cr.Status.SetConditions(rtv1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	rc := getResourceContainer(cr.Spec.ForProvider)
 	return managed.ExternalDelete{}, c.service.Delete(ctx, rc, meta.GetExternalName(cr))

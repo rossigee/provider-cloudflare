@@ -21,7 +21,8 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -459,12 +460,12 @@ func (in *LoadBalancerParameters) DeepCopyInto(out *LoadBalancerParameters) {
 	}
 	if in.FallbackPoolRef != nil {
 		in, out := &in.FallbackPoolRef, &out.FallbackPoolRef
-		*out = new(v2.Reference)
+		*out = new(xpv1.Reference)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.FallbackPoolSelector != nil {
 		in, out := &in.FallbackPoolSelector, &out.FallbackPoolSelector
-		*out = new(v2.Selector)
+		*out = new(xpv1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.DefaultPools != nil {
@@ -474,14 +475,14 @@ func (in *LoadBalancerParameters) DeepCopyInto(out *LoadBalancerParameters) {
 	}
 	if in.DefaultPoolRefs != nil {
 		in, out := &in.DefaultPoolRefs, &out.DefaultPoolRefs
-		*out = make([]v2.Reference, len(*in))
+		*out = make([]xpv1.Reference, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.DefaultPoolSelector != nil {
 		in, out := &in.DefaultPoolSelector, &out.DefaultPoolSelector
-		*out = new(v2.Selector)
+		*out = new(xpv1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.RegionPools != nil {
@@ -715,12 +716,12 @@ func (in *LoadBalancerPoolParameters) DeepCopyInto(out *LoadBalancerPoolParamete
 	}
 	if in.MonitorRef != nil {
 		in, out := &in.MonitorRef, &out.MonitorRef
-		*out = new(v2.Reference)
+		*out = new(xpv1.Reference)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.MonitorSelector != nil {
 		in, out := &in.MonitorSelector, &out.MonitorSelector
-		*out = new(v2.Selector)
+		*out = new(xpv1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Origins != nil {

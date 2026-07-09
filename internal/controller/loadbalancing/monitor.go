@@ -25,13 +25,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
-	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	apisv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
+
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
 	"net/http"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
@@ -46,7 +47,7 @@ const (
 
 // SetupMonitor adds a controller that reconciles LoadBalancerMonitor managed resources.
 func SetupMonitor(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(v1beta1.LoadBalancerMonitorGroupKind)
+	name := managed.ControllerName(v1beta1.LoadBalancerMonitorGroupKind.String())
 
 	o := controller.Options{
 		MaxConcurrentReconciles: 5,
