@@ -1,6 +1,6 @@
 [submodule "build"]
 	path = build
-	url = git@github.com:rossigee/build.git
+	url = https://github.com/rossigee/build
 	branch = main
 [submodule "provider-workflows"]
 	path = provider-workflows
