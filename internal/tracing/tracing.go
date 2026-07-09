@@ -25,6 +25,16 @@ const (
 var tracer trace.Tracer
 var tp *sdktrace.TracerProvider
 
+type safeSpan struct {
+	trace.Span
+}
+
+func (s *safeSpan) End(options ...trace.SpanEndOption) {
+	if s.Span != nil {
+		s.Span.End(options...)
+	}
+}
+
 func Init(serviceName string) func(context.Context) {
 	tracer = otel.Tracer(tracerName)
 
@@ -82,16 +92,17 @@ func Init(serviceName string) func(context.Context) {
 
 func StartSpan(ctx context.Context, name string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
 	if tracer == nil {
-		return ctx, nil
+		return ctx, &safeSpan{}
 	}
-	return tracer.Start(ctx, name,
+	_, span := tracer.Start(ctx, name,
 		trace.WithAttributes(attrs...),
 	)
+	return ctx, &safeSpan{span}
 }
 
 func StartSpanWithAttrs(ctx context.Context, name, resourceType, resourceName, operation string) (context.Context, trace.Span) {
 	if tracer == nil {
-		return ctx, nil
+		return ctx, &safeSpan{}
 	}
 	attrs := []attribute.KeyValue{
 		attribute.String(resourceTypeAttr, resourceType),
@@ -100,9 +111,10 @@ func StartSpanWithAttrs(ctx context.Context, name, resourceType, resourceName, o
 	if resourceName != "" {
 		attrs = append(attrs, attribute.String(resourceNameAttr, resourceName))
 	}
-	return tracer.Start(ctx, name,
+	_, span := tracer.Start(ctx, name,
 		trace.WithAttributes(attrs...),
 	)
+	return ctx, &safeSpan{span}
 }
 
 func SpanAttrs(resourceType, resourceName, operation string) []attribute.KeyValue {
