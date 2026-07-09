@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: universalssls.ssl.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: ssl.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: UniversalSSL
+    listKind: UniversalSSLList
+    plural: universalssls
+    singular: universalssl
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,20 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .spec.forProvider.zone
+      name: ZONE
       type: string
+    - jsonPath: .status.atProvider.enabled
+      name: ENABLED
+      type: boolean
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A UniversalSSL is a managed resource that represents Cloudflare
+          Universal SSL configuration for a zone.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +55,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: UniversalSSLSpec defines the desired state of Universal SSL.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +75,20 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: UniversalSSLParameters define the desired state of Cloudflare
+                  Universal SSL for a zone.
                 properties:
-                  locationHint:
-                    description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
-                    type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  enabled:
+                    description: Enabled indicates whether Universal SSL is enabled
+                      for this zone.
+                    type: boolean
+                  zone:
+                    description: Zone is the zone ID where this Universal SSL configuration
+                      will be applied.
                     type: string
                 required:
-                - name
+                - enabled
+                - zone
                 type: object
               managementPolicies:
                 default:
@@ -175,21 +177,17 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: UniversalSSLStatus defines the observed state of Universal
+              SSL.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: UniversalSSLObservation are the observable fields of
+                  Universal SSL.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
-                    type: string
-                  location:
-                    description: Location where the bucket is stored.
-                    type: string
-                  name:
-                    description: Name of the bucket.
-                    type: string
+                  enabled:
+                    description: Enabled indicates whether Universal SSL is enabled
+                      for this zone.
+                    type: boolean
                 type: object
               conditions:
                 description: Conditions of the resource.

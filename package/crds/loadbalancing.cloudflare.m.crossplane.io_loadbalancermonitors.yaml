@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: loadbalancermonitors.loadbalancing.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: loadbalancing.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: LoadBalancerMonitor
+    listKind: LoadBalancerMonitorList
+    plural: loadbalancermonitors
+    singular: loadbalancermonitor
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,23 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .status.atProvider.id
+      name: ID
+      type: string
+    - jsonPath: .spec.forProvider.type
+      name: TYPE
+      type: string
+    - jsonPath: .spec.forProvider.interval
+      name: INTERVAL
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: LoadBalancerMonitor is a managed resource that represents a Cloudflare
+          Load Balancer Monitor
         properties:
           apiVersion:
             description: |-
@@ -51,8 +58,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: LoadBalancerMonitorSpec defines the desired state of LoadBalancerMonitor
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +78,105 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: LoadBalancerMonitorParameters define the desired state
+                  of a Cloudflare Load Balancer Monitor
                 properties:
-                  locationHint:
+                  account:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                      Account is the account ID where this monitor will be created.
+                      Either Account or Zone must be specified, but not both.
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  allowInsecure:
+                    description: |-
+                      AllowInsecure indicates whether to allow insecure connections.
+                      Only applies to HTTPS monitors.
+                    type: boolean
+                  consecutiveDown:
+                    description: |-
+                      ConsecutiveDown is the number of consecutive failed health checks required
+                      before marking an origin as unhealthy.
+                      Valid range: 1-20.
+                    type: integer
+                  consecutiveUp:
+                    description: |-
+                      ConsecutiveUp is the number of consecutive successful health checks required
+                      before marking an origin as healthy.
+                      Valid range: 1-20.
+                    type: integer
+                  description:
+                    description: Description is a human-readable description of the
+                      monitor.
+                    type: string
+                  expectedBody:
+                    description: |-
+                      ExpectedBody is the expected response body for the health check.
+                      Only applies to HTTP/HTTPS monitors.
+                    type: string
+                  expectedCodes:
+                    description: |-
+                      ExpectedCodes is the expected HTTP response code or code range.
+                      Examples: "200", "2xx", "200,202,301"
+                      Only applies to HTTP/HTTPS monitors.
+                    type: string
+                  followRedirects:
+                    description: |-
+                      FollowRedirects indicates whether to follow redirects.
+                      Only applies to HTTP/HTTPS monitors.
+                    type: boolean
+                  header:
+                    additionalProperties:
+                      items:
+                        type: string
+                      type: array
+                    description: Header contains HTTP headers to send with the health
+                      check request.
+                    type: object
+                  interval:
+                    description: |-
+                      Interval is the interval in seconds between health checks.
+                      Valid range: 5-3600 seconds.
+                    type: integer
+                  method:
+                    description: |-
+                      Method is the HTTP method to use for the health check (only for http/https).
+                      Valid values: "GET", "HEAD"
+                    type: string
+                  path:
+                    description: Path is the path to use for the health check (only
+                      for http/https).
+                    type: string
+                  port:
+                    description: |-
+                      Port is the port to use for the health check.
+                      If not specified, defaults to 80 for HTTP and 443 for HTTPS.
+                    type: integer
+                  probeZone:
+                    description: |-
+                      ProbeZone is the zone ID to use for the probe.
+                      If not specified, probes will be sent from all Cloudflare data centers.
+                    type: string
+                  retries:
+                    description: |-
+                      Retries is the number of retries to attempt in case of a timeout before marking as failed.
+                      Valid range: 0-5 retries.
+                    type: integer
+                  timeout:
+                    description: |-
+                      Timeout is the timeout in seconds before marking the health check as failed.
+                      Valid range: 1-10 seconds.
+                    type: integer
+                  type:
+                    description: |-
+                      Type is the protocol to use for the health check.
+                      Valid values: "http", "https", "tcp", "udp_icmp", "icmp_ping", "smtp"
+                    type: string
+                  zone:
+                    description: |-
+                      Zone is the zone ID where this monitor will be created.
+                      Either Account or Zone must be specified, but not both.
                     type: string
                 required:
-                - name
+                - type
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +265,20 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: LoadBalancerMonitorStatus defines the observed state of LoadBalancerMonitor
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: LoadBalancerMonitorObservation represents the observed
+                  state of a Cloudflare Load Balancer Monitor
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
+                  createdOn:
+                    description: CreatedOn is when the monitor was created.
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  id:
+                    description: ID is the monitor ID.
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  modifiedOn:
+                    description: ModifiedOn is when the monitor was last modified.
                     type: string
                 type: object
               conditions:

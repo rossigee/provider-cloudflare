@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: certificates.originssl.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: originssl.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: Certificate
+    listKind: CertificateList
+    plural: certificates
+    singular: certificate
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,23 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .status.atProvider.id
+      name: ID
+      type: string
+    - jsonPath: .status.atProvider.hostnames
+      name: HOSTNAMES
+      type: string
+    - jsonPath: .status.atProvider.expiresOn
+      name: EXPIRES
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: originsslv1alpha1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A Certificate is a managed resource that represents a Cloudflare
+          Origin CA Certificate.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +58,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: CertificateSpec defines the desired state of a Certificate.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +78,45 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: CertificateParameters define the desired state of a Cloudflare
+                  Origin CA Certificate.
                 properties:
-                  locationHint:
+                  csr:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
+                      CSR is the Certificate Signing Request. Must be newline-encoded.
+                      If not provided, Cloudflare will generate a private key and CSR.
+                    type: string
+                  hostnames:
+                    description: |-
+                      Hostnames is the list of hostnames or wildcard names (beginning with "*.")
+                      for which this certificate is valid.
+                    items:
+                      type: string
+                    minItems: 1
+                    type: array
+                  requestType:
+                    description: 'RequestType is the signature type to create the
+                      certificate with. Options: "origin-rsa", "origin-ecc", "keyless-certificate".'
                     enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                    - origin-rsa
+                    - origin-ecc
+                    - keyless-certificate
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
-                    type: string
+                  requestValidity:
+                    description: |-
+                      RequestValidity is the number of days for which the certificate should be valid.
+                      Valid values: 7, 30, 90, 365, 730, 1095, 5475
+                    enum:
+                    - 7
+                    - 30
+                    - 90
+                    - 365
+                    - 730
+                    - 1095
+                    - 5475
+                    type: integer
                 required:
-                - name
+                - hostnames
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +205,44 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: CertificateStatus defines the observed state of a Certificate.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: CertificateObservation represents the observed state
+                  of a Cloudflare Origin CA Certificate.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
+                  certificate:
+                    description: Certificate is the PEM-encoded certificate.
+                    type: string
+                  csr:
+                    description: CSR is the Certificate Signing Request used to generate
+                      this certificate.
+                    type: string
+                  expiresOn:
+                    description: ExpiresOn is the date and time when the certificate
+                      expires.
                     format: date-time
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  hostnames:
+                    description: Hostnames is the list of hostnames for which this
+                      certificate is valid.
+                    items:
+                      type: string
+                    type: array
+                  id:
+                    description: ID is the certificate ID.
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  requestType:
+                    description: RequestType is the signature type of the certificate.
+                    type: string
+                  requestValidity:
+                    description: RequestValidity is the number of days for which the
+                      certificate is valid.
+                    type: integer
+                  revokedAt:
+                    description: RevokedAt is the date and time when the certificate
+                      was revoked (if applicable).
+                    format: date-time
                     type: string
                 type: object
               conditions:

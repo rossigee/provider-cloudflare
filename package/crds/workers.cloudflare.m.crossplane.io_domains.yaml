@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: domains.workers.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: workers.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: Domain
+    listKind: DomainList
+    plural: domains
+    singular: domain
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,23 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .status.atProvider.hostname
+      name: HOSTNAME
+      type: string
+    - jsonPath: .status.atProvider.service
+      name: SERVICE
+      type: string
+    - jsonPath: .status.atProvider.environment
+      name: ENV
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A Domain is a managed resource that represents a Cloudflare Workers
+          Custom Domain.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +58,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: DomainSpec defines the desired state of Domain.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +78,39 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: DomainParameters define the desired state of a Cloudflare
+                  Workers Custom Domain.
                 properties:
-                  locationHint:
-                    description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                  accountId:
+                    description: AccountID is the account identifier to target for
+                      the resource.
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  environment:
+                    description: |-
+                      Environment is the environment to use for this domain attachment.
+                      Valid values: "production", "staging"
+                    enum:
+                    - production
+                    - staging
+                    type: string
+                  hostname:
+                    description: Hostname is the custom hostname to attach the Worker
+                      to.
+                    type: string
+                  service:
+                    description: Service is the name of the Worker Script to attach
+                      to this domain.
+                    type: string
+                  zoneId:
+                    description: ZoneID is the zone identifier where the custom domain
+                      will be created.
                     type: string
                 required:
-                - name
+                - accountId
+                - environment
+                - hostname
+                - service
+                - zoneId
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +199,33 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: DomainStatus defines the observed state of Domain.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: DomainObservation are the observable fields of a Workers
+                  Custom Domain.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
+                  environment:
+                    description: Environment is the environment used for this domain
+                      attachment.
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  hostname:
+                    description: Hostname is the custom hostname attached to the Worker.
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  id:
+                    description: ID is the unique identifier for this domain attachment.
+                    type: string
+                  service:
+                    description: Service is the name of the Worker Script attached
+                      to this domain.
+                    type: string
+                  zoneId:
+                    description: ZoneID is the zone identifier where the custom domain
+                      is created.
+                    type: string
+                  zoneName:
+                    description: ZoneName is the zone name where the custom domain
+                      is created.
                     type: string
                 type: object
               conditions:

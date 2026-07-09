@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: scripts.workers.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: workers.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: Script
+    listKind: ScriptList
+    plural: scripts
+    singular: script
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -31,10 +31,11 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A Script represents a Cloudflare Worker script for serverless
+          edge computing.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +52,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: A ScriptSpec defines the desired state of a Worker Script.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +72,113 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: ScriptParameters are the configurable fields of a Worker
+                  Script.
                 properties:
-                  locationHint:
+                  bindings:
+                    description: Bindings defines the bindings available to the Worker
+                      script.
+                    items:
+                      description: WorkerBinding represents different types of bindings
+                        available to Workers.
+                      properties:
+                        json:
+                          description: JSON for JSON data bindings (as string).
+                          type: string
+                        name:
+                          description: Name is the variable name used in the Worker
+                            script to access this binding.
+                          type: string
+                        namespaceId:
+                          description: NamespaceID for KV namespace bindings.
+                          type: string
+                        part:
+                          description: Part for WASM module bindings.
+                          type: string
+                        text:
+                          description: Text for text blob bindings.
+                          type: string
+                        type:
+                          description: Type specifies the binding type (kv_namespace,
+                            wasm_module, text_blob, json_data, etc.)
+                          type: string
+                      required:
+                      - name
+                      - type
+                      type: object
+                    type: array
+                  compatibilityDate:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                      CompatibilityDate sets the compatibility date for the Worker.
+                      Format: YYYY-MM-DD
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  compatibilityFlags:
+                    description: CompatibilityFlags enables specific compatibility
+                      flags for the Worker.
+                    items:
+                      type: string
+                    type: array
+                  logPush:
+                    description: LogPush indicates whether to enable log push for
+                      this Worker.
+                    type: boolean
+                  module:
+                    description: Module indicates whether this is an ES module Worker
+                      (true) or service worker (false).
+                    type: boolean
+                  placement:
+                    description: PlacementMode controls smart placement for optimal
+                      performance.
+                    enum:
+                    - ""
+                    - smart
+                    type: string
+                  script:
+                    description: |-
+                      Script is the JavaScript/WebAssembly content of the Worker.
+                      This can be raw script content or base64 encoded for binary content.
+                    type: string
+                  scriptName:
+                    description: ScriptName is the name of the Worker script.
+                    type: string
+                  tags:
+                    description: Tags are arbitrary user-defined tags for organizing
+                      Workers.
+                    items:
+                      type: string
+                    type: array
+                  tailConsumers:
+                    description: TailConsumers defines Workers that will consume logs
+                      from this Worker.
+                    items:
+                      description: TailConsumer represents a Worker that consumes
+                        logs from another Worker.
+                      properties:
+                        environment:
+                          description: Environment specifies which environment of
+                            the service to use.
+                          type: string
+                        namespace:
+                          description: Namespace specifies the Workers for Platforms
+                            namespace.
+                          type: string
+                        service:
+                          description: Service is the name of the Worker service that
+                            will consume logs.
+                          type: string
+                      required:
+                      - service
+                      type: object
+                    type: array
+                  usageModel:
+                    description: UsageModel specifies the usage model for the Worker.
+                    enum:
+                    - bundled
+                    - unbound
                     type: string
                 required:
-                - name
+                - script
+                - scriptName
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +267,45 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: A ScriptStatus represents the observed state of a Worker
+              Script.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: ScriptObservation are the observable fields of a Worker
+                  Script.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
+                  createdOn:
+                    description: CreatedOn indicates when the script was created.
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  deploymentId:
+                    description: DeploymentId represents the current deployment identifier.
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  etag:
+                    description: ETAG represents the current version/state of the
+                      script.
+                    type: string
+                  id:
+                    description: ID is the unique identifier of the Worker script.
+                    type: string
+                  lastDeployedFrom:
+                    description: LastDeployedFrom indicates the deployment source.
+                    type: string
+                  logPush:
+                    description: LogPush indicates whether log push is enabled.
+                    type: boolean
+                  modifiedOn:
+                    description: ModifiedOn indicates when the script was last modified.
+                    type: string
+                  pipeline:
+                    description: Pipeline indicates if the script is part of a deployment
+                      pipeline.
+                    type: string
+                  size:
+                    description: Size is the size of the Worker script in bytes.
+                    format: int64
+                    type: integer
+                  usageModel:
+                    description: UsageModel indicates the current usage model.
                     type: string
                 type: object
               conditions:

@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: crontriggers.workers.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: workers.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: CronTrigger
+    listKind: CronTriggerList
+    plural: crontriggers
+    singular: crontrigger
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,20 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .spec.forProvider.scriptName
+      name: SCRIPT
+      type: string
+    - jsonPath: .spec.forProvider.cron
+      name: CRON
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A CronTrigger represents a scheduled execution trigger for a
+          Cloudflare Worker.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +55,11 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: A CronTriggerSpec defines the desired state of a Workers
+              Cron Trigger.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +76,22 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: CronTriggerParameters are the configurable fields of
+                  a Workers Cron Trigger.
                 properties:
-                  locationHint:
+                  cron:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                      Cron is the cron expression for the schedule.
+                      Examples: "0 0 * * *" (daily at midnight), "*/5 * * * *" (every 5 minutes)
+                      Documentation: https://developers.cloudflare.com/workers/platform/cron-triggers/
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  scriptName:
+                    description: ScriptName is the name of the Worker script to attach
+                      the cron trigger to.
                     type: string
                 required:
-                - name
+                - cron
+                - scriptName
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +180,26 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: A CronTriggerStatus represents the observed state of a Workers
+              Cron Trigger.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: CronTriggerObservation are the observable fields of a
+                  Workers Cron Trigger.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
+                  createdOn:
+                    description: CreatedOn is when the cron trigger was created.
                     format: date-time
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  cron:
+                    description: Cron is the cron expression for the schedule.
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  modifiedOn:
+                    description: ModifiedOn is when the cron trigger was last modified.
+                    format: date-time
+                    type: string
+                  scriptName:
+                    description: ScriptName is the name of the Worker script.
                     type: string
                 type: object
               conditions:

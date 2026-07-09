@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: certificatepacks.ssl.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: ssl.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: CertificatePack
+    listKind: CertificatePackList
+    plural: certificatepacks
+    singular: certificatepack
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,26 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .status.atProvider.id
+      name: ID
+      type: string
+    - jsonPath: .status.atProvider.status
+      name: STATUS
+      type: string
+    - jsonPath: .status.atProvider.type
+      name: TYPE
+      type: string
+    - jsonPath: .status.atProvider.certificateAuthority
+      name: CA
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A CertificatePack is a managed resource that represents a Cloudflare
+          Certificate Pack.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +61,11 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: CertificatePackSpec defines the desired state of Certificate
+              Pack.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +82,62 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: CertificatePackParameters define the desired state of
+                  a Cloudflare Certificate Pack.
                 properties:
-                  locationHint:
+                  certificateAuthority:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
+                      CertificateAuthority is the Certificate Authority to use.
+                      Valid values: "digicert", "google", "lets_encrypt"
                     enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                    - digicert
+                    - google
+                    - lets_encrypt
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  cloudflareBranding:
+                    description: CloudflareBranding indicates whether to show Cloudflare
+                      branding on the certificate.
+                    type: boolean
+                  hosts:
+                    description: Hosts are the hostnames to include in the certificate.
+                    items:
+                      type: string
+                    type: array
+                  type:
+                    description: |-
+                      Type is the certificate pack type.
+                      Valid values: "advanced"
+                    enum:
+                    - advanced
+                    type: string
+                  validationMethod:
+                    description: |-
+                      ValidationMethod is the method to use for domain validation.
+                      Valid values: "txt", "http", "email"
+                    enum:
+                    - txt
+                    - http
+                    - email
+                    type: string
+                  validityDays:
+                    description: |-
+                      ValidityDays is the number of days the certificate is valid.
+                      Valid values: 14, 30, 90, 365
+                    enum:
+                    - 14
+                    - 30
+                    - 90
+                    - 365
+                    type: integer
+                  zone:
+                    description: Zone is the zone ID where this certificate pack will
+                      be created.
                     type: string
                 required:
-                - name
+                - hosts
+                - type
+                - validationMethod
+                - zone
                 type: object
               managementPolicies:
                 default:
@@ -175,21 +226,115 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: CertificatePackStatus defines the observed state of Certificate
+              Pack.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: CertificatePackObservation are the observable fields
+                  of a Certificate Pack.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
+                  certificateAuthority:
+                    description: CertificateAuthority is the Certificate Authority
+                      used.
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  certificates:
+                    description: Certificates are the certificates in this pack.
+                    items:
+                      description: CertificateInfo represents certificate information.
+                      properties:
+                        expiresOn:
+                          description: ExpiresOn is when the certificate expires.
+                          format: date-time
+                          type: string
+                        hosts:
+                          description: Hosts are the hostnames covered by the certificate.
+                          items:
+                            type: string
+                          type: array
+                        id:
+                          description: ID is the certificate ID.
+                          type: string
+                        issuer:
+                          description: Issuer is the certificate issuer.
+                          type: string
+                        modifiedOn:
+                          description: ModifiedOn is when the certificate was last
+                            modified.
+                          format: date-time
+                          type: string
+                        status:
+                          description: Status is the certificate status.
+                          type: string
+                        uploadedOn:
+                          description: UploadedOn is when the certificate was uploaded.
+                          format: date-time
+                          type: string
+                      type: object
+                    type: array
+                  cloudflareBranding:
+                    description: CloudflareBranding indicates whether Cloudflare branding
+                      is shown.
+                    type: boolean
+                  hosts:
+                    description: Hosts are the hostnames included in the certificate.
+                    items:
+                      type: string
+                    type: array
+                  id:
+                    description: ID is the certificate pack ID.
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  primaryCertificate:
+                    description: PrimaryCertificate is the primary certificate ID.
                     type: string
+                  status:
+                    description: Status is the certificate pack status.
+                    type: string
+                  type:
+                    description: Type is the certificate pack type.
+                    type: string
+                  validationErrors:
+                    description: ValidationErrors contain any validation errors.
+                    items:
+                      description: SSLValidationError represents SSL validation errors.
+                      properties:
+                        message:
+                          description: Message is the error message.
+                          type: string
+                      type: object
+                    type: array
+                  validationMethod:
+                    description: ValidationMethod is the method used for domain validation.
+                    type: string
+                  validationRecords:
+                    description: ValidationRecords contain domain validation information.
+                    items:
+                      description: SSLValidationRecord represents SSL validation information.
+                      properties:
+                        emailAddresses:
+                          description: EmailAddresses are the email addresses for
+                            email validation.
+                          items:
+                            type: string
+                          type: array
+                        httpBody:
+                          description: HTTPBody is the HTTP body content for HTTP
+                            validation.
+                          type: string
+                        httpPath:
+                          description: HTTPPath is the HTTP path for HTTP validation.
+                          type: string
+                        txtName:
+                          description: TxtName is the TXT record name for DNS validation.
+                          type: string
+                        txtValue:
+                          description: TxtValue is the TXT record value for DNS validation.
+                          type: string
+                      type: object
+                    type: array
+                  validityDays:
+                    description: ValidityDays is the number of days the certificate
+                      is valid.
+                    type: integer
                 type: object
               conditions:
                 description: Conditions of the resource.

@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: botmanagements.security.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: security.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: BotManagement
+    listKind: BotManagementList
+    plural: botmanagements
+    singular: botmanagement
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,23 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .spec.forProvider.zone
+      name: ZONE
       type: string
+    - jsonPath: .status.atProvider.fightMode
+      name: FIGHT_MODE
+      type: boolean
+    - jsonPath: .status.atProvider.enableJS
+      name: JS_ENABLED
+      type: boolean
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A BotManagement is a managed resource that represents Cloudflare
+          Bot Management configuration for a zone.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +58,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: BotManagementSpec defines the desired state of Bot Management.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +78,86 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: BotManagementParameters define the desired state of Cloudflare
+                  Bot Management for a zone.
                 properties:
-                  locationHint:
+                  aiBotsProtection:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
+                      AIBotsProtection configures protection level for AI/ML bots.
+                      Valid values: "allow", "block", "challenge", "js_challenge", "managed_challenge"
                     enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                    - allow
+                    - block
+                    - challenge
+                    - js_challenge
+                    - managed_challenge
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  autoUpdateModel:
+                    description: AutoUpdateModel indicates whether to automatically
+                      update the bot detection model.
+                    type: boolean
+                  enableJS:
+                    description: EnableJS indicates whether to enable JavaScript detections
+                      and challenges.
+                    type: boolean
+                  fightMode:
+                    description: |-
+                      FightMode indicates whether Bot Fight Mode is enabled.
+                      This helps mitigate automated traffic with a free plan.
+                    type: boolean
+                  optimizeWordpress:
+                    description: |-
+                      OptimizeWordpress indicates whether to enable WordPress-specific optimizations.
+                      This provides enhanced protection for WordPress sites.
+                    type: boolean
+                  sbfmDefinitelyAutomated:
+                    description: |-
+                      SBFMDefinitelyAutomated configures the action for traffic that is definitely automated.
+                      Valid values: "allow", "block", "challenge", "js_challenge", "managed_challenge"
+                    enum:
+                    - allow
+                    - block
+                    - challenge
+                    - js_challenge
+                    - managed_challenge
+                    type: string
+                  sbfmLikelyAutomated:
+                    description: |-
+                      SBFMLikelyAutomated configures the action for traffic that is likely automated.
+                      Valid values: "allow", "block", "challenge", "js_challenge", "managed_challenge"
+                    enum:
+                    - allow
+                    - block
+                    - challenge
+                    - js_challenge
+                    - managed_challenge
+                    type: string
+                  sbfmStaticResourceProtection:
+                    description: |-
+                      SBFMStaticResourceProtection indicates whether to enable static resource protection.
+                      This protects static resources like images, CSS, and JS files.
+                    type: boolean
+                  sbfmVerifiedBots:
+                    description: |-
+                      SBFMVerifiedBots configures the action for verified bots.
+                      Valid values: "allow", "block", "challenge", "js_challenge", "managed_challenge"
+                    enum:
+                    - allow
+                    - block
+                    - challenge
+                    - js_challenge
+                    - managed_challenge
+                    type: string
+                  suppressSessionScore:
+                    description: SuppressSessionScore indicates whether to suppress
+                      session score calculation.
+                    type: boolean
+                  zone:
+                    description: Zone is the zone ID where this bot management configuration
+                      will be applied.
                     type: string
                 required:
-                - name
+                - zone
                 type: object
               managementPolicies:
                 default:
@@ -175,21 +246,54 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: BotManagementStatus defines the observed state of Bot Management.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: BotManagementObservation are the observable fields of
+                  Bot Management.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
+                  aiBotsProtection:
+                    description: AIBotsProtection shows the protection level for AI/ML
+                      bots.
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  autoUpdateModel:
+                    description: AutoUpdateModel indicates whether the bot detection
+                      model is automatically updated.
+                    type: boolean
+                  enableJS:
+                    description: EnableJS indicates whether JavaScript detections
+                      and challenges are enabled.
+                    type: boolean
+                  fightMode:
+                    description: FightMode indicates whether Bot Fight Mode is enabled.
+                    type: boolean
+                  optimizeWordpress:
+                    description: OptimizeWordpress indicates whether WordPress-specific
+                      optimizations are enabled.
+                    type: boolean
+                  sbfmDefinitelyAutomated:
+                    description: SBFMDefinitelyAutomated shows the action for traffic
+                      that is definitely automated.
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  sbfmLikelyAutomated:
+                    description: SBFMLikelyAutomated shows the action for traffic
+                      that is likely automated.
                     type: string
+                  sbfmStaticResourceProtection:
+                    description: SBFMStaticResourceProtection indicates whether static
+                      resource protection is enabled.
+                    type: boolean
+                  sbfmVerifiedBots:
+                    description: SBFMVerifiedBots shows the action for verified bots.
+                    type: string
+                  suppressSessionScore:
+                    description: SuppressSessionScore indicates whether session score
+                      calculation is suppressed.
+                    type: boolean
+                  usingLatestModel:
+                    description: UsingLatestModel indicates whether the zone is using
+                      the latest bot detection model.
+                    type: boolean
                 type: object
               conditions:
                 description: Conditions of the resource.

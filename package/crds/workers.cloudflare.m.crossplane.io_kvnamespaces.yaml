@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: kvnamespaces.workers.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: workers.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: KVNamespace
+    listKind: KVNamespaceList
+    plural: kvnamespaces
+    singular: kvnamespace
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,19 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .spec.forProvider.title
+      name: TITLE
+      type: string
+    - jsonPath: .status.atProvider.id
+      name: ID
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A KVNamespace represents a Workers KV storage namespace.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +54,11 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: A KVNamespaceSpec defines the desired state of a Workers
+              KV Namespace.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +75,14 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: KVNamespaceParameters are the configurable fields of
+                  a Workers KV Namespace.
                 properties:
-                  locationHint:
-                    description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
-                    type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  title:
+                    description: Title is the human-readable name of the KV namespace.
                     type: string
                 required:
-                - name
+                - title
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +171,18 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: A KVNamespaceStatus represents the observed state of a Workers
+              KV Namespace.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: KVNamespaceObservation are the observable fields of a
+                  Workers KV Namespace.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
+                  id:
+                    description: ID is the unique identifier for the KV namespace.
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
-                    type: string
-                  name:
-                    description: Name of the bucket.
+                  title:
+                    description: Title is the human-readable name of the KV namespace.
                     type: string
                 type: object
               conditions:

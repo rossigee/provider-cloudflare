@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: rules.emailrouting.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: emailrouting.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: Rule
+    listKind: RuleList
+    plural: rules
+    singular: rule
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -31,10 +31,10 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A Rule is a Cloudflare Email Routing Rule.
         properties:
           apiVersion:
             description: |-
@@ -52,7 +52,8 @@ spec:
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: A RuleSpec defines the desired state of an Email Routing
+              Rule.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +70,85 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: RuleParameters are the configurable fields of an Email
+                  Routing Rule.
                 properties:
-                  locationHint:
-                    description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
-                    type: string
+                  actions:
+                    description: Actions define what happens when the rule matches.
+                    items:
+                      description: RuleAction defines an action for an email routing
+                        rule.
+                      properties:
+                        type:
+                          description: Type of action.
+                          enum:
+                          - forward
+                          - worker
+                          - drop
+                          type: string
+                        value:
+                          description: |-
+                            Value contains the action parameters.
+                            For "forward" actions, this should be email addresses.
+                            For "worker" actions, this should be worker script names.
+                          items:
+                            type: string
+                          minItems: 1
+                          type: array
+                      required:
+                      - type
+                      - value
+                      type: object
+                    minItems: 1
+                    type: array
+                  enabled:
+                    description: Enabled indicates if the rule is enabled.
+                    type: boolean
+                  matchers:
+                    description: Matchers define the conditions for the rule.
+                    items:
+                      description: RuleMatcher defines a condition for an email routing
+                        rule.
+                      properties:
+                        field:
+                          description: Field to match against.
+                          enum:
+                          - to
+                          - from
+                          - subject
+                          type: string
+                        type:
+                          description: Type of matcher.
+                          enum:
+                          - literal
+                          - all
+                          type: string
+                        value:
+                          description: Value to match.
+                          type: string
+                      required:
+                      - field
+                      - type
+                      - value
+                      type: object
+                    minItems: 1
+                    type: array
                   name:
-                    description: Name of the bucket. Must be globally unique.
+                    description: Name of the email routing rule.
+                    type: string
+                  priority:
+                    description: Priority of the rule. Lower numbers have higher priority.
+                    minimum: 0
+                    type: integer
+                  zoneId:
+                    description: ZoneID is the zone identifier to target for the resource.
                     type: string
                 required:
+                - actions
+                - matchers
                 - name
+                - priority
+                - zoneId
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +237,82 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: A RuleStatus represents the observed state of an Email Routing
+              Rule.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: RuleObservation are the observable fields of an Email
+                  Routing Rule.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
-                    type: string
-                  location:
-                    description: Location where the bucket is stored.
-                    type: string
+                  actions:
+                    description: Actions define what happens when the rule matches.
+                    items:
+                      description: RuleAction defines an action for an email routing
+                        rule.
+                      properties:
+                        type:
+                          description: Type of action.
+                          enum:
+                          - forward
+                          - worker
+                          - drop
+                          type: string
+                        value:
+                          description: |-
+                            Value contains the action parameters.
+                            For "forward" actions, this should be email addresses.
+                            For "worker" actions, this should be worker script names.
+                          items:
+                            type: string
+                          minItems: 1
+                          type: array
+                      required:
+                      - type
+                      - value
+                      type: object
+                    type: array
+                  enabled:
+                    description: Enabled indicates if the rule is enabled.
+                    type: boolean
+                  matchers:
+                    description: Matchers define the conditions for the rule.
+                    items:
+                      description: RuleMatcher defines a condition for an email routing
+                        rule.
+                      properties:
+                        field:
+                          description: Field to match against.
+                          enum:
+                          - to
+                          - from
+                          - subject
+                          type: string
+                        type:
+                          description: Type of matcher.
+                          enum:
+                          - literal
+                          - all
+                          type: string
+                        value:
+                          description: Value to match.
+                          type: string
+                      required:
+                      - field
+                      - type
+                      - value
+                      type: object
+                    type: array
                   name:
-                    description: Name of the bucket.
+                    description: Name of the email routing rule.
+                    type: string
+                  priority:
+                    description: Priority of the rule.
+                    type: integer
+                  tag:
+                    description: Tag is the unique identifier for the rule.
+                    type: string
+                  zoneId:
+                    description: ZoneID is the zone identifier to target for the resource.
                     type: string
                 type: object
               conditions:

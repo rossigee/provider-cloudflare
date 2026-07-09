@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: zones.zone.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: zone.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: Zone
+    listKind: ZoneList
+    plural: zones
+    singular: zone
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,22 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .status.atProvider.status
+      name: STATE
+      type: string
+    - jsonPath: .status.atProvider.accountId
+      name: ACCOUNT
+      type: string
+    - jsonPath: .status.atProvider.plan
+      name: PLAN
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A Zone is a set of common settings applied to one or more domains.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +57,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: A ZoneSpec defines the desired state of a Zone.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,21 +77,53 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: ZoneParameters are the configurable fields of a Zone.
                 properties:
-                  locationHint:
+                  accountId:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                      AccountID is the account ID under which this Zone will be
+                      created.
                     type: string
+                  jumpStart:
+                    default: false
+                    description: |-
+                      JumpStart enables attempting to import existing DNS records
+                      when a new Zone is created.
+
+                      WARNING: When enabled, Cloudflare automatically creates DNS records
+                      by scanning your domain's existing nameservers. These auto-created
+                      records will NOT be managed by Crossplane and will exist only in
+                      Cloudflare. To manage them with Crossplane, you must:
+                      1. Create corresponding Record resources with matching settings
+                      2. Import the external records using crossplane.io/external-name annotation
+
+                      Recommendation: Leave disabled (false) for new zones to maintain
+                      full Crossplane control over DNS records.
+                    type: boolean
                   name:
-                    description: Name of the bucket. Must be globally unique.
+                    description: |-
+                      Name is the name of the Zone, which should be a valid
+                      domain.
+                    format: hostname
+                    maxLength: 253
+                    type: string
+                  paused:
+                    description: Paused indicates if the zone is only using Cloudflare
+                      DNS services.
+                    type: boolean
+                  planId:
+                    description: |-
+                      PlanID indicates the plan that this Zone will be subscribed
+                      to.
+                    type: string
+                  type:
+                    default: full
+                    description: |-
+                      Type indicates the type of this zone - partial (partner-hosted
+                      or CNAME only) or full.
+                    enum:
+                    - full
+                    - partial
                     type: string
                 required:
                 - name
@@ -175,20 +215,42 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: A ZoneStatus represents the observed state of a Zone.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: ZoneObservation are the observable fields of a Zone.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
+                  accountId:
+                    description: AccountID is the account ID that this zone exists
+                      under
+                    type: string
+                  accountName:
+                    description: AccountName is the account name that this zone exists
+                      under
+                    type: string
+                  createdOn:
+                    description: |-
+                      CreatedOn indicates when this zone was created
+                      on Cloudflare.
                     format: date-time
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  modifiedOn:
+                    description: |-
+                      ModifiedOn indicates when this zone was modified
+                      on Cloudflare.
+                    format: date-time
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  nameServers:
+                    description: NameServers lists the nameservers for this Zone
+                    items:
+                      type: string
+                    type: array
+                  plan:
+                    description: Plan indicates the Cloudflare plan type for this
+                      zone
+                    type: string
+                  status:
+                    description: Status indicates if this zone is active or pending
                     type: string
                 type: object
               conditions:

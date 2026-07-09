@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: turnstiles.security.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: security.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: Turnstile
+    listKind: TurnstileList
+    plural: turnstiles
+    singular: turnstile
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,23 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .status.atProvider.siteKey
+      name: SITEKEY
+      type: string
+    - jsonPath: .status.atProvider.name
+      name: NAME
+      type: string
+    - jsonPath: .status.atProvider.mode
+      name: MODE
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A Turnstile is a managed resource that represents a Cloudflare
+          Turnstile widget.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +58,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: TurnstileSpec defines the desired state of Turnstile.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,23 +78,49 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: TurnstileParameters define the desired state of a Cloudflare
+                  Turnstile widget.
                 properties:
-                  locationHint:
+                  accountId:
+                    description: AccountID is the account identifier to target for
+                      the resource.
+                    type: string
+                  botFightMode:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
+                      BotFightMode indicates whether Bot Fight Mode is enabled for this widget.
+                      If true, the widget will enable Cloudflare's Bot Fight Mode.
+                    type: boolean
+                  domains:
+                    description: Domains are the domains for which the widget is active.
+                    items:
+                      type: string
+                    type: array
+                  mode:
+                    description: |-
+                      Mode describes how Cloudflare will handle the traffic coming from human or bot.
+                      Valid values: "non-interactive", "invisible", "managed"
                     enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                    - non-interactive
+                    - invisible
+                    - managed
                     type: string
                   name:
-                    description: Name of the bucket. Must be globally unique.
+                    description: Name is the human readable widget name.
+                    type: string
+                  offLabel:
+                    description: |-
+                      OffLabel indicates whether to show/hide Cloudflare branding on the widget.
+                      If true, Cloudflare branding is hidden (requires appropriate subscription).
+                    type: boolean
+                  region:
+                    description: 'Region is the region for this widget. Valid values:
+                      "world" or specific region codes.'
+                    enum:
+                    - world
                     type: string
                 required:
+                - accountId
+                - domains
                 - name
                 type: object
               managementPolicies:
@@ -175,20 +210,47 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: TurnstileStatus defines the observed state of Turnstile.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: TurnstileObservation are the observable fields of a Turnstile
+                  widget.
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
+                  botFightMode:
+                    description: BotFightMode indicates whether Bot Fight Mode is
+                      enabled.
+                    type: boolean
+                  createdOn:
+                    description: CreatedOn is when the widget was created.
                     format: date-time
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  domains:
+                    description: Domains are the domains for which the widget is active.
+                    items:
+                      type: string
+                    type: array
+                  mode:
+                    description: Mode describes how Cloudflare handles the traffic.
+                    type: string
+                  modifiedOn:
+                    description: ModifiedOn is when the widget was last modified.
+                    format: date-time
                     type: string
                   name:
-                    description: Name of the bucket.
+                    description: Name is the human readable widget name.
+                    type: string
+                  offLabel:
+                    description: OffLabel indicates whether Cloudflare branding is
+                      hidden.
+                    type: boolean
+                  region:
+                    description: Region is the region for this widget.
+                    type: string
+                  secret:
+                    description: Secret is the secret key of the widget (sensitive).
+                    type: string
+                  siteKey:
+                    description: SiteKey is the site key of the widget.
                     type: string
                 type: object
               conditions:

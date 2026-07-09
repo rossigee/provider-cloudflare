@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: rules.transform.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: transform.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: Rule
+    listKind: RuleList
+    plural: rules
+    singular: rule
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -31,10 +31,11 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: transformv1alpha1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A Rule is a managed resource that represents a Cloudflare Transform
+          Rule
         properties:
           apiVersion:
             description: |-
@@ -51,8 +52,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: RuleSpec defines the desired state of Rule
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +72,195 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: RuleParameters define the desired state of a Transform
+                  Rule
                 properties:
-                  locationHint:
+                  action:
                     description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
+                      Action specifies what action to take when the expression matches.
+                      Valid values: rewrite, redirect
                     enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                    - rewrite
+                    - redirect
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  actionParameters:
+                    description: ActionParameters contains the configuration for the
+                      rule action.
+                    properties:
+                      headers:
+                        additionalProperties:
+                          description: HTTPHeaderTransform defines header transformation
+                            settings
+                          properties:
+                            expression:
+                              description: Expression is a dynamic expression for
+                                header value
+                              type: string
+                            operation:
+                              description: |-
+                                Operation specifies what to do with the header
+                                Valid values: set, add, remove
+                              enum:
+                              - set
+                              - add
+                              - remove
+                              type: string
+                            value:
+                              description: Value is the header value (for set and
+                                add operations)
+                              type: string
+                          required:
+                          - operation
+                          type: object
+                        description: Headers settings for header transformations
+                        type: object
+                      statusCode:
+                        description: StatusCode for redirect actions (301, 302, 307,
+                          308)
+                        enum:
+                        - 301
+                        - 302
+                        - 307
+                        - 308
+                        type: integer
+                      uri:
+                        description: URI settings for URL rewriting and redirects
+                        properties:
+                          path:
+                            description: Path settings for URL path transformations
+                            properties:
+                              expression:
+                                description: Expression is a dynamic expression for
+                                  path transformation
+                                type: string
+                              value:
+                                description: Value is the new path value for static
+                                  rewrites
+                                type: string
+                            type: object
+                          query:
+                            description: Query settings for query string transformations
+                            properties:
+                              expression:
+                                description: Expression is a dynamic expression for
+                                  query transformation
+                                type: string
+                              value:
+                                description: Value is the new query string for static
+                                  rewrites
+                                type: string
+                            type: object
+                        type: object
+                    type: object
+                  description:
+                    description: Description provides a human-readable description
+                      of the rule.
                     type: string
+                  enabled:
+                    default: true
+                    description: Enabled controls whether the rule is active.
+                    type: boolean
+                  expression:
+                    description: |-
+                      Expression defines the conditions for when this rule should be applied.
+                      Uses Cloudflare's Rules Language syntax.
+                    type: string
+                  phase:
+                    description: |-
+                      Phase specifies the ruleset phase where this rule should be applied.
+                      Valid values: http_request_transform, http_request_late_transform, http_response_headers_transform
+                    enum:
+                    - http_request_transform
+                    - http_request_late_transform
+                    - http_response_headers_transform
+                    type: string
+                  priority:
+                    description: |-
+                      Priority determines the order in which rules are executed.
+                      Lower numbers have higher priority.
+                    type: integer
+                  zone:
+                    description: Zone is the zone identifier where the transform rule
+                      should be created.
+                    type: string
+                  zoneRef:
+                    description: ZoneRef is a reference to a Zone object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  zoneSelector:
+                    description: ZoneSelector selects a Zone object.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                 required:
-                - name
+                - action
+                - expression
+                - phase
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +349,26 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: RuleStatus defines the observed state of Rule
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: RuleObservation contains the observed state of a Transform
+                  Rule
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
+                  id:
+                    description: ID is the identifier of the transform rule assigned
+                      by Cloudflare
+                    type: string
+                  lastUpdated:
+                    description: LastUpdated indicates when the rule was last modified
                     format: date-time
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  rulesetId:
+                    description: RulesetID is the identifier of the ruleset containing
+                      this rule
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  version:
+                    description: Version is the current version of the rule
                     type: string
                 type: object
               conditions:

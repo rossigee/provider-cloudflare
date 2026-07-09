@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: loadbalancerpools.loadbalancing.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: loadbalancing.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: LoadBalancerPool
+    listKind: LoadBalancerPoolList
+    plural: loadbalancerpools
+    singular: loadbalancerpool
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,20 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .status.atProvider.id
+      name: ID
       type: string
+    - jsonPath: .status.atProvider.healthy
+      name: HEALTHY
+      type: boolean
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: r2v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: LoadBalancerPool is a managed resource that represents a Cloudflare
+          Load Balancer Pool
         properties:
           apiVersion:
             description: |-
@@ -51,8 +55,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: LoadBalancerPoolSpec defines the desired state of LoadBalancerPool
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +75,164 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: LoadBalancerPoolParameters define the desired state of
+                  a Cloudflare Load Balancer Pool
                 properties:
-                  locationHint:
-                    description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                  checkRegions:
+                    description: CheckRegions defines the regions from which to run
+                      health checks.
+                    items:
+                      type: string
+                    type: array
+                  description:
+                    description: Description is a human-readable description of the
+                      pool.
                     type: string
+                  enabled:
+                    description: Enabled indicates whether the pool is enabled.
+                    type: boolean
+                  latitude:
+                    description: Latitude is the latitude for the pool.
+                    type: number
+                  longitude:
+                    description: Longitude is the longitude for the pool.
+                    type: number
+                  minimumOrigins:
+                    description: MinimumOrigins is the minimum number of healthy origins
+                      required for the pool to be considered healthy.
+                    type: integer
+                  monitor:
+                    description: Monitor is the ID of the monitor to use for health
+                      checking.
+                    type: string
+                  monitorRef:
+                    description: MonitorRef is a reference to a LoadBalancerMonitor
+                      resource.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  monitorSelector:
+                    description: MonitorSelector selects a reference to a LoadBalancerMonitor
+                      resource.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                   name:
-                    description: Name of the bucket. Must be globally unique.
+                    description: Name is the name of the pool.
                     type: string
+                  notificationEmail:
+                    description: NotificationEmail is the email address to send health
+                      status notifications to.
+                    type: string
+                  originSteering:
+                    description: OriginSteering controls how origins are selected
+                      within the pool.
+                    properties:
+                      policy:
+                        description: |-
+                          Policy defines the origin steering policy.
+                          Valid values: "random", "hash", "least_outstanding_requests"
+                        type: string
+                    type: object
+                  origins:
+                    description: Origins is the list of origins within this pool.
+                    items:
+                      description: LoadBalancerOrigin represents an origin server
+                        in a load balancer pool
+                      properties:
+                        address:
+                          description: Address is the IP address or hostname of the
+                            origin.
+                          type: string
+                        enabled:
+                          description: Enabled indicates whether this origin is enabled.
+                          type: boolean
+                        header:
+                          additionalProperties:
+                            items:
+                              type: string
+                            type: array
+                          description: Header contains HTTP headers to send to this
+                            origin.
+                          type: object
+                        name:
+                          description: Name is the name of the origin.
+                          type: string
+                        weight:
+                          description: Weight is the weight of this origin in load
+                            balancing decisions.
+                          type: number
+                      required:
+                      - address
+                      - name
+                      type: object
+                    type: array
                 required:
-                - name
+                - origins
                 type: object
               managementPolicies:
                 default:
@@ -175,20 +321,23 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: LoadBalancerPoolStatus defines the observed state of LoadBalancerPool
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
+                description: LoadBalancerPoolObservation represents the observed state
+                  of a Cloudflare Load Balancer Pool
                 properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
+                  createdOn:
+                    description: CreatedOn is when the pool was created.
                     type: string
-                  location:
-                    description: Location where the bucket is stored.
+                  healthy:
+                    description: Healthy indicates whether the pool is healthy.
+                    type: boolean
+                  id:
+                    description: ID is the pool ID.
                     type: string
-                  name:
-                    description: Name of the bucket.
+                  modifiedOn:
+                    description: ModifiedOn is when the pool was last modified.
                     type: string
                 type: object
               conditions:

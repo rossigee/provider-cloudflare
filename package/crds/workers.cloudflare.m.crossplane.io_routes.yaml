@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: buckets.r2.cloudflare.m.crossplane.io
+  name: routes.workers.cloudflare.m.crossplane.io
 spec:
-  group: r2.cloudflare.m.crossplane.io
+  group: workers.cloudflare.m.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - cloudflare
-    kind: Bucket
-    listKind: BucketList
-    plural: buckets
-    singular: bucket
+    kind: Route
+    listKind: RouteList
+    plural: routes
+    singular: route
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -25,16 +25,16 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .spec.forProvider.pattern
+      name: PATTERN
       type: string
-    - jsonPath: .metadata.creationTimestamp
-      name: AGE
-      type: date
-    name: r2v1alpha1
+    - jsonPath: .spec.forProvider.script
+      name: SCRIPT
+      type: string
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Bucket is an example API type.
+        description: A Route represents a single Worker Route managed on a Zone.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +51,10 @@ spec:
               In CamelCase.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
+          metadata:
+            type: object
           spec:
-            description: A BucketSpec defines the desired state of a Bucket.
+            description: A RouteSpec defines the desired state of a Worker Route.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,24 +71,96 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: BucketParameters are the configurable fields of a Bucket.
+                description: RouteParameters are the configurable fields of a DNS
+                  Route.
                 properties:
-                  locationHint:
-                    description: |-
-                      LocationHint for bucket location preference.
-                      Valid values: "apac", "eeur", "enam", "weur", "wnam"
-                    enum:
-                    - apac
-                    - eeur
-                    - enam
-                    - weur
-                    - wnam
+                  pattern:
+                    description: Pattern is the URL pattern of the route.
                     type: string
-                  name:
-                    description: Name of the bucket. Must be globally unique.
+                  script:
+                    description: Script is the name of the worker script.
                     type: string
+                  zone:
+                    description: ZoneID this Worker Route is managed on.
+                    type: string
+                  zoneRef:
+                    description: ZoneRef references the Zone object this Worker Route
+                      is managed on.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  zoneSelector:
+                    description: ZoneSelector selects the Zone object this Worker
+                      Route is managed on.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                 required:
-                - name
+                - pattern
                 type: object
               managementPolicies:
                 default:
@@ -175,21 +249,11 @@ spec:
             - forProvider
             type: object
           status:
-            description: A BucketStatus represents the observed state of a Bucket.
+            description: A RouteStatus represents the observed state of a Worker Route.
             properties:
               atProvider:
-                description: BucketObservation are the observable fields of a Bucket.
-                properties:
-                  creationDate:
-                    description: CreationDate when the bucket was created.
-                    format: date-time
-                    type: string
-                  location:
-                    description: Location where the bucket is stored.
-                    type: string
-                  name:
-                    description: Name of the bucket.
-                    type: string
+                description: RouteObservation is the observable fields of a Worker
+                  Route.
                 type: object
               conditions:
                 description: Conditions of the resource.
