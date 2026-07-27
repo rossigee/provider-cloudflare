@@ -22,6 +22,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -46,5 +47,10 @@ var (
 )
 
 func addKnownTypes(s *runtime.Scheme) error {
+	s.AddKnownTypes(SchemeGroupVersion,
+		&DevicePostureRule{},
+		&DevicePostureRuleList{},
+	)
+	metav1.AddToGroupVersion(s, SchemeGroupVersion)
 	return nil
 }

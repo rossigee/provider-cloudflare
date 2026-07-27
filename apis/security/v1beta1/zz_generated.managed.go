@@ -17,154 +17,154 @@ limitations under the License.
 
 package v1beta1
 
-import xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+import xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 // GetCondition of this BotManagement.
-func (mg *BotManagement) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *BotManagement) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this BotManagement.
-func (mg *BotManagement) GetDeletionPolicy() xpv1.DeletionPolicy {
+func (mg *BotManagement) GetDeletionPolicy() xpv2.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this BotManagement.
-func (mg *BotManagement) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *BotManagement) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this BotManagement.
-func (mg *BotManagement) GetProviderConfigReference() *xpv1.Reference {
+func (mg *BotManagement) GetProviderConfigReference() *xpv2.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this BotManagement.
-func (mg *BotManagement) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+func (mg *BotManagement) GetWriteConnectionSecretToReference() *xpv2.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this BotManagement.
-func (mg *BotManagement) SetConditions(c ...xpv1.Condition) {
+func (mg *BotManagement) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this BotManagement.
-func (mg *BotManagement) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+func (mg *BotManagement) SetDeletionPolicy(r xpv2.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this BotManagement.
-func (mg *BotManagement) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *BotManagement) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this BotManagement.
-func (mg *BotManagement) SetProviderConfigReference(r *xpv1.Reference) {
+func (mg *BotManagement) SetProviderConfigReference(r *xpv2.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this BotManagement.
-func (mg *BotManagement) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+func (mg *BotManagement) SetWriteConnectionSecretToReference(r *xpv2.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this RateLimit.
-func (mg *RateLimit) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *RateLimit) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this RateLimit.
-func (mg *RateLimit) GetDeletionPolicy() xpv1.DeletionPolicy {
+func (mg *RateLimit) GetDeletionPolicy() xpv2.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this RateLimit.
-func (mg *RateLimit) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *RateLimit) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this RateLimit.
-func (mg *RateLimit) GetProviderConfigReference() *xpv1.Reference {
+func (mg *RateLimit) GetProviderConfigReference() *xpv2.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this RateLimit.
-func (mg *RateLimit) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+func (mg *RateLimit) GetWriteConnectionSecretToReference() *xpv2.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this RateLimit.
-func (mg *RateLimit) SetConditions(c ...xpv1.Condition) {
+func (mg *RateLimit) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this RateLimit.
-func (mg *RateLimit) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+func (mg *RateLimit) SetDeletionPolicy(r xpv2.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this RateLimit.
-func (mg *RateLimit) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *RateLimit) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this RateLimit.
-func (mg *RateLimit) SetProviderConfigReference(r *xpv1.Reference) {
+func (mg *RateLimit) SetProviderConfigReference(r *xpv2.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this RateLimit.
-func (mg *RateLimit) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+func (mg *RateLimit) SetWriteConnectionSecretToReference(r *xpv2.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this Turnstile.
-func (mg *Turnstile) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *Turnstile) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this Turnstile.
-func (mg *Turnstile) GetDeletionPolicy() xpv1.DeletionPolicy {
+func (mg *Turnstile) GetDeletionPolicy() xpv2.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this Turnstile.
-func (mg *Turnstile) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *Turnstile) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this Turnstile.
-func (mg *Turnstile) GetProviderConfigReference() *xpv1.Reference {
+func (mg *Turnstile) GetProviderConfigReference() *xpv2.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this Turnstile.
-func (mg *Turnstile) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+func (mg *Turnstile) GetWriteConnectionSecretToReference() *xpv2.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Turnstile.
-func (mg *Turnstile) SetConditions(c ...xpv1.Condition) {
+func (mg *Turnstile) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this Turnstile.
-func (mg *Turnstile) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+func (mg *Turnstile) SetDeletionPolicy(r xpv2.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this Turnstile.
-func (mg *Turnstile) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *Turnstile) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this Turnstile.
-func (mg *Turnstile) SetProviderConfigReference(r *xpv1.Reference) {
+func (mg *Turnstile) SetProviderConfigReference(r *xpv2.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Turnstile.
-func (mg *Turnstile) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+func (mg *Turnstile) SetWriteConnectionSecretToReference(r *xpv2.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

@@ -21,6 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -44,12 +45,19 @@ var (
 
 func addKnownTypes(s *runtime.Scheme) error {
 	s.AddKnownTypes(GroupVersion,
-		&SubdomainList{},
-		&DomainList{},
-		&RouteList{},
+		&Script{},
 		&ScriptList{},
+		&Subdomain{},
+		&SubdomainList{},
+		&Domain{},
+		&DomainList{},
+		&Route{},
+		&RouteList{},
+		&KVNamespace{},
 		&KVNamespaceList{},
+		&CronTrigger{},
 		&CronTriggerList{},
 	)
+	metav1.AddToGroupVersion(s, GroupVersion)
 	return nil
 }

@@ -17,54 +17,54 @@ limitations under the License.
 
 package v1beta1
 
-import xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+import xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 // GetCondition of this CacheRule.
-func (mg *CacheRule) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *CacheRule) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this CacheRule.
-func (mg *CacheRule) GetDeletionPolicy() xpv1.DeletionPolicy {
+func (mg *CacheRule) GetDeletionPolicy() xpv2.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this CacheRule.
-func (mg *CacheRule) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *CacheRule) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this CacheRule.
-func (mg *CacheRule) GetProviderConfigReference() *xpv1.Reference {
+func (mg *CacheRule) GetProviderConfigReference() *xpv2.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this CacheRule.
-func (mg *CacheRule) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+func (mg *CacheRule) GetWriteConnectionSecretToReference() *xpv2.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this CacheRule.
-func (mg *CacheRule) SetConditions(c ...xpv1.Condition) {
+func (mg *CacheRule) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this CacheRule.
-func (mg *CacheRule) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+func (mg *CacheRule) SetDeletionPolicy(r xpv2.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this CacheRule.
-func (mg *CacheRule) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *CacheRule) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CacheRule.
-func (mg *CacheRule) SetProviderConfigReference(r *xpv1.Reference) {
+func (mg *CacheRule) SetProviderConfigReference(r *xpv2.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this CacheRule.
-func (mg *CacheRule) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+func (mg *CacheRule) SetWriteConnectionSecretToReference(r *xpv2.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

@@ -17,54 +17,54 @@ limitations under the License.
 
 package v1beta1
 
-import xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+import xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 // GetCondition of this AccessApplication.
-func (mg *AccessApplication) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *AccessApplication) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this AccessApplication.
-func (mg *AccessApplication) GetDeletionPolicy() xpv1.DeletionPolicy {
+func (mg *AccessApplication) GetDeletionPolicy() xpv2.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this AccessApplication.
-func (mg *AccessApplication) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *AccessApplication) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this AccessApplication.
-func (mg *AccessApplication) GetProviderConfigReference() *xpv1.Reference {
+func (mg *AccessApplication) GetProviderConfigReference() *xpv2.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this AccessApplication.
-func (mg *AccessApplication) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+func (mg *AccessApplication) GetWriteConnectionSecretToReference() *xpv2.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this AccessApplication.
-func (mg *AccessApplication) SetConditions(c ...xpv1.Condition) {
+func (mg *AccessApplication) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this AccessApplication.
-func (mg *AccessApplication) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+func (mg *AccessApplication) SetDeletionPolicy(r xpv2.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this AccessApplication.
-func (mg *AccessApplication) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *AccessApplication) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this AccessApplication.
-func (mg *AccessApplication) SetProviderConfigReference(r *xpv1.Reference) {
+func (mg *AccessApplication) SetProviderConfigReference(r *xpv2.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this AccessApplication.
-func (mg *AccessApplication) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+func (mg *AccessApplication) SetWriteConnectionSecretToReference(r *xpv2.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

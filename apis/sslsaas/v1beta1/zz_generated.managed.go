@@ -17,104 +17,104 @@ limitations under the License.
 
 package v1beta1
 
-import xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+import xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 // GetCondition of this CustomHostname.
-func (mg *CustomHostname) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *CustomHostname) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this CustomHostname.
-func (mg *CustomHostname) GetDeletionPolicy() xpv1.DeletionPolicy {
+func (mg *CustomHostname) GetDeletionPolicy() xpv2.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this CustomHostname.
-func (mg *CustomHostname) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *CustomHostname) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this CustomHostname.
-func (mg *CustomHostname) GetProviderConfigReference() *xpv1.Reference {
+func (mg *CustomHostname) GetProviderConfigReference() *xpv2.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this CustomHostname.
-func (mg *CustomHostname) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+func (mg *CustomHostname) GetWriteConnectionSecretToReference() *xpv2.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this CustomHostname.
-func (mg *CustomHostname) SetConditions(c ...xpv1.Condition) {
+func (mg *CustomHostname) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this CustomHostname.
-func (mg *CustomHostname) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+func (mg *CustomHostname) SetDeletionPolicy(r xpv2.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this CustomHostname.
-func (mg *CustomHostname) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *CustomHostname) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CustomHostname.
-func (mg *CustomHostname) SetProviderConfigReference(r *xpv1.Reference) {
+func (mg *CustomHostname) SetProviderConfigReference(r *xpv2.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this CustomHostname.
-func (mg *CustomHostname) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+func (mg *CustomHostname) SetWriteConnectionSecretToReference(r *xpv2.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this FallbackOrigin.
-func (mg *FallbackOrigin) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *FallbackOrigin) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this FallbackOrigin.
-func (mg *FallbackOrigin) GetDeletionPolicy() xpv1.DeletionPolicy {
+func (mg *FallbackOrigin) GetDeletionPolicy() xpv2.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetManagementPolicies of this FallbackOrigin.
-func (mg *FallbackOrigin) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *FallbackOrigin) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this FallbackOrigin.
-func (mg *FallbackOrigin) GetProviderConfigReference() *xpv1.Reference {
+func (mg *FallbackOrigin) GetProviderConfigReference() *xpv2.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this FallbackOrigin.
-func (mg *FallbackOrigin) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+func (mg *FallbackOrigin) GetWriteConnectionSecretToReference() *xpv2.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this FallbackOrigin.
-func (mg *FallbackOrigin) SetConditions(c ...xpv1.Condition) {
+func (mg *FallbackOrigin) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this FallbackOrigin.
-func (mg *FallbackOrigin) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+func (mg *FallbackOrigin) SetDeletionPolicy(r xpv2.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetManagementPolicies of this FallbackOrigin.
-func (mg *FallbackOrigin) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *FallbackOrigin) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this FallbackOrigin.
-func (mg *FallbackOrigin) SetProviderConfigReference(r *xpv1.Reference) {
+func (mg *FallbackOrigin) SetProviderConfigReference(r *xpv2.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this FallbackOrigin.
-func (mg *FallbackOrigin) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+func (mg *FallbackOrigin) SetWriteConnectionSecretToReference(r *xpv2.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
