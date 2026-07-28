@@ -25,6 +25,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/controller/emailrouting"
 	"github.com/rossigee/provider-cloudflare/internal/controller/loadbalancing"
 	"github.com/rossigee/provider-cloudflare/internal/controller/originssl"
+	"github.com/rossigee/provider-cloudflare/internal/controller/providerconfig"
 	"github.com/rossigee/provider-cloudflare/internal/controller/r2"
 	"github.com/rossigee/provider-cloudflare/internal/controller/rulesets"
 	"github.com/rossigee/provider-cloudflare/internal/controller/security"
@@ -66,6 +67,10 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 			return err
 		}
 	}
+	// providerconfig.Setup has a different signature - call it separately
+	if err := providerconfig.Setup(mgr); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -94,6 +99,10 @@ func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimi
 		if err := setup(mgr, l, wl); err != nil {
 			return err
 		}
+	}
+	// providerconfig.Setup has a different signature - call it separately
+	if err := providerconfig.Setup(mgr); err != nil {
+		return err
 	}
 	return nil
 }

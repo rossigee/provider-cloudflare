@@ -24,6 +24,8 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
 	"github.com/rossigee/provider-cloudflare/internal/version"
 	"gopkg.in/alecthomas/kingpin.v2"
+	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/util/workqueue"
 	"os"
 	"path/filepath"
@@ -61,18 +63,21 @@ func main() {
 		"leader-election-id", "crossplane-leader-election-provider-cloudflare",
 		"debug-mode", *debug)
 
+	s := apimachineryruntime.NewScheme()
+	kingpin.FatalIfError(scheme.AddToScheme(s), "Cannot add k8s types to scheme")
+	kingpin.FatalIfError(apis.AddToScheme(s), "Cannot add CloudFlare APIs to scheme")
+
 	cfg, err := ctrl.GetConfig()
 	kingpin.FatalIfError(err, "Cannot get API server rest config")
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+		Scheme:             s,
 		LeaderElection:   *leaderElection,
 		LeaderElectionID: "crossplane-leader-election-provider-cloudflare",
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 
 	rl := workqueue.DefaultTypedControllerRateLimiter[any]()
-	log.Info("Adding CloudFlare APIs to scheme")
-	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add CloudFlare APIs to scheme")
 	kingpin.FatalIfError(apis.VerifySchemeRegistration(), "Scheme verification failed")
 	log.Info("CloudFlare APIs added to scheme successfully")
 	kingpin.FatalIfError(controller.SetupMinimal(mgr, log, rl), "Cannot setup minimal CloudFlare controllers")
