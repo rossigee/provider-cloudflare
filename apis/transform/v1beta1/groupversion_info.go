@@ -27,7 +27,7 @@ import (
 
 const (
 	Group   = "transform.cloudflare.m.crossplane.io"
-	Version = "transformv1alpha1"
+	Version = "v1beta1"
 )
 
 var (

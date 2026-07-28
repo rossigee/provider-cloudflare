@@ -28,7 +28,7 @@ import (
 // Package type metadata.
 const (
 	Group   = "r2.cloudflare.m.crossplane.io"
-	Version = "r2v1alpha1"
+	Version = "v1beta1"
 )
 
 var (

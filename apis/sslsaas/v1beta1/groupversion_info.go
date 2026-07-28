@@ -27,7 +27,7 @@ import (
 
 const (
 	Group   = "sslsaas.cloudflare.m.crossplane.io"
-	Version = "sslsaasv1alpha1"
+	Version = "v1beta1"
 )
 
 var (

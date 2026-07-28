@@ -29,7 +29,7 @@ import (
 // Package type metadata.
 const (
 	Group   = "logpush.cloudflare.m.crossplane.io"
-	Version = "logpushv1alpha1"
+	Version = "v1beta1"
 )
 
 var (

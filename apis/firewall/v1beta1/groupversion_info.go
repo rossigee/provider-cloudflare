@@ -27,7 +27,7 @@ import (
 
 const (
 	Group   = "firewall.cloudflare.m.crossplane.io"
-	Version = "firewallv1alpha1"
+	Version = "v1beta1"
 )
 
 var (
