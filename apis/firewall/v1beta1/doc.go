@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package firewallv1alpha1 contains the firewallv1alpha1 group Rule and Filter resources of the Cloudflare provider.
+// Package v1beta1 contains the v1beta1 group firewall.cloudflare.m.crossplane.io Rule and Filter resources of the provider.
 // +kubebuilder:object:generate=true
 // +groupName=firewall.cloudflare.m.crossplane.io
-// +versionName=firewallv1alpha1
+// +versionName=v1beta1
 package v1beta1

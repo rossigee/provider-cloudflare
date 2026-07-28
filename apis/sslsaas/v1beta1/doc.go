@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package sslsaasv1alpha1 contains the sslsaasv1alpha1 group SSL SaaS resources of the Template provider.
+// Package v1beta1 contains the v1beta1 group sslsaas.cloudflare.m.crossplane.io SSL SaaS resources of the provider.
 // +kubebuilder:object:generate=true
 // +groupName=sslsaas.cloudflare.m.crossplane.io
-// +versionName=sslsaasv1alpha1
+// +versionName=v1beta1
 package v1beta1

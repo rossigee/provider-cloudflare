@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package originsslv1alpha1 contains the originsslv1alpha1 group Origin SSL resources of the Cloudflare provider.
+// Package v1beta1 contains the v1beta1 group originssl.cloudflare.m.crossplane.io Origin SSL resources of the provider.
 // +kubebuilder:object:generate=true
 // +groupName=originssl.cloudflare.m.crossplane.io
-// +versionName=originsslv1alpha1
+// +versionName=v1beta1
 package v1beta1

@@ -37,7 +37,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: originsslv1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: A Certificate is a managed resource that represents a Cloudflare

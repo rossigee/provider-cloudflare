@@ -25,7 +25,7 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    name: spectrumv1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: A Application is a set of common settings applied to one or more

@@ -28,7 +28,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: firewallv1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: A Rule applies a firewall filter in a particular order to a Zone.

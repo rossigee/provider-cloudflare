@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package r2v1alpha1 contains the core resources of the Cloudflare provider.
+// Package v1beta1 contains the v1beta1 group r2.cloudflare.m.crossplane.io resources of the provider.
 // +kubebuilder:object:generate=true
 // +groupName=r2.cloudflare.m.crossplane.io
-// +versionName=r2v1alpha1
+// +versionName=v1beta1
 package v1beta1
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -47,5 +48,6 @@ func addKnownTypes(s *runtime.Scheme) error {
 		&Bucket{},
 		&BucketList{},
 	)
+	metav1.AddToGroupVersion(s, GroupVersion)
 	return nil
 }

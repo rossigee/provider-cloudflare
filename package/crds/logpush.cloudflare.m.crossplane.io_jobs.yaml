@@ -31,7 +31,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: logpushv1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: A Job is a Cloudflare Logpush Job.

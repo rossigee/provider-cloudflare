@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package spectrumv1alpha1 contains the spectrumv1alpha1 group Spectrum resources of the Template provider.
+// Package v1beta1 contains the v1beta1 group spectrum.cloudflare.m.crossplane.io Spectrum resources of the provider.
 // +kubebuilder:object:generate=true
 // +groupName=spectrum.cloudflare.m.crossplane.io
-// +versionName=spectrumv1alpha1
+// +versionName=v1beta1
 package v1beta1

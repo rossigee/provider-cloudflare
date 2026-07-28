@@ -25,7 +25,7 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    name: sslsaasv1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: A FallbackOrigin is a fallback origin required to use SSL for
