@@ -27,7 +27,7 @@ import (
 
 const (
 	Group   = "spectrum.cloudflare.m.crossplane.io"
-	Version = "spectrumv1alpha1"
+	Version = "v1beta1"
 )
 
 var (
