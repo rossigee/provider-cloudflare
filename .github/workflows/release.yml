@@ -97,7 +97,6 @@ jobs:
             apiVersion: pkg.crossplane.io/v1
             kind: Provider
             metadata:
-        allowUpdates: true
               name: provider-cloudflare
             spec:
               package: ${{ env.REGISTRY_ORGS }}/provider-cloudflare:${{ steps.version.outputs.version }}
