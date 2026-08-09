@@ -49,6 +49,11 @@ jobs:
       - name: Run code generation
         run: make generate
 
+      - name: Prepare Docker build context
+        run: |
+          cp -r package/crds ./
+          cp package/crossplane.yaml ./
+
       - name: Check go.mod is up to date
         run: |
           go mod tidy
