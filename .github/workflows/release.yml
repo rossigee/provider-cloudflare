@@ -49,13 +49,6 @@ jobs:
       - name: Run code generation
         run: make generate
 
-      - name: Prepare Docker build context
-        run: |
-          mkdir -p bin/linux_amd64
-          cp _output/bin/linux_amd64/provider bin/linux_amd64/
-          cp -r package/crds ./
-          cp package/crossplane.yaml ./
-
       - name: Check go.mod is up to date
         run: |
           go mod tidy
@@ -74,6 +67,13 @@ jobs:
           go build -v -o _output/bin/linux_amd64/provider \
             -ldflags "-X github.com/rossigee/provider-cloudflare/internal/version.Version=${{ steps.version.outputs.version }}" \
             ./cmd/provider
+
+      - name: Prepare Docker build context
+        run: |
+          mkdir -p bin/linux_amd64
+          cp _output/bin/linux_amd64/provider bin/linux_amd64/
+          cp -r package/crds ./
+          cp package/crossplane.yaml ./
 
       - name: Build and push Docker image (amd64)
         uses: docker/build-push-action@v7
