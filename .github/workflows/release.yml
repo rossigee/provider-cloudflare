@@ -51,6 +51,8 @@ jobs:
 
       - name: Prepare Docker build context
         run: |
+          mkdir -p bin/linux_amd64
+          cp _output/bin/linux_amd64/provider bin/linux_amd64/
           cp -r package/crds ./
           cp package/crossplane.yaml ./
 
