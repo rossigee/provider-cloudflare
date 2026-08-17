@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"os"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/rossigee/provider-cloudflare/internal/controller/access"
@@ -85,6 +86,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 
 // SetupMinimal creates minimal controllers with only config, zone, and dns record support.
 func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
+	if err := setupRBAC(mgr.GetClient(), l); err != nil {
+		l.Info("RBAC setup warning (may be transient)", "error", err)
+	}
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.TypedRateLimiter[any]) error{
 		// config.Setup, // Temporarily disabled for v2 compatibility debugging
 		zone.Setup,
@@ -150,7 +154,7 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 	binding := &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{Name: "crossplane:provider:provider-cloudflare:system"},
 		RoleRef:    rbacv1.RoleRef{APIGroup: "rbac.authorization.k8s.io", Kind: "ClusterRole", Name: "crossplane:provider:provider-cloudflare:system"},
-		Subjects:   []rbacv1.Subject{{Kind: "ServiceAccount", Name: "provider-cloudflare", Namespace: "crossplane-system"}},
+		Subjects:   []rbacv1.Subject{{Kind: "ServiceAccount", Name: os.Getenv("REVISION_NAME"), Namespace: "crossplane-system"}},
 	}
 	if err := c.Create(ctx, binding); err != nil && !errors.IsAlreadyExists(err) {
 		return err
