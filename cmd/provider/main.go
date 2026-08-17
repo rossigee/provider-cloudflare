@@ -17,7 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"context"
+	"os"
+	"path/filepath"
+	"runtime"
+	"time"
+
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/rossigee/provider-cloudflare/apis"
 	"github.com/rossigee/provider-cloudflare/internal/controller"
@@ -27,10 +31,9 @@ import (
 	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/util/workqueue"
-	"os"
-	"path/filepath"
-	"runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
@@ -47,8 +50,9 @@ func main() {
 	zl := zap.New(zap.UseDevMode(*debug))
 	log := logging.NewLogrLogger(zl.WithName("provider-cloudflare"))
 
+	signalCtx := ctrl.SetupSignalHandler()
 	shutdownTracing := tracing.Init("provider-cloudflare")
-	defer shutdownTracing(context.Background())
+	defer shutdownTracing(signalCtx)
 
 	// Always set the controller-runtime logger to prevent logging errors
 	ctrl.SetLogger(zl)
@@ -70,10 +74,22 @@ func main() {
 	cfg, err := ctrl.GetConfig()
 	kingpin.FatalIfError(err, "Cannot get API server rest config")
 
+	sync := *syncPeriod
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
-		Scheme:             s,
+		Scheme:           s,
+		Logger:           zl,
 		LeaderElection:   *leaderElection,
 		LeaderElectionID: "crossplane-leader-election-provider-cloudflare",
+		Cache: cache.Options{
+			SyncPeriod: &sync,
+		},
+		Controller: config.Controller{
+			// 30 controllers/watchers x initial List+Watch startup can exceed the
+			// controller-runtime default of 2m when the apiserver is slow or many
+			// CRDs are installed. Raise the ceiling so the manager does not fatal-exit
+			// before caches finish syncing.
+			CacheSyncTimeout: 10 * time.Minute,
+		},
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 
@@ -85,5 +101,5 @@ func main() {
 	kingpin.FatalIfError(mgr.AddHealthzCheck("healthz", healthz.Ping), "Cannot add health check")
 	kingpin.FatalIfError(mgr.AddReadyzCheck("readyz", healthz.Ping), "Cannot add ready check")
 
-	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
+	kingpin.FatalIfError(mgr.Start(signalCtx), "Cannot start controller manager")
 }
