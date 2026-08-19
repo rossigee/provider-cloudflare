@@ -18,6 +18,8 @@ package totaltls
 
 import (
 	"context"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
@@ -25,7 +27,6 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"k8s.io/utils/ptr"
-	"testing"
 )
 
 // MockTotalTLSAPI implements the TotalTLSAPI interface for testing

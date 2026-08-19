@@ -19,11 +19,12 @@ package job
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/logpush/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
 )
 
 // LogpushJobAPI defines the interface for Logpush Job operations

@@ -18,6 +18,7 @@ package fallbackorigin
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -28,12 +29,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
 
+	"net/http"
+	"testing"
+
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/fallbackorigin/fake"
 	corev1 "k8s.io/api/core/v1"
-	"net/http"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 
 	providerv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 )

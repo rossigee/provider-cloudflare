@@ -18,11 +18,12 @@ package rule
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
 	"k8s.io/utils/ptr"
-	"testing"
 )
 
 func TestUpToDate(t *testing.T) {

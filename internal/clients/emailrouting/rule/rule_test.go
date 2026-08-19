@@ -18,12 +18,13 @@ package rule
 
 import (
 	"context"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
 	"k8s.io/utils/ptr"
-	"testing"
 )
 
 // MockEmailRoutingRuleAPI implements the EmailRoutingRuleAPI interface for testing

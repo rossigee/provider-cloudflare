@@ -18,11 +18,12 @@ package universalssl
 
 import (
 	"context"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"strings"
 )
 
 // UniversalSSLAPI defines the interface for Universal SSL operations

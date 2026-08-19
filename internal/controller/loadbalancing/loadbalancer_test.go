@@ -18,6 +18,9 @@ package loadbalancing
 
 import (
 	"context"
+	"net/http"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -31,9 +34,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing/fake"
 	corev1 "k8s.io/api/core/v1"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing

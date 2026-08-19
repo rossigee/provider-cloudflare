@@ -19,10 +19,11 @@ package application
 import (
 	"context"
 	"errors"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
-	"testing"
 )
 
 func stringPtr(s string) *string {

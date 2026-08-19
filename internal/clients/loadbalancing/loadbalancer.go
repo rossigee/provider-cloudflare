@@ -18,12 +18,13 @@ package loadbalancing
 
 import (
 	"context"
+	"net/http"
+	"strconv"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"net/http"
-	"strconv"
 )
 
 const (

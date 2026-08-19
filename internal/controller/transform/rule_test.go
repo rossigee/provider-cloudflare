@@ -18,6 +18,7 @@ package transform
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
@@ -29,6 +30,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
 
+	"net/http"
+	"testing"
+
 	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	transformrule "github.com/rossigee/provider-cloudflare/internal/clients/transform/rule"
@@ -36,9 +40,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 type ruleModifier func(*v1beta1.Rule)

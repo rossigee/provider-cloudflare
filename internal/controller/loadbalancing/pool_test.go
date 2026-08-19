@@ -18,6 +18,7 @@ package loadbalancing
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -27,14 +28,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 
+	"net/http"
+	"testing"
+
 	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing/fake"
 	corev1 "k8s.io/api/core/v1"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 type poolModifier func(*v1beta1.LoadBalancerPool)

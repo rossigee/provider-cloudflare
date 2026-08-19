@@ -18,11 +18,12 @@ package ruleset
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"net/http"
 )
 
 const (

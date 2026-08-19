@@ -17,10 +17,11 @@ limitations under the License.
 package workers
 
 import (
+	"testing"
+
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/controller/testutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 // TestV1Beta1ScriptCreation tests basic Worker Script v1beta1 creation

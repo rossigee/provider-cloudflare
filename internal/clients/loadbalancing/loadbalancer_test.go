@@ -17,11 +17,12 @@ limitations under the License.
 package loadbalancing
 
 import (
+	"testing"
+	"time"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
-	"testing"
-	"time"
 )
 
 func stringPtr(s string) *string {

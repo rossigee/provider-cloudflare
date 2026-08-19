@@ -18,6 +18,7 @@ package originssl
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
@@ -29,6 +30,8 @@ import (
 	originsslv1beta1 "github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
 	cloudflarev1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 
+	"time"
+
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/originssl/certificate"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,7 +39,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"time"
 )
 
 const (

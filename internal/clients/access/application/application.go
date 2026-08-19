@@ -18,12 +18,13 @@ package application
 
 import (
 	"context"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 // AccessApplicationAPI defines the interface for Access Application operations

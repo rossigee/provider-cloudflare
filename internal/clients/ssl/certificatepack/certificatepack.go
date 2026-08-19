@@ -18,12 +18,13 @@ package certificatepack
 
 import (
 	"context"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 // CertificatePackAPI defines the interface for Certificate Pack operations

@@ -19,10 +19,11 @@ package posturerule
 import (
 	"context"
 	"errors"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
-	"testing"
 )
 
 func stringPtr(s string) *string {

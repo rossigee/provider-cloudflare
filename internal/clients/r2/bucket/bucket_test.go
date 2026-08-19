@@ -18,6 +18,9 @@ package bucket
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
@@ -25,8 +28,6 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
-	"testing"
-	"time"
 )
 
 // MockR2BucketAPI implements the R2BucketAPI interface for testing

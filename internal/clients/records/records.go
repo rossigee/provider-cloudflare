@@ -19,13 +19,14 @@ package records
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 const (

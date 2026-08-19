@@ -19,11 +19,12 @@ package cache
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"net/http"
 )
 
 const (

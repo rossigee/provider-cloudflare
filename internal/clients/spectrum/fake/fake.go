@@ -18,6 +18,7 @@ package fake
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"

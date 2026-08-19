@@ -19,13 +19,15 @@ package clients
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 
-	"k8s.io/apimachinery/pkg/types"
 	"net/http"
+
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"

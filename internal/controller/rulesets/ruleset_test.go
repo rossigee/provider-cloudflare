@@ -18,6 +18,8 @@ package rulesets
 
 import (
 	"context"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -26,9 +28,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"github.com/rossigee/provider-cloudflare/internal/clients/rulesets"
+	ruleset "github.com/rossigee/provider-cloudflare/internal/clients/rulesets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing

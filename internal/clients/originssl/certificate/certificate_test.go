@@ -18,6 +18,9 @@ package certificate
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
@@ -26,8 +29,6 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
-	"testing"
-	"time"
 )
 
 // MockOriginCACertificateAPI implements the OriginCACertificateAPI interface for testing

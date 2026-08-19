@@ -18,11 +18,12 @@ package botmanagement
 
 import (
 	"context"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"strings"
 )
 
 // BotManagementAPI defines the interface for Bot Management operations

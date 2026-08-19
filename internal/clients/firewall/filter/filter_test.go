@@ -18,6 +18,7 @@ package filter
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
@@ -29,13 +30,14 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
 
+	"net/http"
+	"testing"
+
 	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/firewall/filter/fake"
 	corev1 "k8s.io/api/core/v1"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing

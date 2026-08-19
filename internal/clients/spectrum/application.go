@@ -18,13 +18,14 @@ package spectrum
 
 import (
 	"context"
+	"net"
+	"net/http"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net"
-	"net/http"
 )
 
 const (

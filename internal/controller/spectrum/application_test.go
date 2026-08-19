@@ -18,6 +18,8 @@ package spectrum
 
 import (
 	"context"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -28,7 +30,6 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	applications "github.com/rossigee/provider-cloudflare/internal/clients/spectrum"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing

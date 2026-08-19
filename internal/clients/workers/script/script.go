@@ -18,14 +18,15 @@ package script
 
 import (
 	"context"
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/pkg/errors"
-	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
-	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"math"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/cloudflare/cloudflare-go"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
 )
 
 const (

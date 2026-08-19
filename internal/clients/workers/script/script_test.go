@@ -18,14 +18,15 @@ package script
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"k8s.io/utils/ptr"
-	"testing"
-	"time"
 )
 
 const (

@@ -17,10 +17,11 @@ limitations under the License.
 package cache
 
 import (
+	"testing"
+
 	"github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/controller/testutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 // TestV1Beta1CacheRuleCreation tests basic CacheRule v1beta1 creation

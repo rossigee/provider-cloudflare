@@ -17,10 +17,11 @@ limitations under the License.
 package security
 
 import (
+	"testing"
+
 	"github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/controller/testutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 // TestV1Beta1RateLimitCreation tests basic RateLimit v1beta1 creation

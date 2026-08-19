@@ -18,11 +18,12 @@ package customhostname
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"net/http"
 )
 
 const (

@@ -18,6 +18,8 @@ package rulesets
 
 import (
 	"context"
+	"time"
+
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
@@ -27,13 +29,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"github.com/rossigee/provider-cloudflare/internal/clients/rulesets"
+	ruleset "github.com/rossigee/provider-cloudflare/internal/clients/rulesets"
 	"github.com/rossigee/provider-cloudflare/internal/metrics"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"time"
 )
 
 const (

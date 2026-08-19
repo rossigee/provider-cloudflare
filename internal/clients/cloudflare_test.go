@@ -19,6 +19,7 @@ package clients
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	rtfake "github.com/crossplane/crossplane-runtime/v2/pkg/resource/fake"
@@ -31,8 +32,9 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
 )
 
 // testProviderConfigReferencer is a test helper that implements ProviderConfigReferencer

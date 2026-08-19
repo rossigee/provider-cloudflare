@@ -19,9 +19,10 @@ package tunnel
 import (
 	"context"
 	"errors"
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
-	"testing"
 )
 
 func TestIsUpToDate(t *testing.T) {

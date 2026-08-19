@@ -18,6 +18,7 @@ package rule
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"

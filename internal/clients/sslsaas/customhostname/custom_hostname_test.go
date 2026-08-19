@@ -18,6 +18,7 @@ package customhostname
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
@@ -29,14 +30,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
 
+	"net/http"
+	"testing"
+
 	providerv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/sslsaas/customhostname/fake"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
-	"net/http"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 // Error constants from the controller

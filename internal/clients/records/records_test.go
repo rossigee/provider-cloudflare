@@ -17,12 +17,13 @@ limitations under the License.
 package records
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	"k8s.io/utils/ptr"
-	"strings"
-	"testing"
 )
 
 func uint16Ptr(v uint16) *uint16 {

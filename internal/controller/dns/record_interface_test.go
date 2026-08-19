@@ -18,6 +18,11 @@ package record
 
 import (
 	"context"
+	"io"
+	"net/http"
+	"strings"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
@@ -28,11 +33,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"io"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"strings"
-	"testing"
 )
 
 // Using error constants from main record controller

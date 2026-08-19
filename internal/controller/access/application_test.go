@@ -18,6 +18,8 @@ package access
 
 import (
 	"context"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
@@ -28,7 +30,6 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients/access/application"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 // Unlike many Kubernetes projects Crossplane does not use third party testing

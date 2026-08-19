@@ -19,13 +19,14 @@ package rule
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"strings"
 )
 
 const (

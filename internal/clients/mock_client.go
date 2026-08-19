@@ -19,9 +19,10 @@ package clients
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
-	"strings"
 )
 
 // MockCloudflareClient implements CloudflareClient for testing

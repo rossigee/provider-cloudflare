@@ -18,11 +18,12 @@ package posturerule
 
 import (
 	"context"
+	"strings"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	"strings"
 )
 
 // DevicePostureRuleAPI defines the interface for Device Posture Rule operations

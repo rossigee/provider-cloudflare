@@ -18,6 +18,7 @@ package loadbalancing
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
@@ -27,15 +28,16 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 	apisv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 
+	"net/http"
+	"time"
+
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
-	"net/http"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"time"
 )
 
 const (

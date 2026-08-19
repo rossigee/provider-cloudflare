@@ -18,6 +18,8 @@ package zones
 
 import (
 	"context"
+	"testing"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
 	"github.com/google/go-cmp/cmp"
@@ -25,7 +27,6 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients/zones/fake"
 	"k8s.io/utils/ptr"
-	"testing"
 )
 
 func TestLateInitialize(t *testing.T) {

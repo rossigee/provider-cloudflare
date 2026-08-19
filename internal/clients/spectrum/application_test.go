@@ -18,6 +18,7 @@ package spectrum
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
@@ -30,14 +31,15 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/spectrum/v1beta1"
 	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 
+	"net"
+	"net/http"
+	"testing"
+
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/spectrum/fake"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
-	"net"
-	"net/http"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 // Error constants from the controller
