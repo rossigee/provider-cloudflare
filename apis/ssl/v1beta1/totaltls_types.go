@@ -23,7 +23,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
-
 // TotalTLSParameters define the desired state of Cloudflare Total TLS for a zone.
 type TotalTLSParameters struct {
 	// Zone is the zone ID where this Total TLS configuration will be applied.
@@ -62,13 +61,13 @@ type TotalTLSObservation struct {
 // TotalTLSSpec defines the desired state of Total TLS.
 type TotalTLSSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       TotalTLSParameters `json:"forProvider"`
+	ForProvider                     TotalTLSParameters `json:"forProvider"`
 }
 
 // TotalTLSStatus defines the observed state of Total TLS.
 type TotalTLSStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          TotalTLSObservation `json:"atProvider,omitempty"`
+	AtProvider                 TotalTLSObservation `json:"atProvider,omitempty"`
 }
 
 // A TotalTLS is a managed resource that represents Cloudflare Total TLS configuration for a zone.

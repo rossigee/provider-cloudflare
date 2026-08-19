@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // Transform Rule phases for different types of transformations
 const (
@@ -168,13 +167,13 @@ type RuleObservation struct {
 // RuleSpec defines the desired state of Rule
 type RuleSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       RuleParameters `json:"forProvider"`
+	ForProvider                     RuleParameters `json:"forProvider"`
 }
 
 // RuleStatus defines the observed state of Rule
 type RuleStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          RuleObservation `json:"atProvider,omitempty"`
+	AtProvider                 RuleObservation `json:"atProvider,omitempty"`
 }
 
 // A Rule is a managed resource that represents a Cloudflare Transform Rule

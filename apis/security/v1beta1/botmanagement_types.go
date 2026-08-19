@@ -22,7 +22,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
-
 // BotManagementParameters define the desired state of Cloudflare Bot Management for a zone.
 type BotManagementParameters struct {
 	// Zone is the zone ID where this bot management configuration will be applied.
@@ -120,13 +119,13 @@ type BotManagementObservation struct {
 // BotManagementSpec defines the desired state of Bot Management.
 type BotManagementSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       BotManagementParameters `json:"forProvider"`
+	ForProvider                     BotManagementParameters `json:"forProvider"`
 }
 
 // BotManagementStatus defines the observed state of Bot Management.
 type BotManagementStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          BotManagementObservation `json:"atProvider,omitempty"`
+	AtProvider                 BotManagementObservation `json:"atProvider,omitempty"`
 }
 
 // A BotManagement is a managed resource that represents Cloudflare Bot Management configuration for a zone.
@@ -153,4 +152,3 @@ type BotManagementList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []BotManagement `json:"items"`
 }
-

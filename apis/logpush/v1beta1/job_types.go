@@ -17,14 +17,13 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // JobParameters are the configurable fields of a Logpush Job.
 type JobParameters struct {
-	// Dataset to push logs from. 
+	// Dataset to push logs from.
 	// +kubebuilder:validation:Required
 	Dataset string `json:"dataset"`
 
@@ -201,13 +200,13 @@ type JobObservation struct {
 // A JobSpec defines the desired state of a Logpush Job.
 type JobSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       JobParameters `json:"forProvider"`
+	ForProvider                     JobParameters `json:"forProvider"`
 }
 
 // A JobStatus represents the observed state of a Logpush Job.
 type JobStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          JobObservation `json:"atProvider,omitempty"`
+	AtProvider                 JobObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -235,5 +234,3 @@ type JobList struct {
 	metav1.ListMeta `json:",inline"`
 	Items           []Job `json:"items"`
 }
-
-

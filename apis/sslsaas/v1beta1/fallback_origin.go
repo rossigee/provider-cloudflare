@@ -18,15 +18,14 @@ package v1beta1
 
 import (
 	"context"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	dnsv1beta1 "github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
 
 // FallbackOriginParameters represents the settings of a FallbackOrigin
 type FallbackOriginParameters struct {
@@ -72,13 +71,13 @@ type FallbackOriginObservation struct {
 // A FallbackOriginSpec defines the desired state of a Fallback Origin.
 type FallbackOriginSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       FallbackOriginParameters `json:"forProvider"`
+	ForProvider                     FallbackOriginParameters `json:"forProvider"`
 }
 
 // A FallbackOriginStatus represents the observed state of a Fallback Origin.
 type FallbackOriginStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          FallbackOriginObservation `json:"atProvider,omitempty"`
+	AtProvider                 FallbackOriginObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

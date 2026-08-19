@@ -28,9 +28,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
+	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
-	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/clients/zones"
 	"github.com/rossigee/provider-cloudflare/internal/clients/zones/fake"
 	corev1 "k8s.io/api/core/v1"

@@ -18,14 +18,13 @@ package v1beta1
 
 import (
 	"context"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
 
 // FilterParameters are the configurable fields of a Filter.
 type FilterParameters struct {
@@ -63,13 +62,13 @@ type FilterObservation struct{}
 // A FilterSpec defines the desired state of a Filter.
 type FilterSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       FilterParameters `json:"forProvider"`
+	ForProvider                     FilterParameters `json:"forProvider"`
 }
 
 // A FilterStatus represents the observed state of a Filter.
 type FilterStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          FilterObservation `json:"atProvider,omitempty"`
+	AtProvider                 FilterObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

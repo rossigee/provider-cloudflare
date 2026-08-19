@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // PlacementMode represents the placement mode for a Worker script.
 type PlacementMode string
@@ -158,13 +157,13 @@ type ScriptObservation struct {
 // A ScriptSpec defines the desired state of a Worker Script.
 type ScriptSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       ScriptParameters `json:"forProvider"`
+	ForProvider                     ScriptParameters `json:"forProvider"`
 }
 
 // A ScriptStatus represents the observed state of a Worker Script.
 type ScriptStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          ScriptObservation `json:"atProvider,omitempty"`
+	AtProvider                 ScriptObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -191,5 +190,4 @@ type ScriptList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Script `json:"items"`
-
 }

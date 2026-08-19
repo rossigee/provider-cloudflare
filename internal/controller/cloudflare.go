@@ -165,7 +165,7 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 
 	edit := &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "crossplane:provider:provider-cloudflare:aggregate-to-edit",
+			Name:   "crossplane:provider:provider-cloudflare:aggregate-to-edit",
 			Labels: map[string]string{"rbac.crossplane.io/aggregate-to-edit": "true", "rbac.crossplane.io/aggregate-to-admin": "true", "rbac.crossplane.io/aggregate-to-crossplane": "true", "rbac.crossplane.io/system": "provider-cloudflare"},
 		},
 		Rules: withVerbs(rules, []string{"*"}),

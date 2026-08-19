@@ -18,14 +18,13 @@ package v1beta1
 
 import (
 	"context"
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
+	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 )
-
 
 // SpectrumApplicationDNS holds the external DNS configuration
 // for a Spectrum Application.
@@ -154,13 +153,13 @@ type ApplicationObservation struct {
 // A ApplicationSpec defines the desired state of a Spectrum Application.
 type ApplicationSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       ApplicationParameters `json:"forProvider"`
+	ForProvider                     ApplicationParameters `json:"forProvider"`
 }
 
 // A ApplicationStatus represents the observed state of a Spectrum Application.
 type ApplicationStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          ApplicationObservation `json:"atProvider,omitempty"`
+	AtProvider                 ApplicationObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

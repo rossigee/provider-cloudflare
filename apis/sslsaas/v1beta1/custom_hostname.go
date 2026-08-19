@@ -18,16 +18,15 @@ package v1beta1
 
 import (
 	"context"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"github.com/cloudflare/cloudflare-go"
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	dnsv1beta1 "github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
 
 // CustomHostnameSSLValidationErrors represents errors that occurred during SSL validation.
 type CustomHostnameSSLValidationErrors struct {
@@ -134,13 +133,13 @@ type CustomHostnameSSL struct {
 
 // CustomHostnameSSLObserved represents the Observed SSL section in a given custom hostname.
 type CustomHostnameSSLObserved struct {
-	Status               string                                         `json:"status"`
-	HTTPUrl              string                                         `json:"httpURL"`
-	HTTPBody             string                                         `json:"httpBody"`
+	Status               string                              `json:"status"`
+	HTTPUrl              string                              `json:"httpURL"`
+	HTTPBody             string                              `json:"httpBody"`
 	ValidationErrors     []CustomHostnameSSLValidationErrors `json:"validationErrors,omitempty"`
-	CertificateAuthority string                                         `json:"certificateAuthority"`
-	CnameName            string                                         `json:"cname"`
-	CnameTarget          string                                         `json:"cnameTarget"`
+	CertificateAuthority string                              `json:"certificateAuthority"`
+	CnameName            string                              `json:"cname"`
+	CnameTarget          string                              `json:"cnameTarget"`
 
 	// Following fields are in the API but not supported in go library yet
 	// TxtName          string                              `json:"txt_name,omitempty"`
@@ -208,13 +207,13 @@ type CustomHostnameObservation struct {
 // A CustomHostnameSpec defines the desired state of a custom hostname.
 type CustomHostnameSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       CustomHostnameParameters `json:"forProvider"`
+	ForProvider                     CustomHostnameParameters `json:"forProvider"`
 }
 
 // A CustomHostnameStatus represents the observed state of a custom hostname.
 type CustomHostnameStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          CustomHostnameObservation `json:"atProvider,omitempty"`
+	AtProvider                 CustomHostnameObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

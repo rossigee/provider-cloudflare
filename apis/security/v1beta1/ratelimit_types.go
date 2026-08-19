@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // RateLimitParameters define the desired state of a Cloudflare Rate Limit rule.
 type RateLimitParameters struct {
@@ -186,13 +185,13 @@ type RateLimitObservation struct {
 // A RateLimitSpec defines the desired state of a Rate Limit.
 type RateLimitSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       RateLimitParameters `json:"forProvider"`
+	ForProvider                     RateLimitParameters `json:"forProvider"`
 }
 
 // A RateLimitStatus represents the observed state of a Rate Limit.
 type RateLimitStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          RateLimitObservation `json:"atProvider,omitempty"`
+	AtProvider                 RateLimitObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -220,4 +219,3 @@ type RateLimitList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []RateLimit `json:"items"`
 }
-

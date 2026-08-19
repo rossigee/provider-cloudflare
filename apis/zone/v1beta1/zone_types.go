@@ -17,11 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
-
 
 // Zone type metadata.
 var (
@@ -401,13 +400,13 @@ type ZoneObservation struct {
 // A ZoneSpec defines the desired state of a Zone.
 type ZoneSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       ZoneParameters `json:"forProvider"`
+	ForProvider                     ZoneParameters `json:"forProvider"`
 }
 
 // A ZoneStatus represents the observed state of a Zone.
 type ZoneStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          ZoneObservation `json:"atProvider,omitempty"`
+	AtProvider                 ZoneObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

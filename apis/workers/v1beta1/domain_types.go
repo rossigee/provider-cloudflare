@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // DomainParameters define the desired state of a Cloudflare Workers Custom Domain.
 type DomainParameters struct {
@@ -71,13 +70,13 @@ type DomainObservation struct {
 // DomainSpec defines the desired state of Domain.
 type DomainSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       DomainParameters `json:"forProvider"`
+	ForProvider                     DomainParameters `json:"forProvider"`
 }
 
 // DomainStatus defines the observed state of Domain.
 type DomainStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          DomainObservation `json:"atProvider,omitempty"`
+	AtProvider                 DomainObservation `json:"atProvider,omitempty"`
 }
 
 // A Domain is a managed resource that represents a Cloudflare Workers Custom Domain.
@@ -103,5 +102,4 @@ type DomainList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Domain `json:"items"`
-
 }

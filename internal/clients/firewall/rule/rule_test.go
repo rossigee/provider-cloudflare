@@ -29,8 +29,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/firewall/v1beta1"
 
-	"github.com/rossigee/provider-cloudflare/internal/clients"
 	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/firewall/rule/fake"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"

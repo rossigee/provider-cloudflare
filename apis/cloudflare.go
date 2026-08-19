@@ -20,7 +20,6 @@ package apis
 import (
 	accessv1beta1 "github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
 	cachev1beta1 "github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
-	cloudflarev1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	devicev1beta1 "github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
 	dnsv1beta1 "github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	emailroutingv1beta1 "github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
@@ -36,6 +35,7 @@ import (
 	sslsaasv1beta1 "github.com/rossigee/provider-cloudflare/apis/sslsaas/v1beta1"
 	transformv1beta1 "github.com/rossigee/provider-cloudflare/apis/transform/v1beta1"
 	tunnelv1beta1 "github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
+	cloudflarev1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	workersv1beta1 "github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"

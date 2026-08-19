@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // KVNamespaceParameters are the configurable fields of a Workers KV Namespace.
 type KVNamespaceParameters struct {
@@ -40,13 +39,13 @@ type KVNamespaceObservation struct {
 // A KVNamespaceSpec defines the desired state of a Workers KV Namespace.
 type KVNamespaceSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       KVNamespaceParameters `json:"forProvider"`
+	ForProvider                     KVNamespaceParameters `json:"forProvider"`
 }
 
 // A KVNamespaceStatus represents the observed state of a Workers KV Namespace.
 type KVNamespaceStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          KVNamespaceObservation `json:"atProvider,omitempty"`
+	AtProvider                 KVNamespaceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -74,5 +73,4 @@ type KVNamespaceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []KVNamespace `json:"items"`
-
 }

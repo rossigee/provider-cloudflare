@@ -22,7 +22,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
-
 // TurnstileParameters define the desired state of a Cloudflare Turnstile widget.
 type TurnstileParameters struct {
 	// AccountID is the account identifier to target for the resource.
@@ -95,13 +94,13 @@ type TurnstileObservation struct {
 // TurnstileSpec defines the desired state of Turnstile.
 type TurnstileSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       TurnstileParameters `json:"forProvider"`
+	ForProvider                     TurnstileParameters `json:"forProvider"`
 }
 
 // TurnstileStatus defines the observed state of Turnstile.
 type TurnstileStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          TurnstileObservation `json:"atProvider,omitempty"`
+	AtProvider                 TurnstileObservation `json:"atProvider,omitempty"`
 }
 
 // A Turnstile is a managed resource that represents a Cloudflare Turnstile widget.
@@ -128,4 +127,3 @@ type TurnstileList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Turnstile `json:"items"`
 }
-

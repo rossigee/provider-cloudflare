@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // LoadBalancerParameters define the desired state of a Cloudflare Load Balancer
 type LoadBalancerParameters struct {
@@ -115,7 +114,7 @@ type LoadBalancerParameters struct {
 	LocationStrategy *LocationStrategy `json:"locationStrategy,omitempty"`
 
 	// SteeringPolicy controls pool selection logic.
-	// Valid values: "off", "geo", "dynamic_latency", "random", "proximity", 
+	// Valid values: "off", "geo", "dynamic_latency", "random", "proximity",
 	// "least_outstanding_requests", "least_connections"
 	// +optional
 	SteeringPolicy *string `json:"steeringPolicy,omitempty"`
@@ -300,13 +299,13 @@ type LoadBalancerObservation struct {
 // LoadBalancerSpec defines the desired state of LoadBalancer
 type LoadBalancerSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       LoadBalancerParameters `json:"forProvider"`
+	ForProvider                     LoadBalancerParameters `json:"forProvider"`
 }
 
 // LoadBalancerStatus defines the observed state of LoadBalancer
 type LoadBalancerStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          LoadBalancerObservation `json:"atProvider,omitempty"`
+	AtProvider                 LoadBalancerObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

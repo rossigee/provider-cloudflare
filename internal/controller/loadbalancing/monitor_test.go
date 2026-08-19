@@ -27,8 +27,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 
-	"github.com/rossigee/provider-cloudflare/internal/clients"
 	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	"github.com/rossigee/provider-cloudflare/internal/clients"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing"
 	"github.com/rossigee/provider-cloudflare/internal/clients/loadbalancing/fake"
 	corev1 "k8s.io/api/core/v1"

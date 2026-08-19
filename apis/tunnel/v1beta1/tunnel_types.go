@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // TunnelParameters define the desired state of a Cloudflare Tunnel.
 type TunnelParameters struct {
@@ -210,13 +209,13 @@ type TunnelConnection struct {
 // A TunnelSpec defines the desired state of a Tunnel.
 type TunnelSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       TunnelParameters `json:"forProvider"`
+	ForProvider                     TunnelParameters `json:"forProvider"`
 }
 
 // A TunnelStatus represents the observed state of a Tunnel.
 type TunnelStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          TunnelObservation `json:"atProvider,omitempty"`
+	AtProvider                 TunnelObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -244,5 +243,4 @@ type TunnelList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Tunnel `json:"items"`
-
 }

@@ -22,7 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-
 // CertificateParameters define the desired state of a Cloudflare Origin CA Certificate.
 type CertificateParameters struct {
 	// Hostnames is the list of hostnames or wildcard names (beginning with "*.")
@@ -77,13 +76,13 @@ type CertificateObservation struct {
 // CertificateSpec defines the desired state of a Certificate.
 type CertificateSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       CertificateParameters `json:"forProvider"`
+	ForProvider                     CertificateParameters `json:"forProvider"`
 }
 
 // CertificateStatus defines the observed state of a Certificate.
 type CertificateStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          CertificateObservation `json:"atProvider,omitempty"`
+	AtProvider                 CertificateObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -168,5 +167,3 @@ func (mg *Certificate) SetWriteConnectionSecretToReference(r *xpv1.SecretReferen
 func (mg *Certificate) GetGroupVersionKind() schema.GroupVersionKind {
 	return CertificateGroupVersionKind
 }
-
-

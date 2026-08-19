@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // CronTriggerParameters are the configurable fields of a Workers Cron Trigger.
 type CronTriggerParameters struct {
@@ -52,13 +51,13 @@ type CronTriggerObservation struct {
 // A CronTriggerSpec defines the desired state of a Workers Cron Trigger.
 type CronTriggerSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       CronTriggerParameters `json:"forProvider"`
+	ForProvider                     CronTriggerParameters `json:"forProvider"`
 }
 
 // A CronTriggerStatus represents the observed state of a Workers Cron Trigger.
 type CronTriggerStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          CronTriggerObservation `json:"atProvider,omitempty"`
+	AtProvider                 CronTriggerObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -86,5 +85,4 @@ type CronTriggerList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []CronTrigger `json:"items"`
-
 }

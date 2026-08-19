@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // RuleParameters are the configurable fields of an Email Routing Rule.
 type RuleParameters struct {
@@ -111,13 +110,13 @@ type RuleObservation struct {
 // A RuleSpec defines the desired state of an Email Routing Rule.
 type RuleSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       RuleParameters `json:"forProvider"`
+	ForProvider                     RuleParameters `json:"forProvider"`
 }
 
 // A RuleStatus represents the observed state of an Email Routing Rule.
 type RuleStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          RuleObservation `json:"atProvider,omitempty"`
+	AtProvider                 RuleObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

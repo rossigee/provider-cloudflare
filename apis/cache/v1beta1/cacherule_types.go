@@ -17,10 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
 
 // CacheRuleParameters define the desired state of a Cloudflare Cache Rule
 type CacheRuleParameters struct {
@@ -270,13 +269,13 @@ type CacheRuleObservation struct {
 // A CacheRuleSpec defines the desired state of a Cache Rule.
 type CacheRuleSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       CacheRuleParameters `json:"forProvider"`
+	ForProvider                     CacheRuleParameters `json:"forProvider"`
 }
 
 // A CacheRuleStatus represents the observed state of a Cache Rule.
 type CacheRuleStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          CacheRuleObservation `json:"atProvider,omitempty"`
+	AtProvider                 CacheRuleObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

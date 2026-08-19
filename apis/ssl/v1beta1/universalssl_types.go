@@ -23,7 +23,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
-
 // UniversalSSLParameters define the desired state of Cloudflare Universal SSL for a zone.
 type UniversalSSLParameters struct {
 	// Zone is the zone ID where this Universal SSL configuration will be applied.
@@ -44,13 +43,13 @@ type UniversalSSLObservation struct {
 // UniversalSSLSpec defines the desired state of Universal SSL.
 type UniversalSSLSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       UniversalSSLParameters `json:"forProvider"`
+	ForProvider                     UniversalSSLParameters `json:"forProvider"`
 }
 
 // UniversalSSLStatus defines the observed state of Universal SSL.
 type UniversalSSLStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          UniversalSSLObservation `json:"atProvider,omitempty"`
+	AtProvider                 UniversalSSLObservation `json:"atProvider,omitempty"`
 }
 
 // A UniversalSSL is a managed resource that represents Cloudflare Universal SSL configuration for a zone.

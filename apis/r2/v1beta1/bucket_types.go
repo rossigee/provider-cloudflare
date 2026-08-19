@@ -21,7 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-
 // BucketParameters are the configurable fields of a Bucket.
 type BucketParameters struct {
 	// Name of the bucket. Must be globally unique.
@@ -50,13 +49,13 @@ type BucketObservation struct {
 // A BucketSpec defines the desired state of a Bucket.
 type BucketSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       BucketParameters `json:"forProvider"`
+	ForProvider                     BucketParameters `json:"forProvider"`
 }
 
 // A BucketStatus represents the observed state of a Bucket.
 type BucketStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          BucketObservation `json:"atProvider,omitempty"`
+	AtProvider                 BucketObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -84,5 +83,3 @@ type BucketList struct {
 	metav1.ListMeta `json:",inline"`
 	Items           []Bucket `json:"items"`
 }
-
-

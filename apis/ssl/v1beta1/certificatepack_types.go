@@ -23,7 +23,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
-
 // CertificatePackParameters define the desired state of a Cloudflare Certificate Pack.
 type CertificatePackParameters struct {
 	// Zone is the zone ID where this certificate pack will be created.
@@ -153,13 +152,13 @@ type CertificatePackObservation struct {
 // CertificatePackSpec defines the desired state of Certificate Pack.
 type CertificatePackSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       CertificatePackParameters `json:"forProvider"`
+	ForProvider                     CertificatePackParameters `json:"forProvider"`
 }
 
 // CertificatePackStatus defines the observed state of Certificate Pack.
 type CertificatePackStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          CertificatePackObservation `json:"atProvider,omitempty"`
+	AtProvider                 CertificatePackObservation `json:"atProvider,omitempty"`
 }
 
 // A CertificatePack is a managed resource that represents a Cloudflare Certificate Pack.
