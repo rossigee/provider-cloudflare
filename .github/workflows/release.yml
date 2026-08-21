@@ -89,31 +89,12 @@ jobs:
           push: true
 
       - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag: ${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
-          allowUpdates: true
-          body: |
-            ## Provider Image
-            Published to: `${{ env.REGISTRY_ORGS }}/provider-cloudflare:${{ steps.version.outputs.version }}`
-
-            ## Crossplane Installation
-            ```bash
-            kubectl apply -f - <<EOF
-            apiVersion: pkg.crossplane.io/v1
-            kind: Provider
-            metadata:
-              name: provider-cloudflare
-            spec:
-              package: ${{ env.REGISTRY_ORGS }}/provider-cloudflare:${{ steps.version.outputs.version }}
-            EOF
-            ```
-
-            ## Documentation
-            See the [README](https://github.com/rossigee/provider-cloudflare) for installation and usage instructions.
           draft: false
           prerelease: false
+          generate_release_notes: true
 
       - name: Verify published artifacts
         run: |
