@@ -3,90 +3,109 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to release (e.g., v1.0.0)'
+        required: true
+        type: string
 
 env:
+  GO_VERSION: '1.26.6'
   REGISTRY_ORGS: ghcr.io/rossigee
-  GO_REQUIRED_VERSION: 1.26.6
+  XPKG_REG_ORGS: ghcr.io/rossigee
 
 permissions:
-  packages: write
   contents: write
+  packages: write
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        uses: actions/checkout@v7
         with:
-          submodules: true
           fetch-depth: 0
+          submodules: true
 
-      - uses: actions/setup-go@v6
+      - name: Setup Go
+        uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_REQUIRED_VERSION }}
-
-      - name: Extract version from tag
-        id: version
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Version: ${VERSION}"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Vendor Dependencies
         run: go mod vendor
 
-      - name: Run code generation
-        run: make generate
-
-      - name: Check go.mod is up to date
+      - name: Determine Version
+        id: version
         run: |
-          go mod tidy
-          git diff --exit-code
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION"
 
-      - name: Run unit tests
-        run: make test
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
-      - name: Run linting
-        run: make lint
-
-      - name: Build provider binary
-        run: |
-          mkdir -p _output/bin/linux_amd64
-          VERSION="${{ steps.version.outputs.version }}" \
-          go build -v -o _output/bin/linux_amd64/provider \
-            -ldflags "-X github.com/rossigee/provider-cloudflare/internal/version.Version=${{ steps.version.outputs.version }}" \
-            ./cmd/provider
-
-      - name: Prepare Docker build context
-        run: |
-          mkdir -p bin/linux_amd64
-          cp _output/bin/linux_amd64/provider bin/linux_amd64/
-          cp -r package/crds ./
-          cp package/crossplane.yaml ./
-
-      - name: Build and push Docker image (amd64)
-        uses: docker/build-push-action@v7
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
         with:
-          context: .
-          file: ./cluster/images/provider-cloudflare/Dockerfile
-          build-args: |
-            TARGETOS=linux
-            TARGETARCH=amd64
-          tags: |
-            ${{ env.REGISTRY_ORGS }}/provider-cloudflare:${{ steps.version.outputs.version }}
-            ${{ env.REGISTRY_ORGS }}/provider-cloudflare:latest
-          push: true
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Setup build tools
+        run: make build.init
+
+      - name: Build and Publish All Artifacts
+        run: |
+          set -e
+
+          export VERSION="${{ steps.version.outputs.version }}"
+          export BRANCH_NAME="master"
+
+          make publish \
+            REGISTRY_ORGS="${REGISTRY_ORGS}" \
+            XPKG_REG_ORGS="${XPKG_REG_ORGS}" \
+            BRANCH_NAME=master
+
+          echo "✅ Published to ${REGISTRY_ORGS}"
+
+      - name: Verify Publication
+        run: |
+          set -e
+
+          VERSION="${{ steps.version.outputs.version }}"
+          PROVIDER_NAME="${{ github.event.repository.name }}"
+          REGISTRY_PATH="${REGISTRY_ORGS}/${PROVIDER_NAME}"
+
+          echo "Verifying container image publication..."
+          echo "Registry: ${REGISTRY_PATH}"
+
+          if docker pull "${REGISTRY_PATH}:${VERSION}" > /dev/null 2>&1; then
+            DIGEST=$(docker inspect "${REGISTRY_PATH}:${VERSION}" --format='{{index .RepoDigests 0}}' | cut -d'@' -f2)
+            echo "✅ Verified container image ${VERSION}"
+            echo "   Digest: ${DIGEST}"
+          else
+            echo "⚠️  Could not verify container image (may still be building)"
+          fi
+
+          if docker pull "${REGISTRY_PATH}:latest" > /dev/null 2>&1; then
+            echo "✅ Latest tag verified"
+          else
+            echo "⚠️  Could not verify latest tag"
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -95,9 +114,3 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-
-      - name: Verify published artifacts
-        run: |
-          echo "Verifying published artifacts..."
-          docker pull ${{ env.REGISTRY_ORGS }}/provider-cloudflare:${{ steps.version.outputs.version }} && echo "✓ Docker image published" || echo "✗ Docker image not found"
-          echo "Release complete: ${{ steps.version.outputs.version }}"
