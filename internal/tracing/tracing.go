@@ -23,7 +23,7 @@ const (
 	operationAttr    = "crossplane.operation"
 )
 
-var tracer trace.Tracer
+var tracer trace.Tracer = otel.Tracer(tracerName)
 var tp *sdktrace.TracerProvider
 
 type safeSpan struct {
@@ -92,6 +92,9 @@ func Init(serviceName string) func(context.Context) {
 }
 
 func StartSpan(ctx context.Context, name string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if tracer == nil {
 		return ctx, &safeSpan{}
 	}
@@ -102,6 +105,9 @@ func StartSpan(ctx context.Context, name string, attrs ...attribute.KeyValue) (c
 }
 
 func StartSpanWithAttrs(ctx context.Context, name, resourceType, resourceName, operation string) (context.Context, trace.Span) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if tracer == nil {
 		return ctx, &safeSpan{}
 	}
