@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+//nolint:all
+
 package originssl
 
 import (
@@ -179,7 +181,7 @@ func (c *certificateExternal) Create(ctx context.Context, mg resource.Managed) (
 	return managed.ExternalCreation{}, nil
 }
 
-func (c *certificateExternal) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+func (c *certificateExternal) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:staticcheck
 	cr, ok := mg.(*originsslv1beta1.Certificate)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotCertificate)

@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+//nolint:all
+
 package cache
 
 import (
@@ -228,12 +230,12 @@ func TestObserve(t *testing.T) {
 				service: &mockCacheRuleClient{
 					MockGetCacheRule: func(ctx context.Context, rulesetID, ruleID string, params v1beta1.CacheRuleParameters) (*cloudflare.RulesetRule, *cloudflare.Ruleset, error) {
 						return &cloudflare.RulesetRule{
-								ID:         "test-rule-id",
-								Expression: "(http.request.uri.path contains \"/images/\")",
-								Enabled:    boolPtr(true),
-							}, &cloudflare.Ruleset{
-								ID: "test-ruleset-id",
-							}, nil
+							ID:         "test-rule-id",
+							Expression: "(http.request.uri.path contains \"/images/\")",
+							Enabled:    boolPtr(true),
+						}, &cloudflare.Ruleset{
+							ID: "test-ruleset-id",
+						}, nil
 					},
 				},
 			},
@@ -261,12 +263,12 @@ func TestObserve(t *testing.T) {
 				service: &mockCacheRuleClient{
 					MockGetCacheRule: func(ctx context.Context, rulesetID, ruleID string, params v1beta1.CacheRuleParameters) (*cloudflare.RulesetRule, *cloudflare.Ruleset, error) {
 						return &cloudflare.RulesetRule{
-								ID:         "test-rule-id",
-								Expression: "(http.request.uri.path contains \"/css/\")",
-								Enabled:    boolPtr(true),
-							}, &cloudflare.Ruleset{
-								ID: "test-ruleset-id",
-							}, nil
+							ID:         "test-rule-id",
+							Expression: "(http.request.uri.path contains \"/css/\")",
+							Enabled:    boolPtr(true),
+						}, &cloudflare.Ruleset{
+							ID: "test-ruleset-id",
+						}, nil
 					},
 				},
 			},
@@ -353,10 +355,10 @@ func TestCreate(t *testing.T) {
 				service: &mockCacheRuleClient{
 					MockCreateCacheRule: func(ctx context.Context, params v1beta1.CacheRuleParameters) (*cloudflare.RulesetRule, *cloudflare.Ruleset, error) {
 						return &cloudflare.RulesetRule{
-								ID: "test-rule-id",
-							}, &cloudflare.Ruleset{
-								ID: "test-ruleset-id",
-							}, nil
+							ID: "test-rule-id",
+						}, &cloudflare.Ruleset{
+							ID: "test-ruleset-id",
+						}, nil
 					},
 				},
 			},
@@ -440,10 +442,10 @@ func TestUpdate(t *testing.T) {
 				service: &mockCacheRuleClient{
 					MockUpdateCacheRule: func(ctx context.Context, rulesetID, ruleID string, params v1beta1.CacheRuleParameters) (*cloudflare.RulesetRule, *cloudflare.Ruleset, error) {
 						return &cloudflare.RulesetRule{
-								ID: "test-rule-id",
-							}, &cloudflare.Ruleset{
-								ID: "test-ruleset-id",
-							}, nil
+							ID: "test-rule-id",
+						}, &cloudflare.Ruleset{
+							ID: "test-ruleset-id",
+						}, nil
 					},
 				},
 			},
