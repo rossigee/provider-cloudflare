@@ -24,6 +24,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/statemetrics"
+	"github.com/rossigee/provider-cloudflare/apis"
 	accessv1beta1 "github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
 	cachev1beta1 "github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
 	devicev1beta1 "github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
@@ -43,7 +44,6 @@ import (
 	tunnelv1beta1 "github.com/rossigee/provider-cloudflare/apis/tunnel/v1beta1"
 	workersv1beta1 "github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
-	"github.com/rossigee/provider-cloudflare/apis"
 	"github.com/rossigee/provider-cloudflare/internal/controller"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
 	"github.com/rossigee/provider-cloudflare/internal/version"
@@ -62,12 +62,12 @@ import (
 
 func main() {
 	var (
-		app                      = kingpin.New(filepath.Base(os.Args[0]), "CloudFlare DNS and Zone support for Crossplane.").DefaultEnvars()
-		debug                    = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
-		syncPeriod               = app.Flag("sync", "Controller manager sync period such as 300ms, 1.5h, or 2h45m").Short('s').Default("1h").Duration()
-		leaderElection           = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
-		pollStateMetricInterval  = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
-		metricsBindAddress       = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
+		app                     = kingpin.New(filepath.Base(os.Args[0]), "CloudFlare DNS and Zone support for Crossplane.").DefaultEnvars()
+		debug                   = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
+		syncPeriod              = app.Flag("sync", "Controller manager sync period such as 300ms, 1.5h, or 2h45m").Short('s').Default("1h").Duration()
+		leaderElection          = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
+		pollStateMetricInterval = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
+		metricsBindAddress      = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
