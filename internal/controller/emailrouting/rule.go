@@ -56,6 +56,7 @@ func SetupRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter
 			newServiceFn: emailroutingruleclient.NewClientFromAPI,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
+		managed.WithManagementPolicies(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))))
 
 	return ctrl.NewControllerManagedBy(mgr).

@@ -74,6 +74,7 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimit
 		managed.WithPollInterval(5*time.Minute),
 		// Do not initialize external-name field.
 		managed.WithInitializers(),
+		managed.WithManagementPolicies(),
 	)
 
 	return ctrl.NewControllerManagedBy(mgr).

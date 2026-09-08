@@ -22,6 +22,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/crossplane/crossplane-runtime/v2/pkg/feature"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/statemetrics"
 	"github.com/rossigee/provider-cloudflare/apis"
@@ -45,6 +46,7 @@ import (
 	workersv1beta1 "github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	"github.com/rossigee/provider-cloudflare/internal/controller"
+	"github.com/rossigee/provider-cloudflare/internal/features"
 	"github.com/rossigee/provider-cloudflare/internal/tracing"
 	"github.com/rossigee/provider-cloudflare/internal/version"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -62,12 +64,13 @@ import (
 
 func main() {
 	var (
-		app                     = kingpin.New(filepath.Base(os.Args[0]), "CloudFlare DNS and Zone support for Crossplane.").DefaultEnvars()
-		debug                   = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
-		syncPeriod              = app.Flag("sync", "Controller manager sync period such as 300ms, 1.5h, or 2h45m").Short('s').Default("1h").Duration()
-		leaderElection          = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
-		pollStateMetricInterval = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
-		metricsBindAddress      = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
+		app                      = kingpin.New(filepath.Base(os.Args[0]), "CloudFlare DNS and Zone support for Crossplane.").DefaultEnvars()
+		debug                    = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
+		syncPeriod               = app.Flag("sync", "Controller manager sync period such as 300ms, 1.5h, or 2h45m").Short('s').Default("1h").Duration()
+		leaderElection           = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
+		pollStateMetricInterval  = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
+		metricsBindAddress       = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
+		enableManagementPolicies = app.Flag("enable-management-policies", "Enable support for management policies.").Default("true").OverrideDefaultFromEnvar("ENABLE_MANAGEMENT_POLICIES").Bool()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -81,6 +84,12 @@ func main() {
 	// Always set the controller-runtime logger to prevent logging errors
 	ctrl.SetLogger(zl)
 
+	// Feature flags - ManagementPolicies is enabled by default and controllers
+	// include ManagementPolicies support unconditionally. This flag is
+	// retained for operational visibility and future conditional gating.
+	_ = feature.Flag(features.EnableAlphaManagementPolicies)
+	_ = *enableManagementPolicies
+
 	log.Info("Provider starting up",
 		"provider", "provider-cloudflare",
 		"version", version.Version,
@@ -89,7 +98,12 @@ func main() {
 		"sync-period", syncPeriod.String(),
 		"leader-election", *leaderElection,
 		"leader-election-id", "crossplane-leader-election-provider-cloudflare",
+		"management-policies", *enableManagementPolicies,
 		"debug-mode", *debug)
+
+	if *enableManagementPolicies {
+		log.Info("Alpha feature enabled", "flag", features.EnableAlphaManagementPolicies)
+	}
 
 	s := apimachineryruntime.NewScheme()
 	kingpin.FatalIfError(scheme.AddToScheme(s), "Cannot add k8s types to scheme")

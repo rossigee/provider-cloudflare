@@ -65,6 +65,7 @@ func SetupRoute(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimite
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(10*time.Minute),
 		managed.WithInitializers(),
+		managed.WithManagementPolicies(),
 	)
 
 	return ctrl.NewControllerManagedBy(mgr).
