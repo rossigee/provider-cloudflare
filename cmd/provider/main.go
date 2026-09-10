@@ -22,7 +22,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/crossplane/crossplane-runtime/v2/pkg/feature"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/statemetrics"
 	"github.com/rossigee/provider-cloudflare/apis"
@@ -87,7 +86,7 @@ func main() {
 	// Feature flags - ManagementPolicies is enabled by default and controllers
 	// include ManagementPolicies support unconditionally. This flag is
 	// retained for operational visibility and future conditional gating.
-	_ = feature.Flag(features.EnableAlphaManagementPolicies)
+	_ = features.EnableAlphaManagementPolicies
 	_ = *enableManagementPolicies
 
 	log.Info("Provider starting up",
