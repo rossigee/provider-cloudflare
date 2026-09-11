@@ -5,9 +5,7 @@ metadata:
   name: apex
 spec:
   forProvider:
-    zoneSelector:
-      matchLabels:
-        identifier: dns-record
+    zone: "your-zone-id"
     name: crossplane
     content: 192.168.0.1
     proxied: false

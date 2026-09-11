@@ -3,8 +3,6 @@ kind: Rule
 metadata:
   namespace: default
   name: example-url-rewrite
-  annotations:
-    meta.upbound.io/example-id: transform/v1alpha1/rule
 spec:
   forProvider:
     # Zone ID where the transform rule should be created

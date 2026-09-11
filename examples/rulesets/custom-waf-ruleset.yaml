@@ -5,7 +5,7 @@ metadata:
   name: custom-waf-rules
 spec:
   forProvider:
-    zone: "example.com"  # Replace with your zone ID
+    zone: "your-zone-id"  # Replace with your zone ID
     name: "Custom WAF Rules"
     description: "Custom Web Application Firewall rules for enhanced security"
     kind: "custom"

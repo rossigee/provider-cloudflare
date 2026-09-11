@@ -70,7 +70,7 @@ This directory contains comprehensive examples for all Cloudflare provider resou
 
 4. **Configure Security Rules:**
    ```bash
-   kubectl apply -f rulesets/basic-security-ruleset.yaml
+   kubectl apply -f rulesets/custom-waf-ruleset.yaml
    ```
 
 ## Example Highlights
