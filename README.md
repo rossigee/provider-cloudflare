@@ -85,7 +85,6 @@ spec:
     zone: "your-zone-id-here"
   providerConfigRef:
     name: default
-  deletionPolicy: Delete
 ```
 
 ## Resource Types

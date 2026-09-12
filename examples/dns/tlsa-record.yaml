@@ -1,5 +1,5 @@
 ---
-apiVersion: dns.cloudflare.crossplane.io/v1beta1
+apiVersion: dns.cloudflare.m.crossplane.io/v1beta1
 kind: Record
 metadata:
   name: example-tlsa-dane-ee
@@ -17,9 +17,8 @@ spec:
     zone: "your-zone-id-here"
   providerConfigRef:
     name: default
-  deletionPolicy: Delete
 ---
-apiVersion: dns.cloudflare.crossplane.io/v1beta1
+apiVersion: dns.cloudflare.m.crossplane.io/v1beta1
 kind: Record
 metadata:
   name: example-tlsa-pkix-ta
@@ -34,9 +33,8 @@ spec:
     zone: "your-zone-id-here"
   providerConfigRef:
     name: default
-  deletionPolicy: Delete
 ---
-apiVersion: dns.cloudflare.crossplane.io/v1beta1
+apiVersion: dns.cloudflare.m.crossplane.io/v1beta1
 kind: Record
 metadata:
   name: example-tlsa-dane-ta
@@ -51,4 +49,3 @@ spec:
     zone: "your-zone-id-here"
   providerConfigRef:
     name: default
-  deletionPolicy: Delete

@@ -9,7 +9,7 @@ stringData:
   # The token should have Zone:Zone:Read, Zone:Zone:Edit, Zone:DNS:Edit permissions
   token: "your-cloudflare-api-token-here"
 ---
-apiVersion: cloudflare.crossplane.io/v1beta1
+apiVersion: cloudflare.m.crossplane.io/v1beta1
 kind: ProviderConfig
 metadata:
   name: default

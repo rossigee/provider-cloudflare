@@ -45,7 +45,7 @@ Email Routing, Firewall, Logpush, Origin SSL, R2, Spectrum, SSL, SSL SaaS, Trans
 
 **Before (Cluster-scoped):**
 ```yaml
-apiVersion: cache.cloudflare.crossplane.io/v1alpha1
+apiVersion: cache.cloudflare.m.crossplane.io/v1beta1
 kind: CacheRule
 metadata:
   name: api-cache-rule  # No namespace
@@ -79,7 +79,7 @@ spec:
 
 **Before (Cluster-scoped):**
 ```yaml
-apiVersion: workers.cloudflare.crossplane.io/v1alpha1
+apiVersion: workers.cloudflare.m.crossplane.io/v1beta1
 kind: Script
 metadata:
   name: edge-worker
@@ -112,7 +112,7 @@ spec:
 
 **Before (Cluster-scoped):**
 ```yaml
-apiVersion: security.cloudflare.crossplane.io/v1alpha1
+apiVersion: security.cloudflare.m.crossplane.io/v1beta1
 kind: RateLimit
 metadata:
   name: api-limit

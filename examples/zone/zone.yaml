@@ -4,7 +4,6 @@ metadata:
   namespace: default
   name: example
 spec:
-  deletionPolicy: Orphan
   forProvider:
     name: test-domain.com
     paused: true

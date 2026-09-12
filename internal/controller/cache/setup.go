@@ -24,6 +24,6 @@ import (
 
 // Setup Cache controllers.
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	// Setup v1alpha1 controllers (cluster-scoped)
+	// Setup namespaced controllers
 	return SetupCacheRule(mgr, l, rl)
 }

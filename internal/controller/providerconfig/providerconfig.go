@@ -31,7 +31,7 @@ import (
 	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
 )
 
-const controllerName = "providerconfig.cloudflare.crossplane.io"
+const controllerName = "providerconfig.cloudflare.m.crossplane.io"
 
 // Setup registers the ProviderConfig controller.
 func Setup(mgr ctrl.Manager) error {

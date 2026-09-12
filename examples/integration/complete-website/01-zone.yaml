@@ -50,6 +50,6 @@ spec:
       
   providerConfigRef:
     name: default
-  writeConnectionSecretsToRef:
+  writeConnectionSecretToRef:
     name: zone-connection-details
     namespace: default

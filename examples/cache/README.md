@@ -63,7 +63,7 @@ Shows how to cache content with geographic and language variations.
 
 2. **Configure Provider**: Ensure you have a ProviderConfig named `cloudflare-provider-config`:
    ```yaml
-   apiVersion: cloudflare.crossplane.io/v1alpha1
+   apiVersion: cloudflare.m.crossplane.io/v1beta1
    kind: ProviderConfig
    metadata:
      name: cloudflare-provider-config
