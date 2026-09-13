@@ -263,9 +263,7 @@ func TestConnect(t *testing.T) {
 			},
 			args: args{
 				mg: &v1beta1.CustomHostname{
-					Spec: v1beta1.CustomHostnameSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{},
-					},
+					Spec: v1beta1.CustomHostnameSpec{},
 				},
 			},
 			want: errors.Wrap(errGetProviderConfig, errClientConfig),
@@ -294,8 +292,8 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.CustomHostname{
 					Spec: v1beta1.CustomHostnameSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
-							ProviderConfigReference: &xpv1.Reference{
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{
+							ProviderConfigReference: &xpv1.ProviderConfigReference{
 								Name: "blah",
 							},
 						},

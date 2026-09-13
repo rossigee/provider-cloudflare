@@ -17,6 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -199,7 +201,7 @@ type JobObservation struct {
 
 // A JobSpec defines the desired state of a Logpush Job.
 type JobSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ManagedResourceSpec `json:",inline"`
 	ForProvider                     JobParameters `json:"forProvider"`
 }
 
@@ -233,4 +235,62 @@ type JobList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:",inline"`
 	Items           []Job `json:"items"`
+}
+
+// GetCondition gets the condition from the resource status.
+func (mg *Job) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// SetConditions sets the conditions on the resource status.
+func (mg *Job) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *Job) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *Job) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *Job) DeepCopyObject() runtime.Object {
+	out := &Job{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *Job) DeepCopyInto(out *Job) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
+}
+
+// GetItems returns the list items.
+func (l *JobList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *JobList) DeepCopyObject() runtime.Object {
+	out := &JobList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *JobList) DeepCopyInto(out *JobList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]Job(nil), in.Items...)
 }

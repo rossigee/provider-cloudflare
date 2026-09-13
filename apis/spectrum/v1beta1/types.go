@@ -20,10 +20,12 @@ import (
 	"context"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -153,8 +155,8 @@ type ApplicationObservation struct {
 
 // A ApplicationSpec defines the desired state of a Spectrum Application.
 type ApplicationSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider                     ApplicationParameters `json:"forProvider"`
+	xpv1.ManagedResourceSpec `json:",inline"`
+	ForProvider              ApplicationParameters `json:"forProvider"`
 }
 
 // A ApplicationStatus represents the observed state of a Spectrum Application.
@@ -206,5 +208,71 @@ func (dr *Application) ResolveReferences(ctx context.Context, c client.Reader) e
 	dr.Spec.ForProvider.Zone = reference.ToPtrValue(rsp.ResolvedValue)
 	dr.Spec.ForProvider.ZoneRef = rsp.ResolvedReference
 
+	return nil
+}
+
+// GetCondition gets the condition from the resource status.
+func (mg *Application) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// SetConditions sets the conditions on the resource status.
+func (mg *Application) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *Application) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *Application) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *Application) DeepCopyObject() runtime.Object {
+	out := &Application{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *Application) DeepCopyInto(out *Application) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
+}
+
+// GetItems returns the list items.
+func (l *ApplicationList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *ApplicationList) DeepCopyObject() runtime.Object {
+	out := &ApplicationList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *ApplicationList) DeepCopyInto(out *ApplicationList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]Application(nil), in.Items...)
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *Application) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
 	return nil
 }

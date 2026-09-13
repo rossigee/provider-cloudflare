@@ -21,11 +21,13 @@ import (
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	dnsv1beta1 "github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -207,8 +209,8 @@ type CustomHostnameObservation struct {
 
 // A CustomHostnameSpec defines the desired state of a custom hostname.
 type CustomHostnameSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider                     CustomHostnameParameters `json:"forProvider"`
+	xpv1.ManagedResourceSpec `json:",inline"`
+	ForProvider             CustomHostnameParameters `json:"forProvider"`
 }
 
 // A CustomHostnameStatus represents the observed state of a custom hostname.
@@ -275,5 +277,85 @@ func (dr *CustomHostname) ResolveReferences(ctx context.Context, c client.Reader
 	dr.Spec.ForProvider.Zone = reference.ToPtrValue(rsp.ResolvedValue)
 	dr.Spec.ForProvider.ZoneRef = rsp.ResolvedReference
 
+	return nil
+}
+
+// GetCondition gets the condition from the resource status.
+func (mg *CustomHostname) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// SetConditions sets the conditions on the resource status.
+func (mg *CustomHostname) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *CustomHostname) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *CustomHostname) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
+}
+
+// GetItems returns the list items.
+func (l *CustomHostnameList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *CustomHostname) DeepCopyObject() runtime.Object {
+	out := &CustomHostname{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *CustomHostnameList) DeepCopyObject() runtime.Object {
+	out := &CustomHostnameList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *CustomHostname) DeepCopyInto(out *CustomHostname) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
+}
+
+// DeepCopy returns a deep copy of this object.
+func (in *CustomHostname) DeepCopy() *CustomHostname {
+	out := &CustomHostname{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *CustomHostnameList) DeepCopyInto(out *CustomHostnameList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]CustomHostname(nil), in.Items...)
+}
+
+// DeepCopy returns a deep copy of this object.
+func (in *CustomHostnameList) DeepCopy() *CustomHostnameList {
+	out := &CustomHostnameList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *CustomHostname) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
 	return nil
 }

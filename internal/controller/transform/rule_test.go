@@ -131,7 +131,7 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.Rule{
 					Spec: v1beta1.RuleSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{},
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{},
 					},
 				},
 			},
@@ -161,8 +161,8 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.Rule{
 					Spec: v1beta1.RuleSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
-							ProviderConfigReference: &xpv1.Reference{
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{
+							ProviderConfigReference: &xpv1.ProviderConfigReference{
 								Name: "blah",
 							},
 						},

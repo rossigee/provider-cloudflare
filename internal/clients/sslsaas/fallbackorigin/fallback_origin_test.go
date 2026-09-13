@@ -227,7 +227,7 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.FallbackOrigin{
 					Spec: v1beta1.FallbackOriginSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{},
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{},
 					},
 				},
 			},
@@ -257,8 +257,8 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.FallbackOrigin{
 					Spec: v1beta1.FallbackOriginSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
-							ProviderConfigReference: &xpv1.Reference{
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{
+							ProviderConfigReference: &xpv1.ProviderConfigReference{
 								Name: "blah",
 							},
 						},

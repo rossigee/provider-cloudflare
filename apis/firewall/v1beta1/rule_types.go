@@ -17,6 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"context"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
@@ -100,7 +102,7 @@ type RuleObservation struct{}
 
 // A RuleSpec defines the desired state of a Rule.
 type RuleSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ManagedResourceSpec `json:",inline"`
 	ForProvider                     RuleParameters `json:"forProvider"`
 }
 
@@ -171,5 +173,71 @@ func (fr *Rule) ResolveReferences(ctx context.Context, c client.Reader) error {
 	}
 	fr.Spec.ForProvider.Filter = reference.ToPtrValue(rsp.ResolvedValue)
 	fr.Spec.ForProvider.FilterRef = rsp.ResolvedReference
+	return nil
+}
+
+// GetCondition gets the condition from the resource status.
+func (mg *Rule) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// SetConditions sets the conditions on the resource status.
+func (mg *Rule) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *Rule) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *Rule) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *Rule) DeepCopyObject() runtime.Object {
+	out := &Rule{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *Rule) DeepCopyInto(out *Rule) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
+}
+
+// GetItems returns the list items.
+func (l *RuleList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *RuleList) DeepCopyObject() runtime.Object {
+	out := &RuleList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *RuleList) DeepCopyInto(out *RuleList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]Rule(nil), in.Items...)
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *Rule) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
 	return nil
 }

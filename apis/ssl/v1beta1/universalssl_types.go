@@ -17,8 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
@@ -42,7 +43,7 @@ type UniversalSSLObservation struct {
 
 // UniversalSSLSpec defines the desired state of Universal SSL.
 type UniversalSSLSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ManagedResourceSpec `json:",inline"`
 	ForProvider                     UniversalSSLParameters `json:"forProvider"`
 }
 
@@ -76,57 +77,61 @@ type UniversalSSLList struct {
 	Items           []UniversalSSL `json:"items"`
 }
 
-// GetCondition of this UniversalSSL.
+
+// GetCondition gets the condition from the resource status.
 func (mg *UniversalSSL) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this UniversalSSL.
-func (mg *UniversalSSL) GetDeletionPolicy() xpv1.DeletionPolicy {
-	return mg.Spec.DeletionPolicy
-}
-
-// GetManagementPolicies of this UniversalSSL.
-func (mg *UniversalSSL) GetManagementPolicies() xpv1.ManagementPolicies {
-	return mg.Spec.ManagementPolicies
-}
-
-// GetProviderConfigReference of this UniversalSSL.
-func (mg *UniversalSSL) GetProviderConfigReference() *xpv1.Reference {
-	return mg.Spec.ProviderConfigReference
-}
-
-// GetWriteConnectionSecretToReference of this UniversalSSL.
-func (mg *UniversalSSL) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
-	return mg.Spec.WriteConnectionSecretToReference
-}
-
-// SetConditions of this UniversalSSL.
+// SetConditions sets the conditions on the resource status.
 func (mg *UniversalSSL) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this UniversalSSL.
-func (mg *UniversalSSL) SetDeletionPolicy(r xpv1.DeletionPolicy) {
-	mg.Spec.DeletionPolicy = r
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *UniversalSSL) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
-// SetManagementPolicies of this UniversalSSL.
-func (mg *UniversalSSL) SetManagementPolicies(r xpv1.ManagementPolicies) {
-	mg.Spec.ManagementPolicies = r
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *UniversalSSL) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
 }
 
-// SetProviderConfigReference of this UniversalSSL.
-func (mg *UniversalSSL) SetProviderConfigReference(r *xpv1.Reference) {
-	mg.Spec.ProviderConfigReference = r
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *UniversalSSL) DeepCopyObject() runtime.Object {
+	out := &UniversalSSL{}
+	in.DeepCopyInto(out)
+	return out
 }
 
-// SetWriteConnectionSecretToReference of this UniversalSSL.
-func (mg *UniversalSSL) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
-	mg.Spec.WriteConnectionSecretToReference = r
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *UniversalSSL) DeepCopyInto(out *UniversalSSL) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
 }
 
-// GetGroupVersionKind returns the GroupVersionKind for UniversalSSL.
-func (mg *UniversalSSL) GetGroupVersionKind() schema.GroupVersionKind {
-	return UniversalSSLGroupVersionKind
+// GetItems returns the list items.
+func (l *UniversalSSLList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *UniversalSSLList) DeepCopyObject() runtime.Object {
+	out := &UniversalSSLList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *UniversalSSLList) DeepCopyInto(out *UniversalSSLList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]UniversalSSL(nil), in.Items...)
 }

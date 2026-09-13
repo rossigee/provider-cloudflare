@@ -106,7 +106,7 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &zonev1beta1.Zone{
 					Spec: zonev1beta1.ZoneSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{},
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{},
 					},
 				},
 			},
@@ -136,8 +136,8 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &zonev1beta1.Zone{
 					Spec: zonev1beta1.ZoneSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
-							ProviderConfigReference: &xpv1.Reference{
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{
+							ProviderConfigReference: &xpv1.ProviderConfigReference{
 								Name: "blah",
 							},
 						},

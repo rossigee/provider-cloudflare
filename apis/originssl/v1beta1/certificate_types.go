@@ -1,169 +1,299 @@
 /*
+
 Copyright 2025 The Crossplane Authors.
 
+
+
 Licensed under the Apache License, Version 2.0 (the "License");
+
 you may not use this file except in compliance with the License.
+
 You may obtain a copy of the License at
+
+
 
     http://www.apache.org/licenses/LICENSE-2.0
 
+
+
 Unless required by applicable law or agreed to in writing, software
+
 distributed under the License is distributed on an "AS IS" BASIS,
+
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
 See the License for the specific language governing permissions and
+
 limitations under the License.
+
 */
+
+
 
 package v1beta1
 
+
+
 import (
+
+	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
+
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+
+
 )
 
+
+
 // CertificateParameters define the desired state of a Cloudflare Origin CA Certificate.
+
 type CertificateParameters struct {
+
 	// Hostnames is the list of hostnames or wildcard names (beginning with "*.")
+
 	// for which this certificate is valid.
+
 	// +kubebuilder:validation:MinItems=1
+
 	Hostnames []string `json:"hostnames"`
 
+
+
 	// RequestType is the signature type to create the certificate with. Options: "origin-rsa", "origin-ecc", "keyless-certificate".
+
 	// +kubebuilder:validation:Enum=origin-rsa;origin-ecc;keyless-certificate
+
 	// +optional
+
 	RequestType *string `json:"requestType,omitempty"`
 
+
+
 	// RequestValidity is the number of days for which the certificate should be valid.
+
 	// Valid values: 7, 30, 90, 365, 730, 1095, 5475
+
 	// +kubebuilder:validation:Enum=7;30;90;365;730;1095;5475
+
 	// +optional
+
 	RequestValidity *int `json:"requestValidity,omitempty"`
 
+
+
 	// CSR is the Certificate Signing Request. Must be newline-encoded.
+
 	// If not provided, Cloudflare will generate a private key and CSR.
+
 	// +optional
+
 	CSR *string `json:"csr,omitempty"`
+
 }
+
+
 
 // CertificateObservation represents the observed state of a Cloudflare Origin CA Certificate.
+
 type CertificateObservation struct {
+
 	// ID is the certificate ID.
+
 	ID string `json:"id,omitempty"`
 
+
+
 	// Certificate is the PEM-encoded certificate.
+
 	Certificate string `json:"certificate,omitempty"`
 
+
+
 	// Hostnames is the list of hostnames for which this certificate is valid.
+
 	Hostnames []string `json:"hostnames,omitempty"`
 
+
+
 	// ExpiresOn is the date and time when the certificate expires.
+
 	ExpiresOn *metav1.Time `json:"expiresOn,omitempty"`
 
+
+
 	// RequestType is the signature type of the certificate.
+
 	RequestType string `json:"requestType,omitempty"`
 
+
+
 	// RequestValidity is the number of days for which the certificate is valid.
+
 	RequestValidity int `json:"requestValidity,omitempty"`
 
+
+
 	// RevokedAt is the date and time when the certificate was revoked (if applicable).
+
 	RevokedAt *metav1.Time `json:"revokedAt,omitempty"`
 
+
+
 	// CSR is the Certificate Signing Request used to generate this certificate.
+
 	CSR string `json:"csr,omitempty"`
+
 }
+
+
 
 // CertificateSpec defines the desired state of a Certificate.
+
 type CertificateSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
+
+	xpv1.ManagedResourceSpec `json:",inline"`
+
 	ForProvider                     CertificateParameters `json:"forProvider"`
+
 }
+
+
 
 // CertificateStatus defines the observed state of a Certificate.
+
 type CertificateStatus struct {
+
 	xpv1.ManagedResourceStatus `json:",inline"`
+
 	AtProvider                 CertificateObservation `json:"atProvider,omitempty"`
+
 }
 
+
+
 // +kubebuilder:object:root=true
+
+
 
 // A Certificate is a managed resource that represents a Cloudflare Origin CA Certificate.
+
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.atProvider.id"
+
 // +kubebuilder:printcolumn:name="HOSTNAMES",type="string",JSONPath=".status.atProvider.hostnames"
+
 // +kubebuilder:printcolumn:name="EXPIRES",type="string",JSONPath=".status.atProvider.expiresOn"
+
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+
 // +kubebuilder:subresource:status
+
 // +kubebuilder:resource:scope=Namespaced,categories={crossplane,managed,cloudflare}
+
 type Certificate struct {
+
 	metav1.TypeMeta   `json:",inline"`
+
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+
+
 	Spec   CertificateSpec   `json:"spec"`
+
 	Status CertificateStatus `json:"status,omitempty"`
+
 }
+
+
 
 // +kubebuilder:object:root=true
 
+
+
 // CertificateList contains a list of Certificate
+
 type CertificateList struct {
+
 	metav1.TypeMeta `json:",inline"`
+
 	metav1.ListMeta `json:"metadata,omitempty"`
+
 	Items           []Certificate `json:"items"`
+
 }
 
-// GetCondition of this Certificate.
+
+
+
+// GetCondition gets the condition from the resource status.
 func (mg *Certificate) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this Certificate.
-func (mg *Certificate) GetDeletionPolicy() xpv1.DeletionPolicy {
-	return mg.Spec.DeletionPolicy
-}
-
-// GetManagementPolicies of this Certificate.
-func (mg *Certificate) GetManagementPolicies() xpv1.ManagementPolicies {
-	return mg.Spec.ManagementPolicies
-}
-
-// GetProviderConfigReference of this Certificate.
-func (mg *Certificate) GetProviderConfigReference() *xpv1.Reference {
-	return mg.Spec.ProviderConfigReference
-}
-
-// GetWriteConnectionSecretToReference of this Certificate.
-func (mg *Certificate) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
-	return mg.Spec.WriteConnectionSecretToReference
-}
-
-// SetConditions of this Certificate.
+// SetConditions sets the conditions on the resource status.
 func (mg *Certificate) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this Certificate.
-func (mg *Certificate) SetDeletionPolicy(r xpv1.DeletionPolicy) {
-	mg.Spec.DeletionPolicy = r
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *Certificate) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
-// SetManagementPolicies of this Certificate.
-func (mg *Certificate) SetManagementPolicies(r xpv1.ManagementPolicies) {
-	mg.Spec.ManagementPolicies = r
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *Certificate) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
 }
 
-// SetProviderConfigReference of this Certificate.
-func (mg *Certificate) SetProviderConfigReference(r *xpv1.Reference) {
-	mg.Spec.ProviderConfigReference = r
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *Certificate) DeepCopyObject() runtime.Object {
+	out := &Certificate{}
+	in.DeepCopyInto(out)
+	return out
 }
 
-// SetWriteConnectionSecretToReference of this Certificate.
-func (mg *Certificate) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
-	mg.Spec.WriteConnectionSecretToReference = r
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *Certificate) DeepCopyInto(out *Certificate) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
 }
 
-// GetGroupVersionKind returns the GroupVersionKind for Certificate.
-func (mg *Certificate) GetGroupVersionKind() schema.GroupVersionKind {
-	return CertificateGroupVersionKind
+// GetItems returns the list items.
+func (l *CertificateList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *CertificateList) DeepCopyObject() runtime.Object {
+	out := &CertificateList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *CertificateList) DeepCopyInto(out *CertificateList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]Certificate(nil), in.Items...)
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *Certificate) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
+	return nil
 }

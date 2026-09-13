@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
 	"context"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
@@ -116,7 +117,7 @@ type RecordObservation struct {
 
 // A RecordSpec defines the desired state of a DNS Record.
 type RecordSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ManagedResourceSpec `json:",inline"`
 	ForProvider                     RecordParameters `json:"forProvider"`
 }
 
@@ -184,5 +185,71 @@ func (dr *Record) ResolveReferences(ctx context.Context, c client.Reader) error 
 	dr.Spec.ForProvider.Zone = reference.ToPtrValue(rsp.ResolvedValue)
 	dr.Spec.ForProvider.ZoneRef = rsp.ResolvedReference
 
+	return nil
+}
+
+// GetCondition gets the condition from the resource status.
+func (mg *Record) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// SetConditions sets the conditions on the resource status.
+func (mg *Record) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *Record) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *Record) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *Record) DeepCopyObject() runtime.Object {
+	out := &Record{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *Record) DeepCopyInto(out *Record) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
+}
+
+// GetItems returns the list items.
+func (l *RecordList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *RecordList) DeepCopyObject() runtime.Object {
+	out := &RecordList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *RecordList) DeepCopyInto(out *RecordList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]Record(nil), in.Items...)
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *Record) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
 	return nil
 }

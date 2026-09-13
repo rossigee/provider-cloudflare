@@ -111,8 +111,8 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.LoadBalancer{
 					Spec: v1beta1.LoadBalancerSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
-							ProviderConfigReference: &xpv1.Reference{
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{
+							ProviderConfigReference: &xpv1.ProviderConfigReference{
 								Name: "test-config",
 							},
 						},
@@ -148,8 +148,8 @@ func TestConnect(t *testing.T) {
 			args: args{
 				mg: &v1beta1.LoadBalancer{
 					Spec: v1beta1.LoadBalancerSpec{
-						ClusterManagedResourceSpec: xpv1.ClusterManagedResourceSpec{
-							ProviderConfigReference: &xpv1.Reference{
+						ManagedResourceSpec: xpv1.ManagedResourceSpec{
+							ProviderConfigReference: &xpv1.ProviderConfigReference{
 								Name: "blah",
 							},
 						},

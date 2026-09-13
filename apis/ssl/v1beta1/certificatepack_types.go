@@ -17,8 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
@@ -151,7 +152,7 @@ type CertificatePackObservation struct {
 
 // CertificatePackSpec defines the desired state of Certificate Pack.
 type CertificatePackSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ManagedResourceSpec `json:",inline"`
 	ForProvider                     CertificatePackParameters `json:"forProvider"`
 }
 
@@ -187,57 +188,61 @@ type CertificatePackList struct {
 	Items           []CertificatePack `json:"items"`
 }
 
-// GetCondition of this CertificatePack.
+
+// GetCondition gets the condition from the resource status.
 func (mg *CertificatePack) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this CertificatePack.
-func (mg *CertificatePack) GetDeletionPolicy() xpv1.DeletionPolicy {
-	return mg.Spec.DeletionPolicy
-}
-
-// GetManagementPolicies of this CertificatePack.
-func (mg *CertificatePack) GetManagementPolicies() xpv1.ManagementPolicies {
-	return mg.Spec.ManagementPolicies
-}
-
-// GetProviderConfigReference of this CertificatePack.
-func (mg *CertificatePack) GetProviderConfigReference() *xpv1.Reference {
-	return mg.Spec.ProviderConfigReference
-}
-
-// GetWriteConnectionSecretToReference of this CertificatePack.
-func (mg *CertificatePack) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
-	return mg.Spec.WriteConnectionSecretToReference
-}
-
-// SetConditions of this CertificatePack.
+// SetConditions sets the conditions on the resource status.
 func (mg *CertificatePack) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this CertificatePack.
-func (mg *CertificatePack) SetDeletionPolicy(r xpv1.DeletionPolicy) {
-	mg.Spec.DeletionPolicy = r
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *CertificatePack) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
 }
 
-// SetManagementPolicies of this CertificatePack.
-func (mg *CertificatePack) SetManagementPolicies(r xpv1.ManagementPolicies) {
-	mg.Spec.ManagementPolicies = r
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *CertificatePack) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
 }
 
-// SetProviderConfigReference of this CertificatePack.
-func (mg *CertificatePack) SetProviderConfigReference(r *xpv1.Reference) {
-	mg.Spec.ProviderConfigReference = r
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *CertificatePack) DeepCopyObject() runtime.Object {
+	out := &CertificatePack{}
+	in.DeepCopyInto(out)
+	return out
 }
 
-// SetWriteConnectionSecretToReference of this CertificatePack.
-func (mg *CertificatePack) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
-	mg.Spec.WriteConnectionSecretToReference = r
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *CertificatePack) DeepCopyInto(out *CertificatePack) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
 }
 
-// GetGroupVersionKind returns the GroupVersionKind for CertificatePack.
-func (mg *CertificatePack) GetGroupVersionKind() schema.GroupVersionKind {
-	return CertificatePackGroupVersionKind
+// GetItems returns the list items.
+func (l *CertificatePackList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *CertificatePackList) DeepCopyObject() runtime.Object {
+	out := &CertificatePackList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *CertificatePackList) DeepCopyInto(out *CertificatePackList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]CertificatePack(nil), in.Items...)
 }
