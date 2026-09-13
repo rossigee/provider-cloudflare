@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // RateLimitParameters define the desired state of a Cloudflare Rate Limit rule.
@@ -187,7 +187,7 @@ type RateLimitObservation struct {
 // A RateLimitSpec defines the desired state of a Rate Limit.
 type RateLimitSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     RateLimitParameters `json:"forProvider"`
+	ForProvider              RateLimitParameters `json:"forProvider"`
 }
 
 // A RateLimitStatus represents the observed state of a Rate Limit.

@@ -17,9 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
@@ -44,7 +44,7 @@ type UniversalSSLObservation struct {
 // UniversalSSLSpec defines the desired state of Universal SSL.
 type UniversalSSLSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     UniversalSSLParameters `json:"forProvider"`
+	ForProvider              UniversalSSLParameters `json:"forProvider"`
 }
 
 // UniversalSSLStatus defines the observed state of Universal SSL.
@@ -76,7 +76,6 @@ type UniversalSSLList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []UniversalSSL `json:"items"`
 }
-
 
 // GetCondition gets the condition from the resource status.
 func (mg *UniversalSSL) GetCondition(ct xpv1.ConditionType) xpv1.Condition {

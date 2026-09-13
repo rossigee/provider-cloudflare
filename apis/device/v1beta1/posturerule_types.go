@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // DevicePostureRuleParameters define the desired state of a Cloudflare Device Posture Rule.
@@ -191,7 +191,7 @@ type DevicePostureRuleObservation struct {
 // A DevicePostureRuleSpec defines the desired state of a Device Posture Rule.
 type DevicePostureRuleSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     DevicePostureRuleParameters `json:"forProvider"`
+	ForProvider              DevicePostureRuleParameters `json:"forProvider"`
 }
 
 // A DevicePostureRuleStatus represents the observed state of a Device Posture Rule.

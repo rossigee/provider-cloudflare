@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // CronTriggerParameters are the configurable fields of a Workers Cron Trigger.
@@ -53,7 +53,7 @@ type CronTriggerObservation struct {
 // A CronTriggerSpec defines the desired state of a Workers Cron Trigger.
 type CronTriggerSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     CronTriggerParameters `json:"forProvider"`
+	ForProvider              CronTriggerParameters `json:"forProvider"`
 }
 
 // A CronTriggerStatus represents the observed state of a Workers Cron Trigger.

@@ -210,7 +210,7 @@ type CustomHostnameObservation struct {
 // A CustomHostnameSpec defines the desired state of a custom hostname.
 type CustomHostnameSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider             CustomHostnameParameters `json:"forProvider"`
+	ForProvider              CustomHostnameParameters `json:"forProvider"`
 }
 
 // A CustomHostnameStatus represents the observed state of a custom hostname.

@@ -17,8 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"context"
+
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -118,7 +119,7 @@ type RecordObservation struct {
 // A RecordSpec defines the desired state of a DNS Record.
 type RecordSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     RecordParameters `json:"forProvider"`
+	ForProvider              RecordParameters `json:"forProvider"`
 }
 
 // A RecordStatus represents the observed state of a DNS Record.

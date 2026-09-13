@@ -28,14 +28,9 @@ limitations under the License.
 
 */
 
-
-
 package v1beta1
 
-
-
 import (
-
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -43,11 +38,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-
 )
-
-
 
 // CertificateParameters define the desired state of a Cloudflare Origin CA Certificate.
 
@@ -61,8 +52,6 @@ type CertificateParameters struct {
 
 	Hostnames []string `json:"hostnames"`
 
-
-
 	// RequestType is the signature type to create the certificate with. Options: "origin-rsa", "origin-ecc", "keyless-certificate".
 
 	// +kubebuilder:validation:Enum=origin-rsa;origin-ecc;keyless-certificate
@@ -70,8 +59,6 @@ type CertificateParameters struct {
 	// +optional
 
 	RequestType *string `json:"requestType,omitempty"`
-
-
 
 	// RequestValidity is the number of days for which the certificate should be valid.
 
@@ -83,8 +70,6 @@ type CertificateParameters struct {
 
 	RequestValidity *int `json:"requestValidity,omitempty"`
 
-
-
 	// CSR is the Certificate Signing Request. Must be newline-encoded.
 
 	// If not provided, Cloudflare will generate a private key and CSR.
@@ -92,10 +77,7 @@ type CertificateParameters struct {
 	// +optional
 
 	CSR *string `json:"csr,omitempty"`
-
 }
-
-
 
 // CertificateObservation represents the observed state of a Cloudflare Origin CA Certificate.
 
@@ -105,79 +87,52 @@ type CertificateObservation struct {
 
 	ID string `json:"id,omitempty"`
 
-
-
 	// Certificate is the PEM-encoded certificate.
 
 	Certificate string `json:"certificate,omitempty"`
-
-
 
 	// Hostnames is the list of hostnames for which this certificate is valid.
 
 	Hostnames []string `json:"hostnames,omitempty"`
 
-
-
 	// ExpiresOn is the date and time when the certificate expires.
 
 	ExpiresOn *metav1.Time `json:"expiresOn,omitempty"`
-
-
 
 	// RequestType is the signature type of the certificate.
 
 	RequestType string `json:"requestType,omitempty"`
 
-
-
 	// RequestValidity is the number of days for which the certificate is valid.
 
 	RequestValidity int `json:"requestValidity,omitempty"`
-
-
 
 	// RevokedAt is the date and time when the certificate was revoked (if applicable).
 
 	RevokedAt *metav1.Time `json:"revokedAt,omitempty"`
 
-
-
 	// CSR is the Certificate Signing Request used to generate this certificate.
 
 	CSR string `json:"csr,omitempty"`
-
 }
-
-
 
 // CertificateSpec defines the desired state of a Certificate.
 
 type CertificateSpec struct {
-
 	xpv1.ManagedResourceSpec `json:",inline"`
 
-	ForProvider                     CertificateParameters `json:"forProvider"`
-
+	ForProvider CertificateParameters `json:"forProvider"`
 }
-
-
 
 // CertificateStatus defines the observed state of a Certificate.
 
 type CertificateStatus struct {
-
 	xpv1.ManagedResourceStatus `json:",inline"`
 
-	AtProvider                 CertificateObservation `json:"atProvider,omitempty"`
-
+	AtProvider CertificateObservation `json:"atProvider,omitempty"`
 }
 
-
-
 // +kubebuilder:object:root=true
-
-
 
 // A Certificate is a managed resource that represents a Cloudflare Origin CA Certificate.
 
@@ -198,39 +153,26 @@ type CertificateStatus struct {
 // +kubebuilder:resource:scope=Namespaced,categories={crossplane,managed,cloudflare}
 
 type Certificate struct {
-
-	metav1.TypeMeta   `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
 
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-
-
-	Spec   CertificateSpec   `json:"spec"`
+	Spec CertificateSpec `json:"spec"`
 
 	Status CertificateStatus `json:"status,omitempty"`
-
 }
 
-
-
 // +kubebuilder:object:root=true
-
-
 
 // CertificateList contains a list of Certificate
 
 type CertificateList struct {
-
 	metav1.TypeMeta `json:",inline"`
 
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items           []Certificate `json:"items"`
-
+	Items []Certificate `json:"items"`
 }
-
-
-
 
 // GetCondition gets the condition from the resource status.
 func (mg *Certificate) GetCondition(ct xpv1.ConditionType) xpv1.Condition {

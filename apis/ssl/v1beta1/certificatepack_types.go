@@ -17,9 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
@@ -153,7 +153,7 @@ type CertificatePackObservation struct {
 // CertificatePackSpec defines the desired state of Certificate Pack.
 type CertificatePackSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     CertificatePackParameters `json:"forProvider"`
+	ForProvider              CertificatePackParameters `json:"forProvider"`
 }
 
 // CertificatePackStatus defines the observed state of Certificate Pack.
@@ -187,7 +187,6 @@ type CertificatePackList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []CertificatePack `json:"items"`
 }
-
 
 // GetCondition gets the condition from the resource status.
 func (mg *CertificatePack) GetCondition(ct xpv1.ConditionType) xpv1.Condition {

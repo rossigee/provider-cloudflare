@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // LoadBalancerMonitorParameters define the desired state of a Cloudflare Load Balancer Monitor
@@ -131,7 +131,7 @@ type LoadBalancerMonitorObservation struct {
 // LoadBalancerMonitorSpec defines the desired state of LoadBalancerMonitor
 type LoadBalancerMonitorSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     LoadBalancerMonitorParameters `json:"forProvider"`
+	ForProvider              LoadBalancerMonitorParameters `json:"forProvider"`
 }
 
 // LoadBalancerMonitorStatus defines the observed state of LoadBalancerMonitor

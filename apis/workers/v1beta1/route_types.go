@@ -17,8 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"context"
+
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
@@ -60,7 +61,7 @@ type RouteObservation struct{}
 // A RouteSpec defines the desired state of a Worker Route.
 type RouteSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     RouteParameters `json:"forProvider"`
+	ForProvider              RouteParameters `json:"forProvider"`
 }
 
 // A RouteStatus represents the observed state of a Worker Route.

@@ -74,7 +74,7 @@ type FallbackOriginObservation struct {
 // A FallbackOriginSpec defines the desired state of a Fallback Origin.
 type FallbackOriginSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider             FallbackOriginParameters `json:"forProvider"`
+	ForProvider              FallbackOriginParameters `json:"forProvider"`
 }
 
 // A FallbackOriginStatus represents the observed state of a Fallback Origin.

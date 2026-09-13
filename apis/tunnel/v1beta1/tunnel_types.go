@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // TunnelParameters define the desired state of a Cloudflare Tunnel.
@@ -211,7 +211,7 @@ type TunnelConnection struct {
 // A TunnelSpec defines the desired state of a Tunnel.
 type TunnelSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     TunnelParameters `json:"forProvider"`
+	ForProvider              TunnelParameters `json:"forProvider"`
 }
 
 // A TunnelStatus represents the observed state of a Tunnel.

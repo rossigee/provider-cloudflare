@@ -17,9 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
-	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"context"
+
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
@@ -103,7 +104,7 @@ type RuleObservation struct{}
 // A RuleSpec defines the desired state of a Rule.
 type RuleSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     RuleParameters `json:"forProvider"`
+	ForProvider              RuleParameters `json:"forProvider"`
 }
 
 // A RuleStatus represents the observed state of a Rule.

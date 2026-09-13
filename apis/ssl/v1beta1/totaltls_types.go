@@ -17,9 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
@@ -62,7 +62,7 @@ type TotalTLSObservation struct {
 // TotalTLSSpec defines the desired state of Total TLS.
 type TotalTLSSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     TotalTLSParameters `json:"forProvider"`
+	ForProvider              TotalTLSParameters `json:"forProvider"`
 }
 
 // TotalTLSStatus defines the observed state of Total TLS.
@@ -96,7 +96,6 @@ type TotalTLSList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []TotalTLS `json:"items"`
 }
-
 
 // GetCondition gets the condition from the resource status.
 func (mg *TotalTLS) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
