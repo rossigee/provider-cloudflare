@@ -17,8 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // AccessApplicationParameters define the desired state of a Cloudflare Access Application.
@@ -193,8 +195,8 @@ type AccessApplicationObservation struct {
 
 // A AccessApplicationSpec defines the desired state of an Access Application.
 type AccessApplicationSpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider                     AccessApplicationParameters `json:"forProvider"`
+	xpv1.ManagedResourceSpec `json:",inline"`
+	ForProvider              AccessApplicationParameters `json:"forProvider"`
 }
 
 // A AccessApplicationStatus represents the observed state of an Access Application.
@@ -213,6 +215,7 @@ type AccessApplicationStatus struct {
 // +kubebuilder:printcolumn:name="DOMAIN",type="string",JSONPath=".spec.forProvider.domain"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:resource:scope=Namespaced,categories={crossplane,managed,cloudflare}
+// +kubebuilder:object:root=true
 type AccessApplication struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -228,4 +231,70 @@ type AccessApplicationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []AccessApplication `json:"items"`
+}
+
+// GetCondition gets the condition from the resource status.
+func (mg *AccessApplication) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// SetConditions sets the conditions on the resource status.
+func (mg *AccessApplication) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *AccessApplication) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *AccessApplication) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *AccessApplication) DeepCopyObject() runtime.Object {
+	out := &AccessApplication{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *AccessApplication) DeepCopyInto(out *AccessApplication) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *AccessApplication) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
+	return nil
+}
+
+// GetItems returns the list items.
+func (l *AccessApplicationList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *AccessApplicationList) DeepCopyObject() runtime.Object {
+	out := &AccessApplicationList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *AccessApplicationList) DeepCopyInto(out *AccessApplicationList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]AccessApplication(nil), in.Items...)
 }
