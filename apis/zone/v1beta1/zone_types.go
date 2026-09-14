@@ -20,7 +20,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -459,21 +458,6 @@ func (mg *Zone) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *Zone) DeepCopyObject() runtime.Object {
-	out := &Zone{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *Zone) DeepCopyInto(out *Zone) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetItems returns the list items.
 func (l *ZoneList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -481,33 +465,6 @@ func (l *ZoneList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *ZoneList) DeepCopyObject() runtime.Object {
-	out := &ZoneList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *ZoneList) DeepCopyInto(out *ZoneList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]Zone(nil), in.Items...)
-}
-
-// DeepCopy returns a deep copy of ZoneSettings.
-func (in *ZoneSettings) DeepCopy() *ZoneSettings {
-	if in == nil {
-		return nil
-	}
-	out := new(ZoneSettings)
-	*out = *in
-	if in.Ciphers != nil {
-		out.Ciphers = append([]string(nil), in.Ciphers...)
-	}
-	return out
 }
 
 // GetProviderConfigReference returns the ProviderConfig reference.

@@ -20,7 +20,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // AccessApplicationParameters define the desired state of a Cloudflare Access Application.
@@ -253,21 +252,6 @@ func (mg *AccessApplication) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *AccessApplication) DeepCopyObject() runtime.Object {
-	out := &AccessApplication{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *AccessApplication) DeepCopyInto(out *AccessApplication) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetProviderConfigReference returns the ProviderConfig reference.
 func (mg *AccessApplication) GetProviderConfigReference() *xpv1.Reference {
 	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
@@ -283,18 +267,4 @@ func (l *AccessApplicationList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *AccessApplicationList) DeepCopyObject() runtime.Object {
-	out := &AccessApplicationList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *AccessApplicationList) DeepCopyInto(out *AccessApplicationList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]AccessApplication(nil), in.Items...)
 }

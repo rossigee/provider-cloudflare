@@ -20,7 +20,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // LoadBalancerParameters define the desired state of a Cloudflare Load Balancer
@@ -358,21 +357,6 @@ func (mg *LoadBalancer) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *LoadBalancer) DeepCopyObject() runtime.Object {
-	out := &LoadBalancer{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *LoadBalancer) DeepCopyInto(out *LoadBalancer) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetItems returns the list items.
 func (l *LoadBalancerList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -380,20 +364,6 @@ func (l *LoadBalancerList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *LoadBalancerList) DeepCopyObject() runtime.Object {
-	out := &LoadBalancerList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *LoadBalancerList) DeepCopyInto(out *LoadBalancerList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]LoadBalancer(nil), in.Items...)
 }
 
 // GetProviderConfigReference returns the ProviderConfig reference.

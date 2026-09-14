@@ -31,13 +31,12 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // CertificateParameters define the desired state of a Cloudflare Origin CA Certificate.
@@ -194,6 +193,23 @@ func (mg *Certificate) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
+// GetItems returns the list items.
+func (l *CertificateList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *Certificate) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
+	return nil
+}
+
 // DeepCopyObject returns a deep copy of this object as runtime.Object.
 func (in *Certificate) DeepCopyObject() runtime.Object {
 	out := &Certificate{}
@@ -209,15 +225,6 @@ func (in *Certificate) DeepCopyInto(out *Certificate) {
 	out.Status = in.Status
 }
 
-// GetItems returns the list items.
-func (l *CertificateList) GetItems() []resource.Managed {
-	items := make([]resource.Managed, len(l.Items))
-	for i := range l.Items {
-		items[i] = &l.Items[i]
-	}
-	return items
-}
-
 // DeepCopyObject returns a deep copy of this object as runtime.Object.
 func (in *CertificateList) DeepCopyObject() runtime.Object {
 	out := &CertificateList{}
@@ -230,12 +237,4 @@ func (in *CertificateList) DeepCopyInto(out *CertificateList) {
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	out.Items = append([]Certificate(nil), in.Items...)
-}
-
-// GetProviderConfigReference returns the ProviderConfig reference.
-func (mg *Certificate) GetProviderConfigReference() *xpv1.Reference {
-	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
-		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
-	}
-	return nil
 }

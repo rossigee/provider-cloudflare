@@ -20,7 +20,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // KVNamespaceParameters are the configurable fields of a Workers KV Namespace.
@@ -97,21 +96,6 @@ func (mg *KVNamespace) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *KVNamespace) DeepCopyObject() runtime.Object {
-	out := &KVNamespace{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *KVNamespace) DeepCopyInto(out *KVNamespace) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetItems returns the list items.
 func (l *KVNamespaceList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -119,18 +103,4 @@ func (l *KVNamespaceList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *KVNamespaceList) DeepCopyObject() runtime.Object {
-	out := &KVNamespaceList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *KVNamespaceList) DeepCopyInto(out *KVNamespaceList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]KVNamespace(nil), in.Items...)
 }

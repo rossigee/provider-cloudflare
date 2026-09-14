@@ -19,7 +19,6 @@ package v1beta1
 import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
@@ -208,21 +207,6 @@ func (mg *CertificatePack) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *CertificatePack) DeepCopyObject() runtime.Object {
-	out := &CertificatePack{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *CertificatePack) DeepCopyInto(out *CertificatePack) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetItems returns the list items.
 func (l *CertificatePackList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -230,18 +214,4 @@ func (l *CertificatePackList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *CertificatePackList) DeepCopyObject() runtime.Object {
-	out := &CertificatePackList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *CertificatePackList) DeepCopyInto(out *CertificatePackList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]CertificatePack(nil), in.Items...)
 }

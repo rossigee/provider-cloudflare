@@ -25,7 +25,6 @@ import (
 	"github.com/pkg/errors"
 	zonev1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -231,21 +230,6 @@ func (mg *Application) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *Application) DeepCopyObject() runtime.Object {
-	out := &Application{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *Application) DeepCopyInto(out *Application) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetItems returns the list items.
 func (l *ApplicationList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -253,20 +237,6 @@ func (l *ApplicationList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *ApplicationList) DeepCopyObject() runtime.Object {
-	out := &ApplicationList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *ApplicationList) DeepCopyInto(out *ApplicationList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]Application(nil), in.Items...)
 }
 
 // GetProviderConfigReference returns the ProviderConfig reference.

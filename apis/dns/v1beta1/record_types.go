@@ -19,8 +19,6 @@ package v1beta1
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/runtime"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
@@ -209,21 +207,6 @@ func (mg *Record) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *Record) DeepCopyObject() runtime.Object {
-	out := &Record{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *Record) DeepCopyInto(out *Record) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetItems returns the list items.
 func (l *RecordList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -231,20 +214,6 @@ func (l *RecordList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *RecordList) DeepCopyObject() runtime.Object {
-	out := &RecordList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *RecordList) DeepCopyInto(out *RecordList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]Record(nil), in.Items...)
 }
 
 // GetProviderConfigReference returns the ProviderConfig reference.

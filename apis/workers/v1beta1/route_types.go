@@ -19,8 +19,6 @@ package v1beta1
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/runtime"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
@@ -150,21 +148,6 @@ func (mg *Route) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *Route) DeepCopyObject() runtime.Object {
-	out := &Route{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *Route) DeepCopyInto(out *Route) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetItems returns the list items.
 func (l *RouteList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -172,18 +155,4 @@ func (l *RouteList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *RouteList) DeepCopyObject() runtime.Object {
-	out := &RouteList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *RouteList) DeepCopyInto(out *RouteList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]Route(nil), in.Items...)
 }

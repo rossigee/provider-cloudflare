@@ -19,7 +19,6 @@ package v1beta1
 
 import (
 	"context"
-
 	reference "github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	errors "github.com/pkg/errors"
 	v1beta1 "github.com/rossigee/provider-cloudflare/apis/zone/v1beta1"
@@ -28,12 +27,12 @@ import (
 
 // ResolveReferences of this Rule.
 func (mg *Rule) ResolveReferences(ctx context.Context, c client.Reader) error {
-	r := reference.NewAPIResolver(c, mg)
+	r := reference.NewAPINamespacedResolver(c, mg)
 
-	var rsp reference.ResolutionResponse
+	var rsp reference.NamespacedResolutionResponse
 	var err error
 
-	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+	rsp, err = r.Resolve(ctx, reference.NamespacedResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Zone),
 		Extract:      reference.ExternalName(),
 		Namespace:    mg.GetNamespace(),

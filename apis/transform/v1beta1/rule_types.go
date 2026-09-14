@@ -48,10 +48,10 @@ type RuleParameters struct {
 	Zone *string `json:"zone,omitempty"`
 
 	// ZoneRef is a reference to a Zone object.
-	ZoneRef *xpv1.Reference `json:"zoneRef,omitempty"`
+	ZoneRef *xpv1.NamespacedReference `json:"zoneRef,omitempty"`
 
 	// ZoneSelector selects a Zone object.
-	ZoneSelector *xpv1.Selector `json:"zoneSelector,omitempty"`
+	ZoneSelector *xpv1.NamespacedSelector `json:"zoneSelector,omitempty"`
 
 	// Phase specifies the ruleset phase where this rule should be applied.
 	// Valid values: http_request_transform, http_request_late_transform, http_response_headers_transform
@@ -222,6 +222,23 @@ func (mg *Rule) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
+// GetItems returns the list items.
+func (l *RuleList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *Rule) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
+	return nil
+}
+
 // DeepCopyObject returns a deep copy of this object as runtime.Object.
 func (in *Rule) DeepCopyObject() runtime.Object {
 	out := &Rule{}
@@ -237,15 +254,6 @@ func (in *Rule) DeepCopyInto(out *Rule) {
 	out.Status = in.Status
 }
 
-// GetItems returns the list items.
-func (l *RuleList) GetItems() []resource.Managed {
-	items := make([]resource.Managed, len(l.Items))
-	for i := range l.Items {
-		items[i] = &l.Items[i]
-	}
-	return items
-}
-
 // DeepCopyObject returns a deep copy of this object as runtime.Object.
 func (in *RuleList) DeepCopyObject() runtime.Object {
 	out := &RuleList{}
@@ -258,12 +266,4 @@ func (in *RuleList) DeepCopyInto(out *RuleList) {
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	out.Items = append([]Rule(nil), in.Items...)
-}
-
-// GetProviderConfigReference returns the ProviderConfig reference.
-func (mg *Rule) GetProviderConfigReference() *xpv1.Reference {
-	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
-		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
-	}
-	return nil
 }
