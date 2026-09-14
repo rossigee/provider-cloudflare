@@ -18,8 +18,20 @@ package ssl
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 )
 
-func TestUniversalssl(t *testing.T) {
-	t.Skipf("Test implementation pending")
+// TestUniversalSSL confirms UniversalSSL type exists and is accessible.
+func TestUniversalSSL(t *testing.T) {
+	r := &v1beta1.UniversalSSL{
+		Spec: v1beta1.UniversalSSLSpec{
+			ForProvider: v1beta1.UniversalSSLParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

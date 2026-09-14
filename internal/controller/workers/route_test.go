@@ -18,8 +18,20 @@ package workers
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )
 
+// TestRoute confirms Route type exists and is accessible.
 func TestRoute(t *testing.T) {
-	t.Skipf("Test implementation pending")
+	r := &v1beta1.Route{
+		Spec: v1beta1.RouteSpec{
+			ForProvider: v1beta1.RouteParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

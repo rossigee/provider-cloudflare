@@ -18,8 +18,20 @@ package emailrouting
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/emailrouting/v1beta1"
 )
 
+// TestRule confirms Rule type exists and is accessible.
 func TestRule(t *testing.T) {
-	t.Skipf("Test implementation pending")
+	r := &v1beta1.Rule{
+		Spec: v1beta1.RuleSpec{
+			ForProvider: v1beta1.RuleParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

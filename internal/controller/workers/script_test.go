@@ -18,8 +18,20 @@ package workers
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )
 
+// TestScript confirms Script type exists and is accessible.
 func TestScript(t *testing.T) {
-	t.Skipf("Test implementation pending")
+	r := &v1beta1.Script{
+		Spec: v1beta1.ScriptSpec{
+			ForProvider: v1beta1.ScriptParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

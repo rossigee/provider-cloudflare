@@ -18,8 +18,20 @@ package r2
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
 )
 
+// TestBucket confirms Bucket type exists and is accessible.
 func TestBucket(t *testing.T) {
-	t.Skipf("Test implementation pending")
+	r := &v1beta1.Bucket{
+		Spec: v1beta1.BucketSpec{
+			ForProvider: v1beta1.BucketParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

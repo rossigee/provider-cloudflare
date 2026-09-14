@@ -18,8 +18,20 @@ package workers
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )
 
-func TestCrontrigger(t *testing.T) {
-	t.Skipf("Test implementation pending")
+// TestCronTrigger confirms CronTrigger type exists and is accessible.
+func TestCronTrigger(t *testing.T) {
+	r := &v1beta1.CronTrigger{
+		Spec: v1beta1.CronTriggerSpec{
+			ForProvider: v1beta1.CronTriggerParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

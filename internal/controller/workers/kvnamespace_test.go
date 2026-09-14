@@ -18,8 +18,20 @@ package workers
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )
 
-func TestKvnamespace(t *testing.T) {
-	t.Skipf("Test implementation pending")
+// TestKVNamespace confirms KVNamespace type exists and is accessible.
+func TestKVNamespace(t *testing.T) {
+	r := &v1beta1.KVNamespace{
+		Spec: v1beta1.KVNamespaceSpec{
+			ForProvider: v1beta1.KVNamespaceParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

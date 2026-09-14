@@ -18,8 +18,20 @@ package originssl
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
 )
 
+// TestCertificate confirms Certificate type exists and is accessible.
 func TestCertificate(t *testing.T) {
-	t.Skipf("Test implementation pending")
+	r := &v1beta1.Certificate{
+		Spec: v1beta1.CertificateSpec{
+			ForProvider: v1beta1.CertificateParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

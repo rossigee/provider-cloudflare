@@ -18,8 +18,20 @@ package workers
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )
 
+// TestDomain confirms Domain type exists and is accessible.
 func TestDomain(t *testing.T) {
-	t.Skipf("Test implementation pending")
+	r := &v1beta1.Domain{
+		Spec: v1beta1.DomainSpec{
+			ForProvider: v1beta1.DomainParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

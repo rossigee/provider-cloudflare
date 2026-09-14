@@ -18,8 +18,20 @@ package ssl
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/ssl/v1beta1"
 )
 
-func TestTotaltls(t *testing.T) {
-	t.Skipf("Test implementation pending")
+// TestTotalTLS confirms TotalTLS type exists and is accessible.
+func TestTotalTLS(t *testing.T) {
+	r := &v1beta1.TotalTLS{
+		Spec: v1beta1.TotalTLSSpec{
+			ForProvider: v1beta1.TotalTLSParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }

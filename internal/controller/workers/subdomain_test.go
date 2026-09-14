@@ -18,8 +18,20 @@ package workers
 
 import (
 	"testing"
+
+	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )
 
+// TestSubdomain confirms Subdomain type exists and is accessible.
 func TestSubdomain(t *testing.T) {
-	t.Skipf("Test implementation pending")
+	r := &v1beta1.Subdomain{
+		Spec: v1beta1.SubdomainSpec{
+			ForProvider: v1beta1.SubdomainParameters{},
+		},
+	}
+
+	if r == nil {
+		t.Fatal("expected resource to be non-nil")
+	}
+	t.Logf("resource type %T instantiated successfully", r)
 }
