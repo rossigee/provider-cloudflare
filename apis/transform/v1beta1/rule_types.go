@@ -231,12 +231,18 @@ func (l *RuleList) GetItems() []resource.Managed {
 	return items
 }
 
-// GetProviderConfigReference returns the ProviderConfig reference.
-func (mg *Rule) GetProviderConfigReference() *xpv1.Reference {
-	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
-		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
-	}
-	return nil
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *RuleList) DeepCopyObject() runtime.Object {
+	out := &RuleList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *RuleList) DeepCopyInto(out *RuleList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]Rule(nil), in.Items...)
 }
 
 // DeepCopyObject returns a deep copy of this object as runtime.Object.
@@ -254,16 +260,10 @@ func (in *Rule) DeepCopyInto(out *Rule) {
 	out.Status = in.Status
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *RuleList) DeepCopyObject() runtime.Object {
-	out := &RuleList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *RuleList) DeepCopyInto(out *RuleList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]Rule(nil), in.Items...)
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *Rule) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
+	return nil
 }

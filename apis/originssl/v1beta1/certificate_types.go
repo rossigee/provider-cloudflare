@@ -202,12 +202,18 @@ func (l *CertificateList) GetItems() []resource.Managed {
 	return items
 }
 
-// GetProviderConfigReference returns the ProviderConfig reference.
-func (mg *Certificate) GetProviderConfigReference() *xpv1.Reference {
-	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
-		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
-	}
-	return nil
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *CertificateList) DeepCopyObject() runtime.Object {
+	out := &CertificateList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *CertificateList) DeepCopyInto(out *CertificateList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]Certificate(nil), in.Items...)
 }
 
 // DeepCopyObject returns a deep copy of this object as runtime.Object.
@@ -225,16 +231,10 @@ func (in *Certificate) DeepCopyInto(out *Certificate) {
 	out.Status = in.Status
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *CertificateList) DeepCopyObject() runtime.Object {
-	out := &CertificateList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *CertificateList) DeepCopyInto(out *CertificateList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]Certificate(nil), in.Items...)
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *Certificate) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
+	return nil
 }
