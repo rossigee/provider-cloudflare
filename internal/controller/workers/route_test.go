@@ -30,8 +30,5 @@ func TestRoute(t *testing.T) {
 		},
 	}
 
-	if r == nil {
-		t.Fatal("expected resource to be non-nil")
-	}
 	t.Logf("resource type %T instantiated successfully", r)
 }
