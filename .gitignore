@@ -38,5 +38,3 @@ test_coverage*.out
 *.tmp
 *.temp
 .cache/
-apis/transform/v1beta1/zz_generated.deepcopy.go
-apis/originssl/v1beta1/zz_generated.deepcopy.go
