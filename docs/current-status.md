@@ -71,7 +71,7 @@
 ## 📦 **Deployment Information**
 
 ### **Registry**
-- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.11.0`
+- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.19.2`
 - **Branch**: master
 - **Build System**: Standard Crossplane build submodule
 
@@ -82,7 +82,7 @@ kind: Provider
 metadata:
   name: provider-cloudflare
 spec:
-  package: ghcr.io/rossigee/provider-cloudflare:v0.11.0
+  package: ghcr.io/rossigee/provider-cloudflare:v0.19.2
 ```
 
 ### **Configuration**
