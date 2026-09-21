@@ -124,11 +124,11 @@ func main() {
 			BindAddress: *metricsBindAddress,
 		},
 		Controller: config.Controller{
-			// 30 controllers/watchers x initial List+Watch startup can exceed the
+			// 72 controllers/watchers x initial List+Watch startup can exceed the
 			// controller-runtime default of 2m when the apiserver is slow or many
-			// CRDs are installed. Raise the ceiling so the manager does not fatal-exit
-			// before caches finish syncing.
-			CacheSyncTimeout: 10 * time.Minute,
+			// CRDs are installed. With API server latency, even 10m insufficient.
+			// Set to 30m to allow cache sync on resource-constrained clusters.
+			CacheSyncTimeout: 30 * time.Minute,
 		},
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
