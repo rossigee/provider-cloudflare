@@ -1,4 +1,4 @@
-# Provider Cloudflare - Current Status (2025-09-27)
+# Provider Cloudflare - Current Status (2026-09-22)
 
 ## ✅ **Repository Status: PRODUCTION READY**
 
@@ -71,7 +71,7 @@
 ## 📦 **Deployment Information**
 
 ### **Registry**
-- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.20.0`
+- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.20.1`
 - **Branch**: master
 - **Build System**: Standard Crossplane build submodule
 
@@ -82,7 +82,7 @@ kind: Provider
 metadata:
   name: provider-cloudflare
 spec:
-  package: ghcr.io/rossigee/provider-cloudflare:v0.20.0
+  package: ghcr.io/rossigee/provider-cloudflare:v0.20.1
 ```
 
 ### **Configuration**
@@ -144,5 +144,5 @@ The provider successfully delivers on the requirement to be "v2-native with no b
 ---
 
 **Last Updated**: 2026-09-22
-**Version**: v0.20.0
+**Version**: v0.20.1
 **Status**: ✅ **PRODUCTION READY - V1BETA1 ONLY**

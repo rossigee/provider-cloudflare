@@ -70,8 +70,8 @@ func main() {
 		pollStateMetricInterval  = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
 		metricsBindAddress       = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
 		enableManagementPolicies = app.Flag("enable-management-policies", "Enable support for management policies.").Default("true").OverrideDefaultFromEnvar("ENABLE_MANAGEMENT_POLICIES").Bool()
-		kubeAPIQPS               = app.Flag("kube-api-qps", "Kubernetes API server queries per second.").Default("50").Float()
-		kubeAPIBurst             = app.Flag("kube-api-burst", "Kubernetes API server burst.").Default("100").Int()
+		kubeAPIQPS               = app.Flag("kube-api-qps", "Kubernetes API server queries per second.").Default("150").Float()
+		kubeAPIBurst             = app.Flag("kube-api-burst", "Kubernetes API server burst.").Default("300").Int()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -133,8 +133,9 @@ func main() {
 			// 72 controllers/watchers x initial List+Watch startup can exceed the
 			// controller-runtime default of 2m when the apiserver is slow or many
 			// CRDs are installed. With API server latency, even 10m insufficient.
-			// Set to 30m to allow cache sync on resource-constrained clusters.
-			CacheSyncTimeout: 30 * time.Minute,
+			// Set to 60m to allow cache sync on resource-constrained clusters with
+			// rate-limited LIST/WATCH pacing (kube-api-qps/burst).
+			CacheSyncTimeout: 60 * time.Minute,
 		},
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
