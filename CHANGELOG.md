@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.21.1] - 2026-09-23
+
+### Fixed
+- **Multi-arch manifest**: Fixed image publish to produce a real multi-arch OCI index
+  for `linux/amd64` and `linux/arm64`. The v0.21.0 release shipped a single-arch manifest.
+  `cluster/images/provider-cloudflare/Makefile::img.publish` now builds and pushes
+  per-arch images, then creates the multi-arch index via
+  `docker buildx imagetools create`.
+
 ## [v0.21.0] - 2026-09-23
 
 ### Added
