@@ -71,7 +71,7 @@
 ## 📦 **Deployment Information**
 
 ### **Registry**
-- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.19.2`
+- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.20.0`
 - **Branch**: master
 - **Build System**: Standard Crossplane build submodule
 
@@ -82,7 +82,7 @@ kind: Provider
 metadata:
   name: provider-cloudflare
 spec:
-  package: ghcr.io/rossigee/provider-cloudflare:v0.19.2
+  package: ghcr.io/rossigee/provider-cloudflare:v0.20.0
 ```
 
 ### **Configuration**
@@ -143,6 +143,6 @@ The provider successfully delivers on the requirement to be "v2-native with no b
 
 ---
 
-**Last Updated**: 2025-10-20
-**Version**: v0.11.0
+**Last Updated**: 2026-09-22
+**Version**: v0.20.0
 **Status**: ✅ **PRODUCTION READY - V1BETA1 ONLY**

@@ -4,7 +4,7 @@
 Comprehensive Crossplane provider for managing Cloudflare resources via their V4 API. This provider offers complete coverage of Cloudflare's cloud security, performance, and reliability services including DNS, load balancing, WAF, caching, SSL management, Zero Trust Access, tunneling, and device management.
 
 ## Status
-- **Registry**: `ghcr.io/rossigee/provider-cloudflare:v0.19.2`
+- **Registry**: `ghcr.io/rossigee/provider-cloudflare:v0.20.0`
 - **Branch**: master
 - **CI/CD**: ✅ Standardized GitHub Actions with "CI Builds, Release Publishes" pattern
 - **Build System**: ✅ Standard Crossplane build submodule

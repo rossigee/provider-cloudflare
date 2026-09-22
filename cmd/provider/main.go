@@ -70,6 +70,8 @@ func main() {
 		pollStateMetricInterval  = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
 		metricsBindAddress       = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
 		enableManagementPolicies = app.Flag("enable-management-policies", "Enable support for management policies.").Default("true").OverrideDefaultFromEnvar("ENABLE_MANAGEMENT_POLICIES").Bool()
+		kubeAPIQPS               = app.Flag("kube-api-qps", "Kubernetes API server queries per second.").Default("50").Float()
+		kubeAPIBurst             = app.Flag("kube-api-burst", "Kubernetes API server burst.").Default("100").Int()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -98,7 +100,9 @@ func main() {
 		"leader-election", *leaderElection,
 		"leader-election-id", "crossplane-leader-election-provider-cloudflare",
 		"management-policies", *enableManagementPolicies,
-		"debug-mode", *debug)
+		"debug-mode", *debug,
+		"kube-api-qps", *kubeAPIQPS,
+		"kube-api-burst", *kubeAPIBurst)
 
 	if *enableManagementPolicies {
 		log.Info("Alpha feature enabled", "flag", features.EnableAlphaManagementPolicies)
@@ -110,6 +114,8 @@ func main() {
 
 	cfg, err := ctrl.GetConfig()
 	kingpin.FatalIfError(err, "Cannot get API server rest config")
+	cfg.QPS = float32(*kubeAPIQPS)
+	cfg.Burst = *kubeAPIBurst
 
 	sync := *syncPeriod
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
