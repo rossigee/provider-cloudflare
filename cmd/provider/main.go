@@ -51,6 +51,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -70,8 +71,8 @@ func main() {
 		pollStateMetricInterval  = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
 		metricsBindAddress       = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
 		enableManagementPolicies = app.Flag("enable-management-policies", "Enable support for management policies.").Default("true").OverrideDefaultFromEnvar("ENABLE_MANAGEMENT_POLICIES").Bool()
-		kubeAPIQPS               = app.Flag("kube-api-qps", "Kubernetes API server queries per second.").Default("150").Float()
-		kubeAPIBurst             = app.Flag("kube-api-burst", "Kubernetes API server burst.").Default("300").Int()
+		kubeAPIQPS               = app.Flag("kube-api-qps", "Kubernetes API server queries per second.").Default("500").Float()
+		kubeAPIBurst             = app.Flag("kube-api-burst", "Kubernetes API server burst.").Default("1000").Int()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -116,6 +117,7 @@ func main() {
 	kingpin.FatalIfError(err, "Cannot get API server rest config")
 	cfg.QPS = float32(*kubeAPIQPS)
 	cfg.Burst = *kubeAPIBurst
+	cfg.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(float32(*kubeAPIQPS), *kubeAPIBurst)
 
 	sync := *syncPeriod
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
@@ -130,12 +132,11 @@ func main() {
 			BindAddress: *metricsBindAddress,
 		},
 		Controller: config.Controller{
-			// 72 controllers/watchers x initial List+Watch startup can exceed the
-			// controller-runtime default of 2m when the apiserver is slow or many
-			// CRDs are installed. With API server latency, even 10m insufficient.
-			// Set to 60m to allow cache sync on resource-constrained clusters with
-			// rate-limited LIST/WATCH pacing (kube-api-qps/burst).
-			CacheSyncTimeout: 60 * time.Minute,
+			// 72 controllers × ~6.5 informers with rate-limited pacing (500 QPS/1000 Burst,
+			// explicit TokenBucketRateLimiter) still requires ~20-30m on clusters with many
+			// concurrent providers due to API server WATCH bookmark delays (48-50s per controller).
+			// Set to 30m to complete cache sync reliably on resource-constrained multi-provider clusters.
+			CacheSyncTimeout: 30 * time.Minute,
 		},
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")

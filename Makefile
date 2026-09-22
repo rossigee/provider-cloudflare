@@ -179,6 +179,11 @@ test.cover: generate
 	@$(GO) test -v -coverprofile=coverage.out ./...
 	@$(GO) tool cover -html=coverage.out -o coverage.html
 
+# Report API coverage (measure against cloudflare-go SDK)
+api-coverage:
+	@$(INFO) Analyzing Cloudflare API coverage...
+	@$(GO) run ./hack/api-coverage
+
 # Run critical scheme registration tests
 test.scheme: generate
 	@$(INFO) Running critical scheme registration tests...

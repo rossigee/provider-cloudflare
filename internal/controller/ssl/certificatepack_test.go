@@ -39,6 +39,7 @@ type mockCertificatePackAPI struct {
 	MockCreateCertificatePack        func(ctx context.Context, zoneID string, cert cloudflare.CertificatePackRequest) (cloudflare.CertificatePack, error)
 	MockDeleteCertificatePack        func(ctx context.Context, zoneID, certificateID string) error
 	MockRestartCertificateValidation func(ctx context.Context, zoneID, certificateID string) (cloudflare.CertificatePack, error)
+	MockListCertificatePacks         func(ctx context.Context, zoneID string) ([]cloudflare.CertificatePack, error)
 }
 
 func (m *mockCertificatePackAPI) CertificatePack(ctx context.Context, zoneID, certificatePackID string) (cloudflare.CertificatePack, error) {
@@ -67,6 +68,13 @@ func (m *mockCertificatePackAPI) RestartCertificateValidation(ctx context.Contex
 		return m.MockRestartCertificateValidation(ctx, zoneID, certificateID)
 	}
 	return cloudflare.CertificatePack{}, errors.New("cannot restart certificate validation")
+}
+
+func (m *mockCertificatePackAPI) ListCertificatePacks(ctx context.Context, zoneID string) ([]cloudflare.CertificatePack, error) {
+	if m.MockListCertificatePacks != nil {
+		return m.MockListCertificatePacks(ctx, zoneID)
+	}
+	return nil, errors.New("not implemented")
 }
 
 // Helper to create a CloudflareCertificatePackClient with a mocked API

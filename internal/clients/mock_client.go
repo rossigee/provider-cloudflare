@@ -536,6 +536,362 @@ func (m *MockCloudflareClient) GetLastUpdateDNSRecordCall() *UpdateDNSRecordCall
 	return &m.UpdateDNSRecordCalls[len(m.UpdateDNSRecordCalls)-1]
 }
 
+// Workers Script operations
+func (m *MockCloudflareClient) UpdateWorkersScriptContent(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateWorkersScriptContentParams) (cloudflare.WorkerScriptResponse, error) {
+	return cloudflare.WorkerScriptResponse{}, nil
+}
+func (m *MockCloudflareClient) UpdateWorkersScriptSettings(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateWorkersScriptSettingsParams) (cloudflare.WorkerScriptSettingsResponse, error) {
+	return cloudflare.WorkerScriptSettingsResponse{}, nil
+}
+func (m *MockCloudflareClient) GetWorkerWithDispatchNamespace(ctx context.Context, rc *cloudflare.ResourceContainer, scriptName string, dispatchNamespace string) (cloudflare.WorkerScriptResponse, error) {
+	return cloudflare.WorkerScriptResponse{}, nil
+}
+
+// Workers KV operations
+func (m *MockCloudflareClient) WriteWorkersKVEntry(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.WriteWorkersKVEntryParams) (cloudflare.Response, error) {
+	return cloudflare.Response{}, nil
+}
+func (m *MockCloudflareClient) WriteWorkersKVEntries(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.WriteWorkersKVEntriesParams) (cloudflare.Response, error) {
+	return cloudflare.Response{}, nil
+}
+func (m *MockCloudflareClient) DeleteWorkersKVEntries(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.DeleteWorkersKVEntriesParams) (cloudflare.Response, error) {
+	return cloudflare.Response{}, nil
+}
+
+// Workers Route operations
+func (m *MockCloudflareClient) CreateWorkerRoute(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateWorkerRouteParams) (cloudflare.WorkerRouteResponse, error) {
+	return cloudflare.WorkerRouteResponse{}, nil
+}
+func (m *MockCloudflareClient) GetWorkerRoute(ctx context.Context, rc *cloudflare.ResourceContainer, routeID string) (cloudflare.WorkerRouteResponse, error) {
+	return cloudflare.WorkerRouteResponse{}, nil
+}
+func (m *MockCloudflareClient) ListWorkerRoutes(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListWorkerRoutesParams) (cloudflare.WorkerRoutesResponse, error) {
+	return cloudflare.WorkerRoutesResponse{}, nil
+}
+func (m *MockCloudflareClient) UpdateWorkerRoute(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateWorkerRouteParams) (cloudflare.WorkerRouteResponse, error) {
+	return cloudflare.WorkerRouteResponse{}, nil
+}
+func (m *MockCloudflareClient) DeleteWorkerRoute(ctx context.Context, rc *cloudflare.ResourceContainer, routeID string) (cloudflare.WorkerRouteResponse, error) {
+	return cloudflare.WorkerRouteResponse{}, nil
+}
+
+// Workers Bindings operations
+func (m *MockCloudflareClient) ListWorkerBindings(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListWorkerBindingsParams) (cloudflare.WorkerBindingListResponse, error) {
+	return cloudflare.WorkerBindingListResponse{}, nil
+}
+
+// Workers Secrets operations
+func (m *MockCloudflareClient) SetWorkersSecret(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.SetWorkersSecretParams) (cloudflare.WorkersPutSecretResponse, error) {
+	return cloudflare.WorkersPutSecretResponse{}, nil
+}
+func (m *MockCloudflareClient) DeleteWorkersSecret(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.DeleteWorkersSecretParams) (cloudflare.Response, error) {
+	return cloudflare.Response{}, nil
+}
+func (m *MockCloudflareClient) ListWorkersSecrets(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListWorkersSecretsParams) (cloudflare.WorkersListSecretsResponse, error) {
+	return cloudflare.WorkersListSecretsResponse{}, nil
+}
+
+// Workers Tail operations
+func (m *MockCloudflareClient) StartWorkersTail(ctx context.Context, rc *cloudflare.ResourceContainer, scriptName string) (cloudflare.WorkersTail, error) {
+	return cloudflare.WorkersTail{}, nil
+}
+func (m *MockCloudflareClient) ListWorkersTail(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListWorkersTailParameters) (cloudflare.WorkersTail, error) {
+	return cloudflare.WorkersTail{}, nil
+}
+func (m *MockCloudflareClient) DeleteWorkersTail(ctx context.Context, rc *cloudflare.ResourceContainer, scriptName, tailID string) error {
+	return nil
+}
+
+// Workers For Platforms operations
+func (m *MockCloudflareClient) ListWorkersForPlatformsDispatchNamespaces(ctx context.Context, rc *cloudflare.ResourceContainer) (*cloudflare.ListWorkersForPlatformsDispatchNamespaceResponse, error) {
+	return &cloudflare.ListWorkersForPlatformsDispatchNamespaceResponse{}, nil
+}
+func (m *MockCloudflareClient) GetWorkersForPlatformsDispatchNamespace(ctx context.Context, rc *cloudflare.ResourceContainer, name string) (*cloudflare.GetWorkersForPlatformsDispatchNamespaceResponse, error) {
+	return &cloudflare.GetWorkersForPlatformsDispatchNamespaceResponse{}, nil
+}
+func (m *MockCloudflareClient) CreateWorkersForPlatformsDispatchNamespace(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateWorkersForPlatformsDispatchNamespaceParams) (*cloudflare.GetWorkersForPlatformsDispatchNamespaceResponse, error) {
+	return &cloudflare.GetWorkersForPlatformsDispatchNamespaceResponse{}, nil
+}
+func (m *MockCloudflareClient) DeleteWorkersForPlatformsDispatchNamespace(ctx context.Context, rc *cloudflare.ResourceContainer, name string) error {
+	return nil
+}
+
+// Workers Account Settings operations
+func (m *MockCloudflareClient) CreateWorkersAccountSettings(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateWorkersAccountSettingsParameters) (cloudflare.WorkersAccountSettings, error) {
+	return cloudflare.WorkersAccountSettings{}, nil
+}
+func (m *MockCloudflareClient) WorkersAccountSettings(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.WorkersAccountSettingsParameters) (cloudflare.WorkersAccountSettings, error) {
+	return cloudflare.WorkersAccountSettings{}, nil
+}
+
+// Access Application operations
+func (m *MockCloudflareClient) ListAccessApplications(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListAccessApplicationsParams) ([]cloudflare.AccessApplication, *cloudflare.ResultInfo, error) {
+	return []cloudflare.AccessApplication{}, &cloudflare.ResultInfo{}, nil
+}
+func (m *MockCloudflareClient) GetAccessApplication(ctx context.Context, rc *cloudflare.ResourceContainer, applicationID string) (cloudflare.AccessApplication, error) {
+	return cloudflare.AccessApplication{}, nil
+}
+func (m *MockCloudflareClient) CreateAccessApplication(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateAccessApplicationParams) (cloudflare.AccessApplication, error) {
+	return cloudflare.AccessApplication{}, nil
+}
+func (m *MockCloudflareClient) UpdateAccessApplication(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateAccessApplicationParams) (cloudflare.AccessApplication, error) {
+	return cloudflare.AccessApplication{}, nil
+}
+func (m *MockCloudflareClient) DeleteAccessApplication(ctx context.Context, rc *cloudflare.ResourceContainer, applicationID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) RevokeAccessApplicationTokens(ctx context.Context, rc *cloudflare.ResourceContainer, applicationID string) error {
+	return nil
+}
+
+// Device Posture Rule operations
+func (m *MockCloudflareClient) CreateDevicePostureIntegration(ctx context.Context, accountID string, integration cloudflare.DevicePostureIntegration) (cloudflare.DevicePostureIntegration, error) {
+	return cloudflare.DevicePostureIntegration{}, nil
+}
+func (m *MockCloudflareClient) UpdateDevicePostureIntegration(ctx context.Context, accountID string, integration cloudflare.DevicePostureIntegration) (cloudflare.DevicePostureIntegration, error) {
+	return cloudflare.DevicePostureIntegration{}, nil
+}
+func (m *MockCloudflareClient) DevicePostureIntegration(ctx context.Context, accountID, integrationID string) (cloudflare.DevicePostureIntegration, error) {
+	return cloudflare.DevicePostureIntegration{}, nil
+}
+func (m *MockCloudflareClient) DevicePostureIntegrations(ctx context.Context, accountID string) ([]cloudflare.DevicePostureIntegration, cloudflare.ResultInfo, error) {
+	return []cloudflare.DevicePostureIntegration{}, cloudflare.ResultInfo{}, nil
+}
+func (m *MockCloudflareClient) DeleteDevicePostureIntegration(ctx context.Context, accountID, ruleID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) DevicePostureRules(ctx context.Context, accountID string) ([]cloudflare.DevicePostureRule, cloudflare.ResultInfo, error) {
+	return []cloudflare.DevicePostureRule{}, cloudflare.ResultInfo{}, nil
+}
+func (m *MockCloudflareClient) DevicePostureRule(ctx context.Context, accountID, ruleID string) (cloudflare.DevicePostureRule, error) {
+	return cloudflare.DevicePostureRule{}, nil
+}
+func (m *MockCloudflareClient) CreateDevicePostureRule(ctx context.Context, accountID string, rule cloudflare.DevicePostureRule) (cloudflare.DevicePostureRule, error) {
+	return cloudflare.DevicePostureRule{}, nil
+}
+func (m *MockCloudflareClient) UpdateDevicePostureRule(ctx context.Context, accountID string, rule cloudflare.DevicePostureRule) (cloudflare.DevicePostureRule, error) {
+	return cloudflare.DevicePostureRule{}, nil
+}
+func (m *MockCloudflareClient) DeleteDevicePostureRule(ctx context.Context, accountID, ruleID string) error {
+	return nil
+}
+
+// Tunnel operations
+func (m *MockCloudflareClient) ListTunnels(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelListParams) ([]cloudflare.Tunnel, *cloudflare.ResultInfo, error) {
+	return []cloudflare.Tunnel{}, &cloudflare.ResultInfo{}, nil
+}
+func (m *MockCloudflareClient) GetTunnel(ctx context.Context, rc *cloudflare.ResourceContainer, tunnelID string) (cloudflare.Tunnel, error) {
+	return cloudflare.Tunnel{}, nil
+}
+func (m *MockCloudflareClient) CreateTunnel(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelCreateParams) (cloudflare.Tunnel, error) {
+	return cloudflare.Tunnel{}, nil
+}
+func (m *MockCloudflareClient) UpdateTunnel(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelUpdateParams) (cloudflare.Tunnel, error) {
+	return cloudflare.Tunnel{}, nil
+}
+func (m *MockCloudflareClient) UpdateTunnelConfiguration(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelConfigurationParams) (cloudflare.TunnelConfigurationResult, error) {
+	return cloudflare.TunnelConfigurationResult{}, nil
+}
+func (m *MockCloudflareClient) GetTunnelConfiguration(ctx context.Context, rc *cloudflare.ResourceContainer, tunnelID string) (cloudflare.TunnelConfigurationResult, error) {
+	return cloudflare.TunnelConfigurationResult{}, nil
+}
+func (m *MockCloudflareClient) ListTunnelConnections(ctx context.Context, rc *cloudflare.ResourceContainer, tunnelID string) ([]cloudflare.Connection, error) {
+	return []cloudflare.Connection{}, nil
+}
+func (m *MockCloudflareClient) DeleteTunnel(ctx context.Context, rc *cloudflare.ResourceContainer, tunnelID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) CleanupTunnelConnections(ctx context.Context, rc *cloudflare.ResourceContainer, tunnelID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) GetTunnelToken(ctx context.Context, rc *cloudflare.ResourceContainer, tunnelID string) (string, error) {
+	return "", nil
+}
+
+// Tunnel Routes operations
+func (m *MockCloudflareClient) ListTunnelRoutes(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelRoutesListParams) ([]cloudflare.TunnelRoute, error) {
+	return []cloudflare.TunnelRoute{}, nil
+}
+func (m *MockCloudflareClient) GetTunnelRouteForIP(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelRoutesForIPParams) (cloudflare.TunnelRoute, error) {
+	return cloudflare.TunnelRoute{}, nil
+}
+func (m *MockCloudflareClient) CreateTunnelRoute(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelRoutesCreateParams) (cloudflare.TunnelRoute, error) {
+	return cloudflare.TunnelRoute{}, nil
+}
+func (m *MockCloudflareClient) DeleteTunnelRoute(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelRoutesDeleteParams) error {
+	return nil
+}
+func (m *MockCloudflareClient) UpdateTunnelRoute(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelRoutesUpdateParams) (cloudflare.TunnelRoute, error) {
+	return cloudflare.TunnelRoute{}, nil
+}
+
+// Tunnel Virtual Networks operations
+func (m *MockCloudflareClient) ListTunnelVirtualNetworks(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelVirtualNetworksListParams) ([]cloudflare.TunnelVirtualNetwork, error) {
+	return []cloudflare.TunnelVirtualNetwork{}, nil
+}
+func (m *MockCloudflareClient) CreateTunnelVirtualNetwork(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelVirtualNetworkCreateParams) (cloudflare.TunnelVirtualNetwork, error) {
+	return cloudflare.TunnelVirtualNetwork{}, nil
+}
+func (m *MockCloudflareClient) DeleteTunnelVirtualNetwork(ctx context.Context, rc *cloudflare.ResourceContainer, vnetID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) UpdateTunnelVirtualNetwork(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.TunnelVirtualNetworkUpdateParams) (cloudflare.TunnelVirtualNetwork, error) {
+	return cloudflare.TunnelVirtualNetwork{}, nil
+}
+
+// Rulesets operations
+func (m *MockCloudflareClient) ListRulesets(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListRulesetsParams) ([]cloudflare.Ruleset, error) {
+	return []cloudflare.Ruleset{}, nil
+}
+func (m *MockCloudflareClient) GetRuleset(ctx context.Context, rc *cloudflare.ResourceContainer, rulesetID string) (cloudflare.Ruleset, error) {
+	return cloudflare.Ruleset{}, nil
+}
+func (m *MockCloudflareClient) CreateRuleset(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateRulesetParams) (cloudflare.Ruleset, error) {
+	return cloudflare.Ruleset{}, nil
+}
+func (m *MockCloudflareClient) DeleteRuleset(ctx context.Context, rc *cloudflare.ResourceContainer, rulesetID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) UpdateRuleset(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateRulesetParams) (cloudflare.Ruleset, error) {
+	return cloudflare.Ruleset{}, nil
+}
+func (m *MockCloudflareClient) DeleteRulesetRule(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.DeleteRulesetRuleParams) error {
+	return nil
+}
+func (m *MockCloudflareClient) GetEntrypointRuleset(ctx context.Context, rc *cloudflare.ResourceContainer, phase string) (cloudflare.Ruleset, error) {
+	return cloudflare.Ruleset{}, nil
+}
+func (m *MockCloudflareClient) UpdateEntrypointRuleset(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateEntrypointRulesetParams) (cloudflare.Ruleset, error) {
+	return cloudflare.Ruleset{}, nil
+}
+
+// Load Balancing operations
+func (m *MockCloudflareClient) CreateLoadBalancerPool(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateLoadBalancerPoolParams) (cloudflare.LoadBalancerPool, error) {
+	return cloudflare.LoadBalancerPool{}, nil
+}
+func (m *MockCloudflareClient) ListLoadBalancerPools(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListLoadBalancerPoolParams) ([]cloudflare.LoadBalancerPool, error) {
+	return []cloudflare.LoadBalancerPool{}, nil
+}
+func (m *MockCloudflareClient) GetLoadBalancerPool(ctx context.Context, rc *cloudflare.ResourceContainer, poolID string) (cloudflare.LoadBalancerPool, error) {
+	return cloudflare.LoadBalancerPool{}, nil
+}
+func (m *MockCloudflareClient) DeleteLoadBalancerPool(ctx context.Context, rc *cloudflare.ResourceContainer, poolID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) UpdateLoadBalancerPool(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateLoadBalancerPoolParams) (cloudflare.LoadBalancerPool, error) {
+	return cloudflare.LoadBalancerPool{}, nil
+}
+func (m *MockCloudflareClient) CreateLoadBalancerMonitor(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateLoadBalancerMonitorParams) (cloudflare.LoadBalancerMonitor, error) {
+	return cloudflare.LoadBalancerMonitor{}, nil
+}
+func (m *MockCloudflareClient) ListLoadBalancerMonitors(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListLoadBalancerMonitorParams) ([]cloudflare.LoadBalancerMonitor, error) {
+	return []cloudflare.LoadBalancerMonitor{}, nil
+}
+func (m *MockCloudflareClient) GetLoadBalancerMonitor(ctx context.Context, rc *cloudflare.ResourceContainer, monitorID string) (cloudflare.LoadBalancerMonitor, error) {
+	return cloudflare.LoadBalancerMonitor{}, nil
+}
+func (m *MockCloudflareClient) DeleteLoadBalancerMonitor(ctx context.Context, rc *cloudflare.ResourceContainer, monitorID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) UpdateLoadBalancerMonitor(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateLoadBalancerMonitorParams) (cloudflare.LoadBalancerMonitor, error) {
+	return cloudflare.LoadBalancerMonitor{}, nil
+}
+func (m *MockCloudflareClient) CreateLoadBalancer(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateLoadBalancerParams) (cloudflare.LoadBalancer, error) {
+	return cloudflare.LoadBalancer{}, nil
+}
+func (m *MockCloudflareClient) ListLoadBalancers(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListLoadBalancerParams) ([]cloudflare.LoadBalancer, error) {
+	return []cloudflare.LoadBalancer{}, nil
+}
+func (m *MockCloudflareClient) GetLoadBalancer(ctx context.Context, rc *cloudflare.ResourceContainer, loadbalancerID string) (cloudflare.LoadBalancer, error) {
+	return cloudflare.LoadBalancer{}, nil
+}
+func (m *MockCloudflareClient) DeleteLoadBalancer(ctx context.Context, rc *cloudflare.ResourceContainer, loadbalancerID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) UpdateLoadBalancer(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateLoadBalancerParams) (cloudflare.LoadBalancer, error) {
+	return cloudflare.LoadBalancer{}, nil
+}
+func (m *MockCloudflareClient) GetLoadBalancerPoolHealth(ctx context.Context, rc *cloudflare.ResourceContainer, poolID string) (cloudflare.LoadBalancerPoolHealth, error) {
+	return cloudflare.LoadBalancerPoolHealth{}, nil
+}
+
+// Custom Hostname operations
+func (m *MockCloudflareClient) CreateCustomHostname(ctx context.Context, zoneID string, ch cloudflare.CustomHostname) (*cloudflare.CustomHostnameResponse, error) {
+	return &cloudflare.CustomHostnameResponse{}, nil
+}
+func (m *MockCloudflareClient) CustomHostname(ctx context.Context, zoneID string, customHostnameID string) (cloudflare.CustomHostname, error) {
+	return cloudflare.CustomHostname{}, nil
+}
+func (m *MockCloudflareClient) CustomHostnames(ctx context.Context, zoneID string, page int, filter cloudflare.CustomHostname) ([]cloudflare.CustomHostname, cloudflare.ResultInfo, error) {
+	return []cloudflare.CustomHostname{}, cloudflare.ResultInfo{}, nil
+}
+func (m *MockCloudflareClient) CustomHostnameIDByName(ctx context.Context, zoneID string, hostname string) (string, error) {
+	return "", nil
+}
+func (m *MockCloudflareClient) UpdateCustomHostname(ctx context.Context, zoneID string, customHostnameID string, ch cloudflare.CustomHostname) (*cloudflare.CustomHostnameResponse, error) {
+	return &cloudflare.CustomHostnameResponse{}, nil
+}
+func (m *MockCloudflareClient) UpdateCustomHostnameSSL(ctx context.Context, zoneID string, customHostnameID string, ssl *cloudflare.CustomHostnameSSL) (*cloudflare.CustomHostnameResponse, error) {
+	return &cloudflare.CustomHostnameResponse{}, nil
+}
+func (m *MockCloudflareClient) DeleteCustomHostname(ctx context.Context, zoneID string, customHostnameID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) UpdateCustomHostnameFallbackOrigin(ctx context.Context, zoneID string, chfo cloudflare.CustomHostnameFallbackOrigin) (*cloudflare.CustomHostnameFallbackOriginResponse, error) {
+	return &cloudflare.CustomHostnameFallbackOriginResponse{}, nil
+}
+func (m *MockCloudflareClient) DeleteCustomHostnameFallbackOrigin(ctx context.Context, zoneID string) error {
+	return nil
+}
+func (m *MockCloudflareClient) CustomHostnameFallbackOrigin(ctx context.Context, zoneID string) (cloudflare.CustomHostnameFallbackOrigin, error) {
+	return cloudflare.CustomHostnameFallbackOrigin{}, nil
+}
+
+// SSL operations
+func (m *MockCloudflareClient) CreateSSL(ctx context.Context, zoneID string, options cloudflare.ZoneCustomSSLOptions) (cloudflare.ZoneCustomSSL, error) {
+	return cloudflare.ZoneCustomSSL{}, nil
+}
+func (m *MockCloudflareClient) ListSSL(ctx context.Context, zoneID string) ([]cloudflare.ZoneCustomSSL, error) {
+	return []cloudflare.ZoneCustomSSL{}, nil
+}
+func (m *MockCloudflareClient) SSLDetails(ctx context.Context, zoneID, certificateID string) (cloudflare.ZoneCustomSSL, error) {
+	return cloudflare.ZoneCustomSSL{}, nil
+}
+func (m *MockCloudflareClient) UpdateSSL(ctx context.Context, zoneID, certificateID string, options cloudflare.ZoneCustomSSLOptions) (cloudflare.ZoneCustomSSL, error) {
+	return cloudflare.ZoneCustomSSL{}, nil
+}
+func (m *MockCloudflareClient) ReprioritizeSSL(ctx context.Context, zoneID string, p []cloudflare.ZoneCustomSSLPriority) ([]cloudflare.ZoneCustomSSL, error) {
+	return []cloudflare.ZoneCustomSSL{}, nil
+}
+func (m *MockCloudflareClient) DeleteSSL(ctx context.Context, zoneID, certificateID string) error {
+	return nil
+}
+
+// Spectrum operations
+func (m *MockCloudflareClient) SpectrumApplications(ctx context.Context, zoneID string) ([]cloudflare.SpectrumApplication, error) {
+	return []cloudflare.SpectrumApplication{}, nil
+}
+func (m *MockCloudflareClient) SpectrumApplication(ctx context.Context, zoneID string, applicationID string) (cloudflare.SpectrumApplication, error) {
+	return cloudflare.SpectrumApplication{}, nil
+}
+func (m *MockCloudflareClient) CreateSpectrumApplication(ctx context.Context, zoneID string, appDetails cloudflare.SpectrumApplication) (cloudflare.SpectrumApplication, error) {
+	return cloudflare.SpectrumApplication{}, nil
+}
+func (m *MockCloudflareClient) UpdateSpectrumApplication(ctx context.Context, zoneID, appID string, appDetails cloudflare.SpectrumApplication) (cloudflare.SpectrumApplication, error) {
+	return cloudflare.SpectrumApplication{}, nil
+}
+func (m *MockCloudflareClient) DeleteSpectrumApplication(ctx context.Context, zoneID string, applicationID string) error {
+	return nil
+}
+
+// Cache Reserve operations
+func (m *MockCloudflareClient) GetCacheReserve(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.GetCacheReserveParams) (cloudflare.CacheReserve, error) {
+	return cloudflare.CacheReserve{}, nil
+}
+func (m *MockCloudflareClient) UpdateCacheReserve(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateCacheReserveParams) (cloudflare.CacheReserve, error) {
+	return cloudflare.CacheReserve{}, nil
+}
+
 func (m *MockCloudflareClient) Reset() {
 	m.CreateDNSRecordCalls = make([]CreateDNSRecordCall, 0)
 	m.UpdateDNSRecordCalls = make([]UpdateDNSRecordCall, 0)

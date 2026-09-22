@@ -38,6 +38,13 @@ type UniversalSSLParameters struct {
 type UniversalSSLObservation struct {
 	// Enabled indicates whether Universal SSL is enabled for this zone.
 	Enabled *bool `json:"enabled,omitempty"`
+
+	// CertificateCount is the number of Universal SSL certificates.
+	CertificateCount *int `json:"certificateCount,omitempty"`
+
+	// ValidationStatus is the validation status of the certificate
+	// (pending_validation, pending_deletion, timed_out, or active).
+	ValidationStatus *string `json:"validationStatus,omitempty"`
 }
 
 // UniversalSSLSpec defines the desired state of Universal SSL.

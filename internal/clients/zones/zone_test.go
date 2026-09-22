@@ -373,7 +373,7 @@ func TestUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := UpToDate(tc.args.zp, tc.args.z, tc.args.ozs)
+			got := UpToDate(tc.args.zp, tc.args.z, tc.args.ozs, nil)
 			if diff := cmp.Diff(tc.want.o, got); diff != "" {
 				t.Errorf("\n%s\nUpToDate(...): -want, +got:\n%s\n", tc.reason, diff)
 			}

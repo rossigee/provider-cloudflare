@@ -142,10 +142,18 @@ spec:
                 description: UniversalSSLObservation are the observable fields of
                   Universal SSL.
                 properties:
+                  certificateCount:
+                    description: CertificateCount is the number of Universal SSL certificates.
+                    type: integer
                   enabled:
                     description: Enabled indicates whether Universal SSL is enabled
                       for this zone.
                     type: boolean
+                  validationStatus:
+                    description: |-
+                      ValidationStatus is the validation status of the certificate
+                      (pending_validation, pending_deletion, timed_out, or active).
+                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.
