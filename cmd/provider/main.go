@@ -34,6 +34,8 @@ import (
 	loadbalancingv1beta1 "github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 	logpushv1beta1 "github.com/rossigee/provider-cloudflare/apis/logpush/v1beta1"
 	originsslv1beta1 "github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
+	pagerulesv1beta1 "github.com/rossigee/provider-cloudflare/apis/pagerules/v1beta1"
+	pagesv1beta1 "github.com/rossigee/provider-cloudflare/apis/pages/v1beta1"
 	r2v1beta1 "github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
 	rulesetsv1beta1 "github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
 	securityv1beta1 "github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
@@ -179,6 +181,10 @@ func main() {
 	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &firewallv1beta1.RuleList{}, *pollStateMetricInterval)), "Cannot register state metrics for FirewallRule")
 	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &firewallv1beta1.FilterList{}, *pollStateMetricInterval)), "Cannot register state metrics for Filter")
 	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &logpushv1beta1.JobList{}, *pollStateMetricInterval)), "Cannot register state metrics for LogpushJob")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &pagesv1beta1.ProjectList{}, *pollStateMetricInterval)), "Cannot register state metrics for PagesProject")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &pagesv1beta1.DeploymentList{}, *pollStateMetricInterval)), "Cannot register state metrics for PagesDeployment")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &pagesv1beta1.DomainList{}, *pollStateMetricInterval)), "Cannot register state metrics for PagesDomain")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &pagerulesv1beta1.PageRuleList{}, *pollStateMetricInterval)), "Cannot register state metrics for PageRule")
 
 	kingpin.FatalIfError(mgr.AddHealthzCheck("healthz", healthz.Ping), "Cannot add health check")
 	kingpin.FatalIfError(mgr.AddReadyzCheck("readyz", healthz.Ping), "Cannot add ready check")

@@ -1,0 +1,12 @@
+apiVersion: pages.cloudflare.m.crossplane.io/v1beta1
+kind: Deployment
+metadata:
+  namespace: default
+  name: my-pages-deployment
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    projectName: "my-static-site"
+    branch: "main"
+  providerConfigRef:
+    name: default
