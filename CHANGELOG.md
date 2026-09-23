@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.21.2] - 2026-09-23
+
+### Changed
+- **Publish as xpkg-only (multi-platform)**: Release now publishes the
+  Crossplane package (xpkg) directly via `crossplane xpkg push`, with
+  multi-platform metadata for `linux/amd64` and `linux/arm64`. This is the
+  current standardized pattern for Crossplane providers and avoids issues
+  with per-arch container image tagging. Image publishing is neutralized
+  via the Makefile overrides that other providers use (PR #13).
+
+### Fixed
+- **Regenerated deepcopy methods**: `zz_generated.deepcopy.go` files for
+  Pages and Page Rules were regenerated with controller-gen to use plain
+  (non-aliased) `k8s.io/apimachinery/pkg/runtime` imports. Fixes the
+  `check-diff` CI step.
+
 ## [v0.21.1] - 2026-09-23
 
 ### Fixed
