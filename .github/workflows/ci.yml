@@ -218,12 +218,11 @@ jobs:
           # Build binary
           make build
           echo "✅ Binary build successful"
-          
-          # Build Docker image locally (without push)
-          make docker.build
-          echo "✅ Docker image build successful"
-          
+
           # Build Crossplane package locally (without push)
+          # NOTE: We do NOT build the container image here. Publishing is
+          # image-neutralized (see Makefile) in favor of `crossplane xpkg push`,
+          # which is the modern Crossplane provider distribution mechanism.
           make xpkg.build
           echo "✅ Crossplane package build successful"
           
