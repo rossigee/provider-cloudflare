@@ -287,3 +287,13 @@ benchmark.ci: generate
 	@mkdir -p .benchmarks
 	@$(GO) test -bench=. -benchmem ./internal/clients/benchmarks/ | tee .benchmarks/ci-$(shell date +%Y%m%d-%H%M%S).txt
 	@echo "Benchmark results saved for CI analysis"
+# xpkg-only publishing override + img neutralization for ghcr (standardized)
+xpkg.release.publish.ghcr.io/rossigee.provider-cloudflare:
+	@$(foreach p,$(XPKG_LINUX_PLATFORMS),$(MAKE) xpkg.build.provider-cloudflare PLATFORM=$(p) || exit 1;)
+	@$(CROSSPLANE_CLI) xpkg push \
+		$(foreach p,$(XPKG_LINUX_PLATFORMS),--package-files $(XPKG_OUTPUT_DIR)/$(p)/provider-cloudflare-$(VERSION).xpkg ) \
+		ghcr.io/rossigee/provider-cloudflare:$(VERSION)
+	@$(OK) Pushed package ghcr.io/rossigee/provider-cloudflare:$(VERSION)
+
+XPKG_REG_ORGS ?= ghcr.io/rossigee
+img.release.publish: ; @echo "img.release neutralized for xpkg-only pattern"
