@@ -296,4 +296,7 @@ xpkg.release.publish.ghcr.io/rossigee.provider-cloudflare:
 	@$(OK) Pushed package ghcr.io/rossigee/provider-cloudflare:$(VERSION)
 
 XPKG_REG_ORGS ?= ghcr.io/rossigee
-img.release.publish: ; @echo "img.release neutralized for xpkg-only pattern"
+
+# Neutralize plain image publish for ghcr (xpkg uses same ref; plain push would clobber package.yaml)
+img.release.publish.ghcr.io/rossigee.provider-cloudflare:
+	@:
