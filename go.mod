@@ -120,4 +120,4 @@ replace golang.org/x/net v0.46.0 => golang.org/x/net v0.33.0
 
 replace github.com/crossplane/crossplane-runtime/v2 => github.com/rossigee/crossplane-runtime/v2 v2.5.0
 
-replace github.com/crossplane/crossplane/apis/v2 => github.com/rossigee/crossplane/apis/v2 v2.0.0-20260823052155-23396e2cece7
+replace github.com/crossplane/crossplane/apis/v2 => github.com/rossigee/crossplane/apis/v2 v2.5.0-rc.0.0.20260923113947-5fc6b7aa10a3
