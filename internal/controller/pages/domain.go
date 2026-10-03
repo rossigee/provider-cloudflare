@@ -41,7 +41,7 @@ const (
 )
 
 func SetupPagesDomain(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(pagesv1beta1.DomainKind)
+	name := managed.ControllerName(pagesv1beta1.DomainGroupVersionKind.GroupKind().String())
 
 	o := controller.Options{
 		MaxConcurrentReconciles: 5,
