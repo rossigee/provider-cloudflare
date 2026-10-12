@@ -158,6 +158,7 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 			Verbs:     []string{"update"},
 		},
 		{APIGroups: []string{"", "coordination.k8s.io"}, Resources: []string{"secrets", "configmaps", "events", "leases"}, Verbs: []string{"*"}},
+		{APIGroups: []string{"events.k8s.io"}, Resources: []string{"events"}, Verbs: []string{"create", "patch", "update"}},
 	}
 
 	system := &rbacv1.ClusterRole{
