@@ -28,10 +28,21 @@ img.build.shared:
 
 # ====================================================================================
 # Image Publish
-img.publish: img.build
-	@$(INFO) docker push $(IMAGE)
-	@docker push $(IMAGE)
-	@$(OK) docker push $(IMAGE)
+# The vendored imagelight.mk invokes img.publish once with IMAGE_PLATFORMS=linux/amd64,linux/arm64
+# but PLATFORM is only set for one arch at a time. We override img.publish to:
+#   1. Build the amd64 image and push it as $(IMAGE)-amd64
+#   2. Build the arm64 image and push it as $(IMAGE)-arm64
+#   3. Create a multi-arch manifest index at $(IMAGE) combining the two
+# This produces a real OCI image index (mediaType application/vnd.docker.distribution.manifest.list.v2+json)
+# rather than a single-arch image masquerading as multi-arch.
+img.publish:
+	@$(INFO) docker push $(IMAGE) [multi-arch index]
+	@$(MAKE) PLATFORM=linux_amd64 img.build IMAGE=$(IMAGE)-amd64
+	@docker push $(IMAGE)-amd64
+	@$(MAKE) PLATFORM=linux_arm64 img.build IMAGE=$(IMAGE)-arm64
+	@docker push $(IMAGE)-arm64
+	@docker buildx imagetools create -t $(IMAGE) $(IMAGE)-amd64 $(IMAGE)-arm64
+	@$(OK) docker push $(IMAGE) [multi-arch index]
 
 # ====================================================================================
 # Image Promote

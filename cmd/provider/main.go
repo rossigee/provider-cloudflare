@@ -34,6 +34,8 @@ import (
 	loadbalancingv1beta1 "github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 	logpushv1beta1 "github.com/rossigee/provider-cloudflare/apis/logpush/v1beta1"
 	originsslv1beta1 "github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
+	pagerulesv1beta1 "github.com/rossigee/provider-cloudflare/apis/pagerules/v1beta1"
+	pagesv1beta1 "github.com/rossigee/provider-cloudflare/apis/pages/v1beta1"
 	r2v1beta1 "github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
 	rulesetsv1beta1 "github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
 	securityv1beta1 "github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
@@ -70,6 +72,8 @@ func main() {
 		pollStateMetricInterval  = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
 		metricsBindAddress       = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
 		enableManagementPolicies = app.Flag("enable-management-policies", "Enable support for management policies.").Default("true").OverrideDefaultFromEnvar("ENABLE_MANAGEMENT_POLICIES").Bool()
+		kubeAPIQPS               = app.Flag("kube-api-qps", "Kubernetes API server queries per second.").Default("50").Float()
+		kubeAPIBurst             = app.Flag("kube-api-burst", "Kubernetes API server burst.").Default("100").Int()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -98,7 +102,9 @@ func main() {
 		"leader-election", *leaderElection,
 		"leader-election-id", "crossplane-leader-election-provider-cloudflare",
 		"management-policies", *enableManagementPolicies,
-		"debug-mode", *debug)
+		"debug-mode", *debug,
+		"kube-api-qps", *kubeAPIQPS,
+		"kube-api-burst", *kubeAPIBurst)
 
 	if *enableManagementPolicies {
 		log.Info("Alpha feature enabled", "flag", features.EnableAlphaManagementPolicies)
@@ -110,6 +116,8 @@ func main() {
 
 	cfg, err := ctrl.GetConfig()
 	kingpin.FatalIfError(err, "Cannot get API server rest config")
+	cfg.QPS = float32(*kubeAPIQPS)
+	cfg.Burst = *kubeAPIBurst
 
 	sync := *syncPeriod
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
@@ -173,6 +181,10 @@ func main() {
 	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &firewallv1beta1.RuleList{}, *pollStateMetricInterval)), "Cannot register state metrics for FirewallRule")
 	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &firewallv1beta1.FilterList{}, *pollStateMetricInterval)), "Cannot register state metrics for Filter")
 	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &logpushv1beta1.JobList{}, *pollStateMetricInterval)), "Cannot register state metrics for LogpushJob")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &pagesv1beta1.ProjectList{}, *pollStateMetricInterval)), "Cannot register state metrics for PagesProject")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &pagesv1beta1.DeploymentList{}, *pollStateMetricInterval)), "Cannot register state metrics for PagesDeployment")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &pagesv1beta1.DomainList{}, *pollStateMetricInterval)), "Cannot register state metrics for PagesDomain")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &pagerulesv1beta1.PageRuleList{}, *pollStateMetricInterval)), "Cannot register state metrics for PageRule")
 
 	kingpin.FatalIfError(mgr.AddHealthzCheck("healthz", healthz.Ping), "Cannot add health check")
 	kingpin.FatalIfError(mgr.AddReadyzCheck("readyz", healthz.Ping), "Cannot add ready check")

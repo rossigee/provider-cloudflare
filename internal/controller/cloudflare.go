@@ -28,6 +28,8 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/controller/emailrouting"
 	"github.com/rossigee/provider-cloudflare/internal/controller/loadbalancing"
 	"github.com/rossigee/provider-cloudflare/internal/controller/originssl"
+	"github.com/rossigee/provider-cloudflare/internal/controller/pagerules"
+	"github.com/rossigee/provider-cloudflare/internal/controller/pages"
 	"github.com/rossigee/provider-cloudflare/internal/controller/providerconfig"
 	"github.com/rossigee/provider-cloudflare/internal/controller/r2"
 	"github.com/rossigee/provider-cloudflare/internal/controller/rulesets"
@@ -72,6 +74,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 		access.Setup,
 		tunnel.Setup,
 		device.Setup,
+		pages.Setup,
+		pagerules.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err
@@ -108,6 +112,8 @@ func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimi
 		access.Setup,
 		tunnel.Setup,
 		device.Setup,
+		pages.Setup,
+		pagerules.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err
@@ -144,8 +150,10 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 		{APIGroups: []string{"tunnel.cloudflare.m.crossplane.io"}, Resources: []string{"tunnels", "tunnels/status"}, Verbs: []string{"get", "list", "watch", "update", "patch", "create"}},
 		{APIGroups: []string{"workers.cloudflare.m.crossplane.io"}, Resources: []string{"crontriggers", "crontriggers/status", "domains", "domains/status", "kvnamespaces", "kvnamespaces/status", "routes", "routes/status", "scripts", "scripts/status", "subdomains", "subdomains/status"}, Verbs: []string{"get", "list", "watch", "update", "patch", "create"}},
 		{APIGroups: []string{"zone.cloudflare.m.crossplane.io"}, Resources: []string{"zones", "zones/status"}, Verbs: []string{"get", "list", "watch", "update", "patch", "create"}},
+		{APIGroups: []string{"pages.cloudflare.m.crossplane.io"}, Resources: []string{"projects", "projects/status", "deployments", "deployments/status", "domains", "domains/status"}, Verbs: []string{"get", "list", "watch", "update", "patch", "create"}},
+		{APIGroups: []string{"pagerules.cloudflare.m.crossplane.io"}, Resources: []string{"pagerules", "pagerules/status"}, Verbs: []string{"get", "list", "watch", "update", "patch", "create"}},
 		{
-			APIGroups: []string{"access.cloudflare.m.crossplane.io", "cache.cloudflare.m.crossplane.io", "cloudflare.m.crossplane.io", "device.cloudflare.m.crossplane.io", "dns.cloudflare.m.crossplane.io", "emailrouting.cloudflare.m.crossplane.io", "firewall.cloudflare.m.crossplane.io", "loadbalancing.cloudflare.m.crossplane.io", "logpush.cloudflare.m.crossplane.io", "originssl.cloudflare.m.crossplane.io", "r2.cloudflare.m.crossplane.io", "rulesets.cloudflare.m.crossplane.io", "security.cloudflare.m.crossplane.io", "spectrum.cloudflare.m.crossplane.io", "ssl.cloudflare.m.crossplane.io", "sslsaas.cloudflare.m.crossplane.io", "transform.cloudflare.m.crossplane.io", "tunnel.cloudflare.m.crossplane.io", "workers.cloudflare.m.crossplane.io", "zone.cloudflare.m.crossplane.io"},
+			APIGroups: []string{"access.cloudflare.m.crossplane.io", "cache.cloudflare.m.crossplane.io", "cloudflare.m.crossplane.io", "device.cloudflare.m.crossplane.io", "dns.cloudflare.m.crossplane.io", "emailrouting.cloudflare.m.crossplane.io", "firewall.cloudflare.m.crossplane.io", "loadbalancing.cloudflare.m.crossplane.io", "logpush.cloudflare.m.crossplane.io", "originssl.cloudflare.m.crossplane.io", "pages.cloudflare.m.crossplane.io", "pagerules.cloudflare.m.crossplane.io", "r2.cloudflare.m.crossplane.io", "rulesets.cloudflare.m.crossplane.io", "security.cloudflare.m.crossplane.io", "spectrum.cloudflare.m.crossplane.io", "ssl.cloudflare.m.crossplane.io", "sslsaas.cloudflare.m.crossplane.io", "transform.cloudflare.m.crossplane.io", "tunnel.cloudflare.m.crossplane.io", "workers.cloudflare.m.crossplane.io", "zone.cloudflare.m.crossplane.io"},
 			Resources: []string{"*/finalizers"},
 			Verbs:     []string{"update"},
 		},

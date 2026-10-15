@@ -27,6 +27,8 @@ import (
 	loadbalancingv1beta1 "github.com/rossigee/provider-cloudflare/apis/loadbalancing/v1beta1"
 	logpushv1beta1 "github.com/rossigee/provider-cloudflare/apis/logpush/v1beta1"
 	originsslv1beta1 "github.com/rossigee/provider-cloudflare/apis/originssl/v1beta1"
+	pagerulesv1beta1 "github.com/rossigee/provider-cloudflare/apis/pagerules/v1beta1"
+	pagesv1beta1 "github.com/rossigee/provider-cloudflare/apis/pages/v1beta1"
 	r2v1beta1 "github.com/rossigee/provider-cloudflare/apis/r2/v1beta1"
 	rulesetsv1beta1 "github.com/rossigee/provider-cloudflare/apis/rulesets/v1beta1"
 	securityv1beta1 "github.com/rossigee/provider-cloudflare/apis/security/v1beta1"
@@ -67,6 +69,8 @@ func init() {
 		accessv1beta1.SchemeBuilder.AddToScheme,
 		tunnelv1beta1.SchemeBuilder.AddToScheme,
 		devicev1beta1.SchemeBuilder.AddToScheme,
+		pagesv1beta1.SchemeBuilder.AddToScheme,
+		pagerulesv1beta1.SchemeBuilder.AddToScheme,
 	)
 }
 
