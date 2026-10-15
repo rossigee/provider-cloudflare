@@ -31,8 +31,10 @@ import (
 
 // MockUniversalSSLAPI implements the UniversalSSLAPI interface for testing
 type MockUniversalSSLAPI struct {
-	MockUniversalSSLSettingDetails func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error)
-	MockEditUniversalSSLSetting    func(ctx context.Context, zoneID string, setting cloudflare.UniversalSSLSetting) (cloudflare.UniversalSSLSetting, error)
+	MockUniversalSSLSettingDetails                        func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error)
+	MockEditUniversalSSLSetting                           func(ctx context.Context, zoneID string, setting cloudflare.UniversalSSLSetting) (cloudflare.UniversalSSLSetting, error)
+	MockUniversalSSLVerificationDetails                   func(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error)
+	MockUpdateUniversalSSLCertificatePackValidationMethod func(ctx context.Context, zoneID string, certPackUUID string, setting cloudflare.UniversalSSLCertificatePackValidationMethodSetting) (cloudflare.UniversalSSLCertificatePackValidationMethodSetting, error)
 }
 
 func (m *MockUniversalSSLAPI) UniversalSSLSettingDetails(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error) {
@@ -45,6 +47,20 @@ func (m *MockUniversalSSLAPI) UniversalSSLSettingDetails(ctx context.Context, zo
 func (m *MockUniversalSSLAPI) EditUniversalSSLSetting(ctx context.Context, zoneID string, setting cloudflare.UniversalSSLSetting) (cloudflare.UniversalSSLSetting, error) {
 	if m.MockEditUniversalSSLSetting != nil {
 		return m.MockEditUniversalSSLSetting(ctx, zoneID, setting)
+	}
+	return setting, nil
+}
+
+func (m *MockUniversalSSLAPI) UniversalSSLVerificationDetails(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error) {
+	if m.MockUniversalSSLVerificationDetails != nil {
+		return m.MockUniversalSSLVerificationDetails(ctx, zoneID)
+	}
+	return []cloudflare.UniversalSSLVerificationDetails{}, nil
+}
+
+func (m *MockUniversalSSLAPI) UpdateUniversalSSLCertificatePackValidationMethod(ctx context.Context, zoneID string, certPackUUID string, setting cloudflare.UniversalSSLCertificatePackValidationMethodSetting) (cloudflare.UniversalSSLCertificatePackValidationMethodSetting, error) {
+	if m.MockUpdateUniversalSSLCertificatePackValidationMethod != nil {
+		return m.MockUpdateUniversalSSLCertificatePackValidationMethod(ctx, zoneID, certPackUUID, setting)
 	}
 	return setting, nil
 }

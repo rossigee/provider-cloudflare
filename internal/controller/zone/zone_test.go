@@ -59,6 +59,9 @@ func withPlan(sValue *string) zoneModifier {
 func withType(typ *string) zoneModifier {
 	return func(r *zonev1beta1.Zone) { r.Spec.ForProvider.Type = typ }
 }
+func withDNSSECEnabled(enabled *bool) zoneModifier {
+	return func(r *zonev1beta1.Zone) { r.Spec.ForProvider.DNSSECEnabled = enabled }
+}
 
 func zone(m ...zoneModifier) *zonev1beta1.Zone {
 	cr := &zonev1beta1.Zone{}
@@ -254,6 +257,9 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
+					MockZoneDNSSECSetting: func(ctx context.Context, zoneID string) (cloudflare.ZoneDNSSEC, error) {
+						return cloudflare.ZoneDNSSEC{Status: "active"}, nil
+					},
 				},
 			},
 			args: args{
@@ -264,6 +270,7 @@ func TestObserve(t *testing.T) {
 					withPaused(ptr.To(false)),
 					withAccount(ptr.To("a1234")),
 					withPlan(ptr.To("a1235")),
+					withDNSSECEnabled(ptr.To(true)),
 				),
 			},
 			want: want{
@@ -290,6 +297,9 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
+					MockZoneDNSSECSetting: func(ctx context.Context, zoneID string) (cloudflare.ZoneDNSSEC, error) {
+						return cloudflare.ZoneDNSSEC{Status: "active"}, nil
+					},
 				},
 			},
 			args: args{
@@ -298,6 +308,7 @@ func TestObserve(t *testing.T) {
 					withPaused(ptr.To(false)),
 					withAccount(ptr.To("a1234")),
 					withPlan(ptr.To("a1235")),
+					withDNSSECEnabled(ptr.To(true)),
 				),
 			},
 			want: want{
@@ -324,6 +335,9 @@ func TestObserve(t *testing.T) {
 							},
 						}, nil
 					},
+					MockZoneDNSSECSetting: func(ctx context.Context, zoneID string) (cloudflare.ZoneDNSSEC, error) {
+						return cloudflare.ZoneDNSSEC{Status: "active"}, nil
+					},
 				},
 			},
 			args: args{
@@ -332,6 +346,7 @@ func TestObserve(t *testing.T) {
 					withPaused(ptr.To(true)),
 					withAccount(ptr.To("a1234")),
 					withPlan(ptr.To("a1235")),
+					withDNSSECEnabled(ptr.To(true)),
 				),
 			},
 			want: want{

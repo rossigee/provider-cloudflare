@@ -30,6 +30,8 @@ import (
 type UniversalSSLAPI interface {
 	UniversalSSLSettingDetails(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error)
 	EditUniversalSSLSetting(ctx context.Context, zoneID string, setting cloudflare.UniversalSSLSetting) (cloudflare.UniversalSSLSetting, error)
+	UniversalSSLVerificationDetails(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error)
+	UpdateUniversalSSLCertificatePackValidationMethod(ctx context.Context, zoneID string, certPackUUID string, setting cloudflare.UniversalSSLCertificatePackValidationMethodSetting) (cloudflare.UniversalSSLCertificatePackValidationMethodSetting, error)
 }
 
 // CloudflareUniversalSSLClient is a Cloudflare API client for Universal SSL settings.
@@ -42,7 +44,7 @@ func NewClient(client UniversalSSLAPI) *CloudflareUniversalSSLClient {
 	return &CloudflareUniversalSSLClient{client: client}
 }
 
-// Get retrieves Universal SSL settings for a zone.
+// Get retrieves Universal SSL settings for a zone, including verification details.
 func (c *CloudflareUniversalSSLClient) Get(ctx context.Context, zoneID string) (*v1beta1.UniversalSSLObservation, error) {
 	settings, err := c.client.UniversalSSLSettingDetails(ctx, zoneID)
 	if err != nil {
@@ -52,7 +54,17 @@ func (c *CloudflareUniversalSSLClient) Get(ctx context.Context, zoneID string) (
 		return nil, errors.Wrap(err, "cannot get universal ssl settings")
 	}
 
-	return convertUniversalSSLToObservation(settings), nil
+	obs := convertUniversalSSLToObservation(settings)
+
+	// Enrich observation with verification details (best-effort).
+	if details, err := c.client.UniversalSSLVerificationDetails(ctx, zoneID); err == nil && len(details) > 0 {
+		count := len(details)
+		obs.CertificateCount = &count
+		status := details[0].CertificateStatus
+		obs.ValidationStatus = &status
+	}
+
+	return obs, nil
 }
 
 // Update updates Universal SSL settings for a zone.

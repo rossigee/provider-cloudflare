@@ -370,6 +370,13 @@ type ZoneParameters struct {
 	// +immutable
 	// +optional
 	Type *string `json:"type,omitempty"`
+
+	// DNSSECEnabled enables or disables DNSSEC for this zone.
+	// When true, the provider will enable DNSSEC via the Cloudflare API.
+	// When false, the provider will disable (delete) DNSSEC.
+	// When unset, the current remote state is late-initialized and left alone.
+	// +optional
+	DNSSECEnabled *bool `json:"dnssecEnabled,omitempty"`
 }
 
 // ZoneObservation are the observable fields of a Zone.
@@ -396,6 +403,23 @@ type ZoneObservation struct {
 	// ModifiedOn indicates when this zone was modified
 	// on Cloudflare.
 	ModifiedOn *metav1.Time `json:"modifiedOn,omitempty"`
+
+	// DNSSECStatus is the status of DNSSEC for this zone
+	// (active, pending, disabled, or unavailable).
+	DNSSECStatus string `json:"dnssecStatus,omitempty"`
+
+	// DNSSECEnabled indicates whether DNSSEC is currently enabled
+	// for this zone (true when status is active or pending).
+	DNSSECEnabled *bool `json:"dnssecEnabled,omitempty"`
+
+	// DNSSECDS is the DS record content for DNSSEC.
+	DNSSECDS string `json:"dnssecDS,omitempty"`
+
+	// DNSSECKeyTag is the DNSSEC key tag.
+	DNSSECKeyTag int `json:"dnssecKeyTag,omitempty"`
+
+	// DNSSECAlgorithm is the DNSSEC algorithm.
+	DNSSECAlgorithm string `json:"dnssecAlgorithm,omitempty"`
 }
 
 // A ZoneSpec defines the desired state of a Zone.

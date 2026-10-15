@@ -49,6 +49,7 @@ const (
 	errZoneCreation    = "cannot create zone"
 	errZoneUpdate      = "cannot update zone"
 	errZoneDeletion    = "cannot delete zone"
+	errZoneDNSSEC      = "cannot observe DNSSEC"
 
 	maxConcurrency = 5
 
@@ -153,6 +154,19 @@ func (e *external) Observe(ctx context.Context,
 
 	cr.Status.AtProvider = zones.GenerateObservation(z)
 
+	// Observe DNSSEC state.
+	dnssecEnabled, dnssecStatus, dnssecDS, dnssecKeyTag, dnssecAlgorithm, err :=
+		zones.ObserveDNSSEC(ctx, e.client, zid)
+	if err != nil {
+		return managed.ExternalObservation{},
+			errors.Wrap(err, errZoneDNSSEC)
+	}
+	cr.Status.AtProvider.DNSSECStatus = dnssecStatus
+	cr.Status.AtProvider.DNSSECEnabled = dnssecEnabled
+	cr.Status.AtProvider.DNSSECDS = dnssecDS
+	cr.Status.AtProvider.DNSSECKeyTag = dnssecKeyTag
+	cr.Status.AtProvider.DNSSECAlgorithm = dnssecAlgorithm
+
 	if cr.Status.AtProvider.Status == zoneStatusActive {
 		cr.Status.SetConditions(xpv1.Available())
 	} else {
@@ -165,10 +179,15 @@ func (e *external) Observe(ctx context.Context,
 			errors.Wrap(err, errZoneObservation)
 	}
 
+	lateInit := zones.LateInitialize(&cr.Spec.ForProvider, z, observedSettings)
+	if zones.LateInitializeDNSSEC(&cr.Spec.ForProvider, dnssecEnabled) {
+		lateInit = true
+	}
+
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceLateInitialized: zones.LateInitialize(&cr.Spec.ForProvider, z, observedSettings),
-		ResourceUpToDate:        zones.UpToDate(&cr.Spec.ForProvider, z, observedSettings),
+		ResourceLateInitialized: lateInit,
+		ResourceUpToDate:        zones.UpToDate(&cr.Spec.ForProvider, z, observedSettings, dnssecEnabled),
 	}, nil
 }
 

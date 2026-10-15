@@ -32,6 +32,8 @@ type RateLimitAPI interface {
 	CreateRateLimit(ctx context.Context, zoneID string, limit cloudflare.RateLimit) (cloudflare.RateLimit, error)
 	UpdateRateLimit(ctx context.Context, zoneID, limitID string, limit cloudflare.RateLimit) (cloudflare.RateLimit, error)
 	DeleteRateLimit(ctx context.Context, zoneID, limitID string) error
+	ListRateLimits(ctx context.Context, zoneID string, pageOpts cloudflare.PaginationOptions) ([]cloudflare.RateLimit, cloudflare.ResultInfo, error)
+	ListAllRateLimits(ctx context.Context, zoneID string) ([]cloudflare.RateLimit, error)
 }
 
 // CloudflareRateLimitClient is a Cloudflare API client for Rate Limits.

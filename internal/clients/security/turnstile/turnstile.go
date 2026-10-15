@@ -30,8 +30,10 @@ import (
 // TurnstileAPI defines the interface for Turnstile operations
 type TurnstileAPI interface {
 	CreateTurnstileWidget(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateTurnstileWidgetParams) (cloudflare.TurnstileWidget, error)
+	ListTurnstileWidgets(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListTurnstileWidgetParams) ([]cloudflare.TurnstileWidget, *cloudflare.ResultInfo, error)
 	GetTurnstileWidget(ctx context.Context, rc *cloudflare.ResourceContainer, siteKey string) (cloudflare.TurnstileWidget, error)
 	UpdateTurnstileWidget(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateTurnstileWidgetParams) (cloudflare.TurnstileWidget, error)
+	RotateTurnstileWidget(ctx context.Context, rc *cloudflare.ResourceContainer, param cloudflare.RotateTurnstileWidgetParams) (cloudflare.TurnstileWidget, error)
 	DeleteTurnstileWidget(ctx context.Context, rc *cloudflare.ResourceContainer, siteKey string) error
 }
 

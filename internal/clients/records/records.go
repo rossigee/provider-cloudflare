@@ -41,6 +41,9 @@ type Client interface {
 	UpdateDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error)
 	GetDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error)
 	DeleteDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error
+	ListDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListDNSRecordsParams) ([]cloudflare.DNSRecord, *cloudflare.ResultInfo, error)
+	ExportDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ExportDNSRecordsParams) (string, error)
+	ImportDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ImportDNSRecordsParams) error
 }
 
 // NewClient returns a new Cloudflare API client for working with DNS Records.
