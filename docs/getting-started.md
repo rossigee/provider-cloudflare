@@ -7,7 +7,7 @@ Guide to getting started with the Cloudflare provider.
 Install the Cloudflare provider:
 
 ```bash
-kubectl crossplane install provider ghcr.io/rossigee/provider-cloudflare:v0.20.1
+kubectl crossplane install provider ghcr.io/rossigee/provider-cloudflare:v0.21.0
 ```
 
 ## Prerequisites

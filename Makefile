@@ -17,8 +17,8 @@ PLATFORMS ?= linux_amd64 linux_arm64
 -include build/makelib/output.mk
 
 # Setup Go
-GO_REQUIRED_VERSION ?= 1.27.1
-GOLANGCILINT_VERSION ?= 2.13.2
+GO_REQUIRED_VERSION ?= 1.27.2
+GOLANGCILINT_VERSION ?= 2.14.0
 NPROCS ?= 1
 GO_TEST_PARALLEL := $(shell echo $$(( $(NPROCS) / 2 )))
 GO_STATIC_PACKAGES = $(GO_PROJECT)/cmd/provider
@@ -292,3 +292,16 @@ benchmark.ci: generate
 	@mkdir -p .benchmarks
 	@$(GO) test -bench=. -benchmem ./internal/clients/benchmarks/ | tee .benchmarks/ci-$(shell date +%Y%m%d-%H%M%S).txt
 	@echo "Benchmark results saved for CI analysis"
+# xpkg-only publishing override + img neutralization for ghcr (standardized)
+xpkg.release.publish.ghcr.io/rossigee.provider-cloudflare:
+	@$(foreach p,$(XPKG_LINUX_PLATFORMS),$(MAKE) xpkg.build.provider-cloudflare PLATFORM=$(p) || exit 1;)
+	@$(CROSSPLANE_CLI) xpkg push \
+		$(foreach p,$(XPKG_LINUX_PLATFORMS),--package-files $(XPKG_OUTPUT_DIR)/$(p)/provider-cloudflare-$(VERSION).xpkg ) \
+		ghcr.io/rossigee/provider-cloudflare:$(VERSION)
+	@$(OK) Pushed package ghcr.io/rossigee/provider-cloudflare:$(VERSION)
+
+XPKG_REG_ORGS ?= ghcr.io/rossigee
+
+# Neutralize plain image publish for ghcr (xpkg uses same ref; plain push would clobber package.yaml)
+img.release.publish.ghcr.io/rossigee.provider-cloudflare:
+	@:
