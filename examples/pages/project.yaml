@@ -1,0 +1,20 @@
+apiVersion: pages.cloudflare.m.crossplane.io/v1beta1
+kind: Project
+metadata:
+  namespace: default
+  name: my-pages-project
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    name: "my-static-site"
+    productionBranch: "main"
+    buildCommand: "npm run build"
+    destinationDir: "dist"
+    rootDir: "/"
+    environmentVariables:
+      NODE_ENV: "production"
+    gitRepository:
+      url: "https://github.com/your-org/my-site.git"
+      branch: "main"
+  providerConfigRef:
+    name: default

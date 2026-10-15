@@ -47,7 +47,7 @@ const (
 
 // SetupRule adds a controller that reconciles Rule managed resources.
 func SetupRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(v1beta1.RuleKind)
+	name := managed.ControllerName(v1beta1.RuleGroupVersionKind.GroupKind().String())
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.RuleGroupVersionKind),

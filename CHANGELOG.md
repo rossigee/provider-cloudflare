@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.21.2] - 2026-09-23
+
+### Changed
+- **Publish as xpkg-only (multi-platform)**: Release now publishes the
+  Crossplane package (xpkg) directly via `crossplane xpkg push`, with
+  multi-platform metadata for `linux/amd64` and `linux/arm64`. This is the
+  current standardized pattern for Crossplane providers and avoids issues
+  with per-arch container image tagging. Image publishing is neutralized
+  via the Makefile overrides that other providers use (PR #13).
+
+### Fixed
+- **Regenerated deepcopy methods**: `zz_generated.deepcopy.go` files for
+  Pages and Page Rules were regenerated with controller-gen to use plain
+  (non-aliased) `k8s.io/apimachinery/pkg/runtime` imports. Fixes the
+  `check-diff` CI step.
+
+## [v0.21.1] - 2026-09-23
+
+### Fixed
+- **Multi-arch manifest**: Fixed image publish to produce a real multi-arch OCI index
+  for `linux/amd64` and `linux/arm64`. The v0.21.0 release shipped a single-arch manifest.
+  `cluster/images/provider-cloudflare/Makefile::img.publish` now builds and pushes
+  per-arch images, then creates the multi-arch index via
+  `docker buildx imagetools create`.
+
+## [v0.21.0] - 2026-09-23
+
+### Added
+- **Cloudflare Pages Support**: Complete implementation for managing Pages projects, deployments, and custom domains
+  - `pages.cloudflare.m.crossplane.io/v1beta1` API group
+  - `Project`, `Deployment`, and `Domain` resources with full CRUD support
+  - Account-scoped operations using ResourceContainer
+- **Page Rules Support**: Full support for legacy Page Rules
+  - `pagerules.cloudflare.m.crossplane.io/v1beta1` API group
+  - `PageRule` resource with targets, actions, priority, and status handling
+- **New Examples**: Comprehensive examples under `examples/pages/` and `examples/pagerules/`
+- **Documentation**: New resource documentation in `docs/resources/` for Pages and PageRules
+- **Tests**: Interface-based controller tests with mocks for the new resources
+
+### Changed
+- **Version**: Bumped to v0.21.0
+- Improved controller interface usage for better testability across Pages and PageRules controllers
+
+### Infrastructure
+- All new resources follow the established v2 controller patterns
+- CRDs generated for new resources
+
 ## [v0.13.0] - 2025-10-27
 
 ### Changed
