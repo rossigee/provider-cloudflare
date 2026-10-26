@@ -1,6 +1,6 @@
 module github.com/rossigee/provider-cloudflare
 
-go 1.27.2
+go 1.27.3
 
 require (
 	github.com/cloudflare/cloudflare-go v0.117.0
