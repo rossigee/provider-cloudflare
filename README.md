@@ -13,7 +13,7 @@ A Crossplane provider for managing Cloudflare resources via the Cloudflare v4 AP
 
 ## Container Registry
 
-- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.14.10`
+- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.21.4`
 
 ## Features
 
@@ -40,7 +40,7 @@ A Crossplane provider for managing Cloudflare resources via the Cloudflare v4 AP
 ### Installation
 
 ```bash
-kubectl crossplane install provider ghcr.io/rossigee/provider-cloudflare:v0.14.10
+kubectl crossplane install provider ghcr.io/rossigee/provider-cloudflare:v0.21.4
 ```
 
 ### Configuration
