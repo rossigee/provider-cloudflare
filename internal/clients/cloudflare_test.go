@@ -29,6 +29,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -156,6 +157,41 @@ func TestGetConfig(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func TestGetConfigLooksUpProviderConfigInManagedResourceNamespace(t *testing.T) {
+	// The ProviderConfig is namespaced, so it has to be looked up in the
+	// namespace of the managed resource that refers to it. The reference
+	// carries only a name.
+	var gotKey client.ObjectKey
+
+	mc := &test.MockClient{
+		MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
+			switch o := obj.(type) {
+			case *v1beta1.ProviderConfig:
+				gotKey = key
+				o.Spec.Credentials.Source = "Secret"
+				o.Spec.Credentials.SecretRef = &xpv1.SecretKeySelector{Key: "credentials"}
+			case *corev1.Secret:
+				o.Data = map[string][]byte{"credentials": []byte(`{"token":"beef"}`)}
+			}
+			return nil
+		},
+	}
+
+	mg := &testProviderConfigReferencer{
+		Managed: &rtfake.Managed{ObjectMeta: metav1.ObjectMeta{Namespace: "cloudflare-resources"}},
+		Ref:     &xpv1.Reference{Name: "cloudflare-golder-master"},
+	}
+
+	if _, err := GetConfig(context.Background(), mc, mg); err != nil {
+		t.Fatalf("GetConfig(...): unexpected error: %v", err)
+	}
+
+	want := client.ObjectKey{Name: "cloudflare-golder-master", Namespace: "cloudflare-resources"}
+	if diff := cmp.Diff(want, gotKey); diff != "" {
+		t.Errorf("GetConfig(...): -want ProviderConfig key, +got:\n%s", diff)
 	}
 }
 
