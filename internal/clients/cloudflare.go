@@ -114,8 +114,14 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		return nil, errors.New(errPCRef)
 	}
 
+	// The ProviderConfig is namespaced, and it lives in the same namespace as
+	// the managed resource that refers to it. The reference itself carries
+	// only a name, so the namespace comes from the managed resource.
 	pc := &v1beta1.ProviderConfig{}
-	if err := c.Get(ctx, types.NamespacedName{Name: pcRef.Name}, pc); err != nil {
+	if err := c.Get(ctx, types.NamespacedName{
+		Name:      pcRef.Name,
+		Namespace: mg.GetNamespace(),
+	}, pc); err != nil {
 		return nil, errors.Wrap(err, errGetPC)
 	}
 
