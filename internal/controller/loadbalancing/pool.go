@@ -95,7 +95,7 @@ func (c *poolConnector) Connect(ctx context.Context, mg resource.Managed) (manag
 	}
 
 	pc := &apisv1beta1.ProviderConfig{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.GetProviderConfigReference().Name}, pc); err != nil {
+	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.GetProviderConfigReference().Name, Namespace: mg.GetNamespace()}, pc); err != nil {
 		return nil, errors.Wrap(err, errGetPoolPC)
 	}
 
@@ -251,7 +251,7 @@ func (c *poolExternal) resolveReferences(ctx context.Context, cr *v1beta1.LoadBa
 	if cr.Spec.ForProvider.MonitorRef != nil {
 		r := cr.Spec.ForProvider.MonitorRef
 		monitor := &v1beta1.LoadBalancerMonitor{}
-		if err := c.kube.Get(ctx, types.NamespacedName{Name: r.Name}, monitor); err != nil {
+		if err := c.kube.Get(ctx, types.NamespacedName{Name: r.Name, Namespace: cr.GetNamespace()}, monitor); err != nil {
 			return errors.Wrap(err, "cannot get referenced monitor")
 		}
 		if monitor.Status.AtProvider.ID == "" {

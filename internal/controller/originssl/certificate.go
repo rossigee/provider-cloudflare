@@ -105,7 +105,7 @@ func (c *certificateConnector) Connect(ctx context.Context, mg resource.Managed)
 	}
 
 	pc := &cloudflarev1beta1.ProviderConfig{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.GetProviderConfigReference().Name}, pc); err != nil {
+	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.GetProviderConfigReference().Name, Namespace: mg.GetNamespace()}, pc); err != nil {
 		return nil, errors.Wrap(err, errGetPC)
 	}
 
