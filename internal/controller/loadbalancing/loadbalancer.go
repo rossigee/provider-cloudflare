@@ -99,7 +99,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	pc := &apisv1beta1.ProviderConfig{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.GetProviderConfigReference().Name}, pc); err != nil {
+	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.GetProviderConfigReference().Name, Namespace: mg.GetNamespace()}, pc); err != nil {
 		return nil, errors.Wrap(err, errGetPC)
 	}
 
@@ -282,7 +282,7 @@ func (c *external) resolveReferences(ctx context.Context, cr *v1beta1.LoadBalanc
 	if cr.Spec.ForProvider.FallbackPoolRef != nil {
 		r := cr.Spec.ForProvider.FallbackPoolRef
 		pool := &v1beta1.LoadBalancerPool{}
-		if err := c.kube.Get(ctx, types.NamespacedName{Name: r.Name}, pool); err != nil {
+		if err := c.kube.Get(ctx, types.NamespacedName{Name: r.Name, Namespace: cr.GetNamespace()}, pool); err != nil {
 			return errors.Wrap(err, "cannot get referenced fallback pool")
 		}
 		if pool.Status.AtProvider.ID == "" {
@@ -296,7 +296,7 @@ func (c *external) resolveReferences(ctx context.Context, cr *v1beta1.LoadBalanc
 		poolIDs := make([]string, 0, len(cr.Spec.ForProvider.DefaultPoolRefs))
 		for _, ref := range cr.Spec.ForProvider.DefaultPoolRefs {
 			pool := &v1beta1.LoadBalancerPool{}
-			if err := c.kube.Get(ctx, types.NamespacedName{Name: ref.Name}, pool); err != nil {
+			if err := c.kube.Get(ctx, types.NamespacedName{Name: ref.Name, Namespace: cr.GetNamespace()}, pool); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("cannot get referenced default pool %s", ref.Name))
 			}
 			if pool.Status.AtProvider.ID == "" {
