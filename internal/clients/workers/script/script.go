@@ -584,3 +584,21 @@ func (c *ScriptClient) IsUpToDate(ctx context.Context, params v1beta1.ScriptPara
 
 	return true, nil
 }
+
+// GetAccountID returns the resolved Cloudflare account ID.
+func (c *ScriptClient) GetAccountID() string {
+	if c.accountID != "" {
+		return c.accountID
+	}
+	id, err := c.getAccountID(context.Background())
+	if err != nil {
+		return ""
+	}
+	c.accountID = id
+	return id
+}
+
+// SetWorkersSecret creates or updates a secret bound to a Worker script.
+func (c *ScriptClient) SetWorkersSecret(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.SetWorkersSecretParams) (cloudflare.WorkersPutSecretResponse, error) {
+	return c.client.SetWorkersSecret(ctx, rc, params)
+}

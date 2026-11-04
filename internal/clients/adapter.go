@@ -77,6 +77,13 @@ func (a *CloudflareAPIAdapter) GetWorkersScriptContent(ctx context.Context, rc *
 	return a.api.GetWorkersScriptContent(ctx, rc, scriptName)
 }
 
+// SetWorkersSecret wraps the cloudflare API: it creates or updates a secret
+// bound to a Worker script. The secret's value is write-only; Cloudflare
+// never returns it.
+func (a *CloudflareAPIAdapter) SetWorkersSecret(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.SetWorkersSecretParams) (cloudflare.WorkersPutSecretResponse, error) {
+	return a.api.SetWorkersSecret(ctx, rc, params)
+}
+
 // GetWorkersScriptSettings wraps the cloudflare API
 func (a *CloudflareAPIAdapter) GetWorkersScriptSettings(ctx context.Context, rc *cloudflare.ResourceContainer, scriptName string) (cloudflare.WorkerScriptSettingsResponse, error) {
 	return a.api.GetWorkersScriptSettings(ctx, rc, scriptName)

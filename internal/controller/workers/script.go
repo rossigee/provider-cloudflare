@@ -29,8 +29,11 @@ import (
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
+	"github.com/cloudflare/cloudflare-go"
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 	workerscript "github.com/rossigee/provider-cloudflare/internal/clients/workers/script"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -113,13 +116,14 @@ func (c *scriptConnector) Connect(ctx context.Context, mg resource.Managed) (man
 	// Wrap with adapter to implement ClientInterface
 	adapter := clients.NewCloudflareAPIAdapter(api)
 	client := c.newCloudflareClientFn(adapter)
-	return &scriptExternal{client: client}, nil
+	return &scriptExternal{client: client, kube: c.kube}, nil
 }
 
 // An scriptExternal observes, then either creates, updates, or deletes an
 // external resource to ensure it reflects the managed resource's desired state.
 type scriptExternal struct {
 	client *workerscript.ScriptClient
+	kube   client.Client
 }
 
 func (e *scriptExternal) Observe(ctx context.Context,
@@ -170,6 +174,12 @@ func (e *scriptExternal) Create(ctx context.Context, mg resource.Managed) (manag
 	cr.Status.AtProvider = *scriptObs
 	meta.SetExternalName(cr, cr.Spec.ForProvider.ScriptName)
 
+	// Sync secret_text bindings. Cloudflare never returns a secret's value,
+	// so the values must be pushed on every Create.
+	if err := e.syncSecrets(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, "cannot sync script secrets")
+	}
+
 	return managed.ExternalCreation{}, nil
 }
 
@@ -186,7 +196,17 @@ func (e *scriptExternal) Update(ctx context.Context, mg resource.Managed) (manag
 	}
 
 	_, err := e.client.Update(ctx, cr.Spec.ForProvider)
-	return managed.ExternalUpdate{}, errors.Wrap(err, errScriptUpdate)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errScriptUpdate)
+	}
+
+	// Sync secret_text bindings. Cloudflare never returns a secret's value,
+	// so the values must be pushed on every Update.
+	if err := e.syncSecrets(ctx, cr); err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, "cannot sync script secrets")
+	}
+
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *scriptExternal) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
@@ -205,6 +225,67 @@ func (e *scriptExternal) Delete(ctx context.Context, mg resource.Managed) (manag
 	return managed.ExternalDelete{}, errors.Wrap(
 		e.client.Delete(ctx, scriptName),
 		errScriptDeletion)
+}
+
+
+// syncSecrets pushes the value of every secret_text binding to Cloudflare.
+// Cloudflare's script-secrets endpoint is write-only, so a value that was
+// never uploaded (or that changed in the referenced Kubernetes secret) must
+// be pushed again on every reconcile.
+func (e *scriptExternal) syncSecrets(ctx context.Context, cr *v1beta1.Script) error {
+	accountID := e.client.GetAccountID()
+	if accountID == "" {
+		// The ScriptClient lazily resolves the account ID; force it.
+		// GetAccountID on the adapter returns the cached value, so fall back
+		// to the config's account ID via the client interface is not possible
+		// here; the script must have been created already (which resolved it).
+	}
+	rc := &cloudflare.ResourceContainer{
+		Level:      cloudflare.AccountRouteLevel,
+		Identifier: accountID,
+	}
+
+	for i := range cr.Spec.ForProvider.Bindings {
+		b := &cr.Spec.ForProvider.Bindings[i]
+		if b.Type != "secret_text" || b.SecretRef == nil {
+			continue
+		}
+		sel := b.SecretRef
+		ns := cr.GetNamespace()
+		if sel.Namespace != nil && *sel.Namespace != "" {
+			ns = *sel.Namespace
+		}
+		sec := &corev1.Secret{}
+		if err := e.kube.Get(ctx, types.NamespacedName{Name: sel.Name, Namespace: ns}, sec); err != nil {
+			return errors.Wrap(err, "cannot read secret for secret_text binding")
+		}
+		value, ok := sec.Data[sel.Key]
+		if !ok {
+			// fall back to the only key when none is specified
+			if sel.Key == "" && len(sec.Data) == 1 {
+				for _, v := range sec.Data {
+					value = v
+					ok = true
+				}
+			}
+		}
+		if !ok {
+			return errors.New("secret key not found for secret_text binding")
+		}
+		_ = e.client.GetAccountID()
+		params := cloudflare.SetWorkersSecretParams{
+			ScriptName: cr.Spec.ForProvider.ScriptName,
+			Secret: &cloudflare.WorkersPutSecretRequest{
+				Name: b.Name,
+				Text: string(value),
+				Type: cloudflare.WorkerBindingType("secret_text"),
+			},
+		}
+		if _, err := e.client.SetWorkersSecret(ctx, rc, params); err != nil {
+			return errors.Wrap(err, "cannot set worker secret")
+		}
+	}
+	return nil
 }
 
 func (e *scriptExternal) Disconnect(ctx context.Context) error {
