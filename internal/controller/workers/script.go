@@ -235,10 +235,9 @@ func (e *scriptExternal) Delete(ctx context.Context, mg resource.Managed) (manag
 func (e *scriptExternal) syncSecrets(ctx context.Context, cr *v1beta1.Script) error {
 	accountID := e.client.GetAccountID()
 	if accountID == "" {
-		// The ScriptClient lazily resolves the account ID; force it.
-		// GetAccountID on the adapter returns the cached value, so fall back
-		// to the config's account ID via the client interface is not possible
-		// here; the script must have been created already (which resolved it).
+		// The account ID is resolved when the script is created. Pushing
+		// secrets without it would target an empty container identifier.
+		return errors.New("cloudflare account ID not resolved; cannot sync script secrets")
 	}
 	rc := &cloudflare.ResourceContainer{
 		Level:      cloudflare.AccountRouteLevel,
