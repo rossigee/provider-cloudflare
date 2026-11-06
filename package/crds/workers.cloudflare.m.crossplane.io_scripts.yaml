@@ -81,12 +81,36 @@ spec:
                         part:
                           description: Part for WASM module bindings.
                           type: string
+                        secretRef:
+                          description: |-
+                            SecretRef selects the key in a Kubernetes secret whose value is
+                            uploaded to Cloudflare as a Worker secret. Cloudflare never returns a
+                            secret's value, so the value never has to appear in this resource, in
+                            a ConfigMap, or in a Git repository. Required for a secret_text binding.
+                          properties:
+                            key:
+                              description: |-
+                                Key within the secret's data. Defaults to the secret's only key when
+                                the secret holds exactly one.
+                              type: string
+                            name:
+                              description: Name of the secret.
+                              type: string
+                            namespace:
+                              description: |-
+                                Namespace of the secret. Defaults to the namespace of the resource
+                                that refers to it.
+                              type: string
+                          required:
+                          - name
+                          type: object
                         text:
                           description: Text for text blob bindings.
                           type: string
                         type:
-                          description: Type specifies the binding type (kv_namespace,
-                            wasm_module, text_blob, json_data, etc.)
+                          description: |-
+                            Type specifies the binding type (kv_namespace, wasm_module, text_blob,
+                            json_data, secret_text, etc.)
                           type: string
                       required:
                       - name
