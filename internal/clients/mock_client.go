@@ -470,6 +470,11 @@ func (m *MockCloudflareClient) GetWorkersScriptContent(ctx context.Context, rc *
 	return "addEventListener('fetch', event => { event.respondWith(new Response('Hello World!')) })", nil
 }
 
+// SetWorkersSecret mocks the SetWorkersSecret method
+func (m *MockCloudflareClient) SetWorkersSecret(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.SetWorkersSecretParams) (cloudflare.WorkersPutSecretResponse, error) {
+	return cloudflare.WorkersPutSecretResponse{}, nil
+}
+
 func (m *MockCloudflareClient) GetWorkersScriptSettings(ctx context.Context, rc *cloudflare.ResourceContainer, scriptName string) (cloudflare.WorkerScriptSettingsResponse, error) {
 	return cloudflare.WorkerScriptSettingsResponse{
 		WorkerMetaData: cloudflare.WorkerMetaData{
@@ -716,6 +721,17 @@ func (m *MockClient) GetWorkersScriptContent(ctx context.Context, rc *cloudflare
 		return response.(string), nil
 	}
 	return "addEventListener('fetch', event => { event.respondWith(new Response('Hello World!')) })", nil
+}
+
+// SetWorkersSecret mocks the SetWorkersSecret method
+func (m *MockClient) SetWorkersSecret(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.SetWorkersSecretParams) (cloudflare.WorkersPutSecretResponse, error) {
+	if err, ok := m.errors["SetWorkersSecret"]; ok {
+		return cloudflare.WorkersPutSecretResponse{}, err
+	}
+	if response, ok := m.responses["SetWorkersSecret"]; ok {
+		return response.(cloudflare.WorkersPutSecretResponse), nil
+	}
+	return cloudflare.WorkersPutSecretResponse{}, nil
 }
 
 // GetWorkersScriptSettings mocks the GetWorkersScriptSettings method

@@ -32,9 +32,26 @@ const (
 	PlacementModeSmart PlacementMode = "smart"
 )
 
+// SecretKeySelector selects a key in a Kubernetes secret.
+type SecretKeySelector struct {
+	// Name of the secret.
+	Name string `json:"name"`
+
+	// Key within the secret's data. Defaults to the secret's only key when
+	// the secret holds exactly one.
+	// +optional
+	Key string `json:"key,omitempty"`
+
+	// Namespace of the secret. Defaults to the namespace of the resource
+	// that refers to it.
+	// +optional
+	Namespace *string `json:"namespace,omitempty"`
+}
+
 // WorkerBinding represents different types of bindings available to Workers.
 type WorkerBinding struct {
-	// Type specifies the binding type (kv_namespace, wasm_module, text_blob, json_data, etc.)
+	// Type specifies the binding type (kv_namespace, wasm_module, text_blob,
+	// json_data, secret_text, etc.)
 	Type string `json:"type"`
 
 	// Name is the variable name used in the Worker script to access this binding.
@@ -55,6 +72,13 @@ type WorkerBinding struct {
 	// JSON for JSON data bindings (as string).
 	// +optional
 	JSON *string `json:"json,omitempty"`
+
+	// SecretRef selects the key in a Kubernetes secret whose value is
+	// uploaded to Cloudflare as a Worker secret. Cloudflare never returns a
+	// secret's value, so the value never has to appear in this resource, in
+	// a ConfigMap, or in a Git repository. Required for a secret_text binding.
+	// +optional
+	SecretRef *SecretKeySelector `json:"secretRef,omitempty"`
 }
 
 // TailConsumer represents a Worker that consumes logs from another Worker.
