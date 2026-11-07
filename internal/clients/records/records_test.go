@@ -26,8 +26,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
-	"k8s.io/utils/ptr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 )
 
 func uint16Ptr(v uint16) *uint16 {
@@ -40,10 +40,13 @@ func stringPtr(s string) *string {
 
 // mockRecordsAPI mocks the DNS Records API client
 type mockRecordsAPI struct {
-	MockCreateDNSRecord func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error)
-	MockUpdateDNSRecord func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error)
-	MockGetDNSRecord    func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error)
-	MockDeleteDNSRecord func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error
+	MockCreateDNSRecord  func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error)
+	MockUpdateDNSRecord  func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error)
+	MockGetDNSRecord     func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error)
+	MockDeleteDNSRecord  func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error
+	MockListDNSRecords   func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListDNSRecordsParams) ([]cloudflare.DNSRecord, *cloudflare.ResultInfo, error)
+	MockExportDNSRecords func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ExportDNSRecordsParams) (string, error)
+	MockImportDNSRecords func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ImportDNSRecordsParams) error
 }
 
 func (m *mockRecordsAPI) CreateDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
@@ -60,6 +63,27 @@ func (m *mockRecordsAPI) GetDNSRecord(ctx context.Context, rc *cloudflare.Resour
 
 func (m *mockRecordsAPI) DeleteDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error {
 	return m.MockDeleteDNSRecord(ctx, rc, recordID)
+}
+
+func (m *mockRecordsAPI) ListDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListDNSRecordsParams) ([]cloudflare.DNSRecord, *cloudflare.ResultInfo, error) {
+	if m.MockListDNSRecords != nil {
+		return m.MockListDNSRecords(ctx, rc, params)
+	}
+	return nil, nil, errors.New("not implemented")
+}
+
+func (m *mockRecordsAPI) ExportDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ExportDNSRecordsParams) (string, error) {
+	if m.MockExportDNSRecords != nil {
+		return m.MockExportDNSRecords(ctx, rc, params)
+	}
+	return "", errors.New("not implemented")
+}
+
+func (m *mockRecordsAPI) ImportDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ImportDNSRecordsParams) error {
+	if m.MockImportDNSRecords != nil {
+		return m.MockImportDNSRecords(ctx, rc, params)
+	}
+	return errors.New("not implemented")
 }
 
 func TestIsRecordNotFound(t *testing.T) {

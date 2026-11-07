@@ -62,4 +62,12 @@ A Crossplane v2 provider for managing Cloudflare resources. All managed resource
 
 ## API Coverage Gaps
 
-Cloudflare API surface not yet modeled: Pages projects/deployments, D1/KV read-write data operations (namespaces only), Queues, AI Gateway/Workers AI bindings, Waiting Rooms, Web Analytics rules, DNSSEC DS management beyond zone settings, account-level audit logs, and Spectrum origins beyond application tunnels.
+Cloudflare API surface not yet modeled: Pages projects/deployments, D1/KV read-write data operations (namespaces only), Queues, AI Gateway/Workers AI bindings, Waiting Rooms, Web Analytics rules, account-level audit logs, and Spectrum origins beyond application tunnels.
+
+### Zone DNSSEC
+
+Zones support DNSSEC enablement via `spec.forProvider.dnssecEnabled: true`. The provider enables DNSSEC with status `active` on Cloudflare, and disables (deletes) it when set to `false`. The observed DNSSEC status, DS record, key tag, and algorithm are reported under `status.atProvider`.
+
+### Universal SSL Verification
+
+The UniversalSSL resource reports certificate count and validation status from the Cloudflare Universal SSL verification API under `status.atProvider.certificateCount` and `status.atProvider.validationStatus`.

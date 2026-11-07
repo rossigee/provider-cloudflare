@@ -40,10 +40,12 @@ func intPtr(i int) *int {
 
 // mockRateLimitAPI mocks the RateLimitAPI interface
 type mockRateLimitAPI struct {
-	MockRateLimit       func(ctx context.Context, zoneID, limitID string) (cloudflare.RateLimit, error)
-	MockCreateRateLimit func(ctx context.Context, zoneID string, limit cloudflare.RateLimit) (cloudflare.RateLimit, error)
-	MockUpdateRateLimit func(ctx context.Context, zoneID, limitID string, limit cloudflare.RateLimit) (cloudflare.RateLimit, error)
-	MockDeleteRateLimit func(ctx context.Context, zoneID, limitID string) error
+	MockRateLimit         func(ctx context.Context, zoneID, limitID string) (cloudflare.RateLimit, error)
+	MockCreateRateLimit   func(ctx context.Context, zoneID string, limit cloudflare.RateLimit) (cloudflare.RateLimit, error)
+	MockUpdateRateLimit   func(ctx context.Context, zoneID, limitID string, limit cloudflare.RateLimit) (cloudflare.RateLimit, error)
+	MockDeleteRateLimit   func(ctx context.Context, zoneID, limitID string) error
+	MockListRateLimits    func(ctx context.Context, zoneID string, pageOpts cloudflare.PaginationOptions) ([]cloudflare.RateLimit, cloudflare.ResultInfo, error)
+	MockListAllRateLimits func(ctx context.Context, zoneID string) ([]cloudflare.RateLimit, error)
 }
 
 func (m *mockRateLimitAPI) RateLimit(ctx context.Context, zoneID, limitID string) (cloudflare.RateLimit, error) {
@@ -60,6 +62,20 @@ func (m *mockRateLimitAPI) UpdateRateLimit(ctx context.Context, zoneID, limitID 
 
 func (m *mockRateLimitAPI) DeleteRateLimit(ctx context.Context, zoneID, limitID string) error {
 	return m.MockDeleteRateLimit(ctx, zoneID, limitID)
+}
+
+func (m *mockRateLimitAPI) ListRateLimits(ctx context.Context, zoneID string, pageOpts cloudflare.PaginationOptions) ([]cloudflare.RateLimit, cloudflare.ResultInfo, error) {
+	if m.MockListRateLimits != nil {
+		return m.MockListRateLimits(ctx, zoneID, pageOpts)
+	}
+	return []cloudflare.RateLimit{}, cloudflare.ResultInfo{}, nil
+}
+
+func (m *mockRateLimitAPI) ListAllRateLimits(ctx context.Context, zoneID string) ([]cloudflare.RateLimit, error) {
+	if m.MockListAllRateLimits != nil {
+		return m.MockListAllRateLimits(ctx, zoneID)
+	}
+	return []cloudflare.RateLimit{}, nil
 }
 
 func TestGet(t *testing.T) {

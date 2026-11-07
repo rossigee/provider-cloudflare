@@ -8,6 +8,7 @@ spec:
     name: test-domain.com
     paused: true
     jumpStart: false
+    dnssecEnabled: true
     settings:
       developmentMode: "on"
   providerConfigRef:

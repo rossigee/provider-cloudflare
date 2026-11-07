@@ -17,7 +17,6 @@ limitations under the License.
 package spectrum
 
 import (
-	"context"
 	"net"
 	"testing"
 	"time"
@@ -31,34 +30,6 @@ import (
 
 func stringPtr(s string) *string {
 	return &s
-}
-
-func uint32Ptr(i uint32) *uint32 {
-	return &i
-}
-
-// mockSpectrumAPI mocks the Spectrum API client
-type mockSpectrumAPI struct {
-	MockSpectrumApplication       func(ctx context.Context, zoneID, applicationID string) (cloudflare.SpectrumApplication, error)
-	MockCreateSpectrumApplication func(ctx context.Context, zoneID string, params *v1beta1.ApplicationParameters) (cloudflare.SpectrumApplication, error)
-	MockUpdateSpectrumApplication func(ctx context.Context, zoneID, applicationID string, params *v1beta1.ApplicationParameters) error
-	MockDeleteSpectrumApplication func(ctx context.Context, zoneID, applicationID string) error
-}
-
-func (m *mockSpectrumAPI) SpectrumApplication(ctx context.Context, zoneID, applicationID string) (cloudflare.SpectrumApplication, error) {
-	return m.MockSpectrumApplication(ctx, zoneID, applicationID)
-}
-
-func (m *mockSpectrumAPI) CreateSpectrumApplication(ctx context.Context, zoneID string, params *v1beta1.ApplicationParameters) (cloudflare.SpectrumApplication, error) {
-	return m.MockCreateSpectrumApplication(ctx, zoneID, params)
-}
-
-func (m *mockSpectrumAPI) UpdateSpectrumApplication(ctx context.Context, zoneID, applicationID string, params *v1beta1.ApplicationParameters) error {
-	return m.MockUpdateSpectrumApplication(ctx, zoneID, applicationID, params)
-}
-
-func (m *mockSpectrumAPI) DeleteSpectrumApplication(ctx context.Context, zoneID, applicationID string) error {
-	return m.MockDeleteSpectrumApplication(ctx, zoneID, applicationID)
 }
 
 func TestIsApplicationNotFound(t *testing.T) {
@@ -284,9 +255,9 @@ func TestLateInitialize(t *testing.T) {
 			spec:   &v1beta1.ApplicationParameters{},
 			app: cloudflare.SpectrumApplication{
 				EdgeIPs: &cloudflare.SpectrumApplicationEdgeIPs{
-					Type:          cloudflare.SpectrumApplicationEdgeType("dynamic"),
-					Connectivity:  (*cloudflare.SpectrumApplicationConnectivity)(stringPtr("all")),
-					IPs:           []net.IP{net.ParseIP("192.0.2.1"), net.ParseIP("192.0.2.2")},
+					Type:         cloudflare.SpectrumApplicationEdgeType("dynamic"),
+					Connectivity: (*cloudflare.SpectrumApplicationConnectivity)(stringPtr("all")),
+					IPs:          []net.IP{net.ParseIP("192.0.2.1"), net.ParseIP("192.0.2.2")},
 				},
 			},
 			want: true,
@@ -450,4 +421,3 @@ func TestUpToDate(t *testing.T) {
 		})
 	}
 }
-

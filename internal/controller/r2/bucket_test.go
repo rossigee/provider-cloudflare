@@ -144,20 +144,3 @@ func TestBucketObservation(t *testing.T) {
 		})
 	}
 }
-
-func TestBucket(t *testing.T) {
-	r := &v1beta1.Bucket{
-		Spec: v1beta1.BucketSpec{
-			ForProvider: v1beta1.BucketParameters{
-				Name: "test-bucket",
-			},
-		},
-	}
-
-	if r == nil {
-		t.Errorf("Bucket resource should not be nil")
-	}
-	if r.Spec.ForProvider.Name != "test-bucket" {
-		t.Logf("resource type %T instantiated successfully", r)
-	}
-}
