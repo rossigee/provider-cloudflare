@@ -1,4 +1,4 @@
-# Provider Cloudflare - Current Status (2025-09-27)
+# Provider Cloudflare - Current Status (2026-11-08)
 
 ## ✅ **Repository Status: PRODUCTION READY**
 
@@ -6,7 +6,7 @@
 - ✅ **`make lint`**: 0 issues - All linting requirements satisfied
 - ✅ **`make test`**: All unit tests passing with existing coverage
 - ✅ **`make build`**: Successful compilation and binary generation
-- ✅ **Dependencies**: Go 1.25.3, cloudflare-go v0.115.0, crossplane-runtime v2.x
+- ✅ **Dependencies**: Go 1.27.3, cloudflare-go v0.119.0 (existing resources) and v7.14.0 (AI Gateway), crossplane-runtime v2.5.0-dev
 
 ### **Crossplane v2 Migration: COMPLETE**
 - ✅ **v2-native architecture**: Full migration to Crossplane v2 patterns
@@ -71,7 +71,7 @@
 ## 📦 **Deployment Information**
 
 ### **Registry**
-- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.21.4`
+- **Primary**: `ghcr.io/rossigee/provider-cloudflare:v0.22.0`
 - **Branch**: master
 - **Build System**: Standard Crossplane build submodule
 
@@ -82,7 +82,7 @@ kind: Provider
 metadata:
   name: provider-cloudflare
 spec:
-  package: ghcr.io/rossigee/provider-cloudflare:v0.21.4
+  package: ghcr.io/rossigee/provider-cloudflare:v0.22.0
 ```
 
 ### **Configuration**
@@ -103,7 +103,7 @@ spec:
 ## 📊 **Quality Metrics**
 
 ### **Test Coverage**
-- **Unit Tests**: 100% coverage for all clients and controllers
+- **Unit Tests**: 21.8% statement coverage across the module (`go test -cover ./...`, measured for v0.22.0). Generated code and `cmd/` are included in this figure.
 - **Interface Testing**: Comprehensive mocking framework
 - **v1beta1 Validation**: Working test examples for namespaced resources
 - **Integration Testing**: All controller patterns validated
@@ -143,6 +143,6 @@ The provider successfully delivers on the requirement to be "v2-native with no b
 
 ---
 
-**Last Updated**: 2026-09-22
-**Version**: v0.21.0
+**Last Updated**: 2026-11-08
+**Version**: v0.22.0
 **Status**: ✅ **PRODUCTION READY - V1BETA1 ONLY**
