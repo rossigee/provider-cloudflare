@@ -1,0 +1,21 @@
+apiVersion: emailrouting.cloudflare.m.crossplane.io/v1beta1
+kind: Rule
+metadata:
+  namespace: default
+  name: example-email-rule
+spec:
+  forProvider:
+    zoneId: "your-zone-id"
+    name: forward-support
+    priority: 1
+    enabled: true
+    matchers:
+      - type: literal
+        field: to
+        value: "support@example.com"
+    actions:
+      - type: forward
+        value:
+          - "team@example.com"
+  providerConfigRef:
+    name: default

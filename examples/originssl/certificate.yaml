@@ -1,0 +1,14 @@
+apiVersion: originssl.cloudflare.m.crossplane.io/v1beta1
+kind: Certificate
+metadata:
+  namespace: default
+  name: example-origin-certificate
+spec:
+  forProvider:
+    hostnames:
+      - "example.com"
+      - "*.example.com"
+    requestType: origin-ecc
+    requestValidity: 5475
+  providerConfigRef:
+    name: default
