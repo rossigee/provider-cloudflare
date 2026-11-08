@@ -66,8 +66,8 @@ Cloudflare API surface not yet modeled: Pages projects/deployments, D1/KV read-w
 
 ### Zone DNSSEC
 
-Zones support DNSSEC enablement via `spec.forProvider.dnssecEnabled: true`. The provider enables DNSSEC with status `active` on Cloudflare, and disables (deletes) it when set to `false`. The observed DNSSEC status, DS record, key tag, and algorithm are reported under `status.atProvider`.
+Zones support DNSSEC enablement via `spec.forProvider.dnssecEnabled: true`. The provider enables DNSSEC with status `active` on Cloudflare, and disables (deletes) it when set to `false`. DNSSEC is only read from Cloudflare when `dnssecEnabled` is set. When it is set, the observed DNSSEC status, DS record, key tag, and algorithm are reported under `status.atProvider`.
 
 ### Universal SSL Verification
 
-The UniversalSSL resource reports certificate count and validation status from the Cloudflare Universal SSL verification API under `status.atProvider.certificateCount` and `status.atProvider.validationStatus`.
+The UniversalSSL resource reports the number of certificate packs and their validation status from the Cloudflare Universal SSL verification API under `status.atProvider.certificatePackCount` and `status.atProvider.validationStatus`. The validation status is the first non-`active` certificate pack status, or `active` when every pack is active.

@@ -142,8 +142,10 @@ spec:
                 description: UniversalSSLObservation are the observable fields of
                   Universal SSL.
                 properties:
-                  certificateCount:
-                    description: CertificateCount is the number of Universal SSL certificates.
+                  certificatePackCount:
+                    description: |-
+                      CertificatePackCount is the number of Universal SSL certificate packs
+                      reported by the verification API.
                     type: integer
                   enabled:
                     description: Enabled indicates whether Universal SSL is enabled

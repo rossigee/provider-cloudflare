@@ -280,16 +280,29 @@ func dnssecEnabledFromStatus(status string) bool {
 	return status == dnssecStatusActive || status == dnssecStatusPending
 }
 
-// ObserveDNSSEC fetches current DNSSEC status and returns whether
-// it is enabled, along with observation fields.
-func ObserveDNSSEC(ctx context.Context, client Client, zoneID string) (*bool, string, string, int, string, error) {
+// DNSSECObservation is the observed DNSSEC state of a zone.
+type DNSSECObservation struct {
+	Enabled   bool
+	Status    string
+	DS        string
+	KeyTag    int
+	Algorithm string
+}
+
+// ObserveDNSSEC fetches the current DNSSEC state of a zone.
+func ObserveDNSSEC(ctx context.Context, client Client, zoneID string) (DNSSECObservation, error) {
 	d, err := client.ZoneDNSSECSetting(ctx, zoneID)
 	if err != nil {
-		return nil, "", "", 0, "", errors.Wrap(err, errGetDNSSEC)
+		return DNSSECObservation{}, errors.Wrap(err, errGetDNSSEC)
 	}
 
-	enabled := dnssecEnabledFromStatus(d.Status)
-	return &enabled, d.Status, d.DS, d.KeyTag, d.Algorithm, nil
+	return DNSSECObservation{
+		Enabled:   dnssecEnabledFromStatus(d.Status),
+		Status:    d.Status,
+		DS:        d.DS,
+		KeyTag:    d.KeyTag,
+		Algorithm: d.Algorithm,
+	}, nil
 }
 
 // LateInitialize initializes ZoneParameters based on the remote resource
@@ -315,16 +328,6 @@ func LateInitialize(spec *v1beta1.ZoneParameters, z cloudflare.Zone,
 	}
 
 	return li
-}
-
-// LateInitializeDNSSEC late-initializes DNSSECEnabled from observed remote state.
-func LateInitializeDNSSEC(spec *v1beta1.ZoneParameters, observed *bool) bool {
-	if spec == nil || spec.DNSSECEnabled != nil || observed == nil {
-		return false
-	}
-	v := *observed
-	spec.DNSSECEnabled = &v
-	return true
 }
 
 func lateInitializeMinifySettings(observed, desired *v1beta1.MinifySettings) bool {

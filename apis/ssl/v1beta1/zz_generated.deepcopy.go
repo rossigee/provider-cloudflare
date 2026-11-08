@@ -560,8 +560,8 @@ func (in *UniversalSSLObservation) DeepCopyInto(out *UniversalSSLObservation) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.CertificateCount != nil {
-		in, out := &in.CertificateCount, &out.CertificateCount
+	if in.CertificatePackCount != nil {
+		in, out := &in.CertificatePackCount, &out.CertificatePackCount
 		*out = new(int)
 		**out = **in
 	}

@@ -26,6 +26,10 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 )
 
+// certificateStatusActive is the certificate pack status Cloudflare reports
+// once a Universal SSL certificate pack is fully issued.
+const certificateStatusActive = "active"
+
 // UniversalSSLAPI defines the interface for Universal SSL operations
 type UniversalSSLAPI interface {
 	UniversalSSLSettingDetails(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error)
@@ -62,12 +66,25 @@ func (c *CloudflareUniversalSSLClient) Get(ctx context.Context, zoneID string) (
 	}
 	if len(details) > 0 {
 		count := len(details)
-		obs.CertificateCount = &count
-		status := details[0].CertificateStatus
+		obs.CertificatePackCount = &count
+		status := aggregateValidationStatus(details)
 		obs.ValidationStatus = &status
 	}
 
 	return obs, nil
+}
+
+// aggregateValidationStatus reports the first certificate pack status that is
+// not active, so a pack that is pending or failed is never hidden behind an
+// active one. It returns active when every pack is active. details must not be
+// empty.
+func aggregateValidationStatus(details []cloudflare.UniversalSSLVerificationDetails) string {
+	for _, d := range details {
+		if d.CertificateStatus != certificateStatusActive {
+			return d.CertificateStatus
+		}
+	}
+	return certificateStatusActive
 }
 
 // Update updates Universal SSL settings for a zone.

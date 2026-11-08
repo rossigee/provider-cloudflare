@@ -243,6 +243,62 @@ func TestObserve(t *testing.T) {
 				err: errors.Wrap(errBoom, errZoneLookup),
 			},
 		},
+		"ErrDNSSECLookup": {
+			reason: "We should return an error when DNSSEC is managed and its state cannot be read",
+			fields: fields{
+				client: fake.MockClient{
+					MockZoneDetails: func(ctx context.Context, zoneID string) (cloudflare.Zone, error) {
+						return testZone, nil
+					},
+					MockZoneDNSSECSetting: func(ctx context.Context, zoneID string) (cloudflare.ZoneDNSSEC, error) {
+						return cloudflare.ZoneDNSSEC{}, errBoom
+					},
+				},
+			},
+			args: args{
+				mg: zone(
+					withExternalName("1234beef"),
+					withDNSSECEnabled(ptr.To(true)),
+				),
+			},
+			want: want{
+				o:   managed.ExternalObservation{},
+				err: errors.Wrap(errors.Wrap(errBoom, "error getting DNSSEC status"), errZoneDNSSEC),
+			},
+		},
+		"SuccessDNSSECNotManaged": {
+			reason: "We should not read DNSSEC state when the spec does not manage it, so a DNSSEC read failure is ignored and DNSSEC does not affect up-to-date",
+			fields: fields{
+				client: fake.MockClient{
+					MockZoneDetails: func(ctx context.Context, zoneID string) (cloudflare.Zone, error) {
+						return testZone, nil
+					},
+					MockZoneSettings: func(ctx context.Context, zoneID string) (*cloudflare.ZoneSettingResponse, error) {
+						return &cloudflare.ZoneSettingResponse{
+							Result: []cloudflare.ZoneSetting{
+								{ID: "edge_cache_ttl", Value: 7200, Editable: true},
+							},
+						}, nil
+					},
+					MockZoneDNSSECSetting: func(ctx context.Context, zoneID string) (cloudflare.ZoneDNSSEC, error) {
+						return cloudflare.ZoneDNSSEC{}, errBoom
+					},
+				},
+			},
+			args: args{
+				mg: zone(
+					withExternalName("1234beef"),
+				),
+			},
+			want: want{
+				o: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: true,
+				},
+				err: nil,
+			},
+		},
 		"SuccessNeedsUpdate": {
 			reason: "We should return ResourceExists: true and no error when a zone is found",
 			fields: fields{

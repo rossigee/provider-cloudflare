@@ -111,6 +111,62 @@ func TestGet(t *testing.T) {
 				err: nil,
 			},
 		},
+		"GetUniversalSSLMultiplePacks": {
+			reason: "Get should count certificate packs and report the first non-active validation status",
+			fields: fields{
+				client: &MockUniversalSSLAPI{
+					MockUniversalSSLSettingDetails: func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error) {
+						return cloudflare.UniversalSSLSetting{Enabled: true}, nil
+					},
+					MockUniversalSSLVerificationDetails: func(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error) {
+						return []cloudflare.UniversalSSLVerificationDetails{
+							{CertificateStatus: "active"},
+							{CertificateStatus: "pending_validation"},
+							{CertificateStatus: "timed_out"},
+						}, nil
+					},
+				},
+			},
+			args: args{
+				ctx:    context.Background(),
+				zoneID: zoneID,
+			},
+			want: want{
+				obs: &v1beta1.UniversalSSLObservation{
+					Enabled:              ptr.To(true),
+					CertificatePackCount: ptr.To(3),
+					ValidationStatus:     ptr.To("pending_validation"),
+				},
+				err: nil,
+			},
+		},
+		"GetUniversalSSLAllActive": {
+			reason: "Get should report active when every certificate pack is active",
+			fields: fields{
+				client: &MockUniversalSSLAPI{
+					MockUniversalSSLSettingDetails: func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error) {
+						return cloudflare.UniversalSSLSetting{Enabled: true}, nil
+					},
+					MockUniversalSSLVerificationDetails: func(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error) {
+						return []cloudflare.UniversalSSLVerificationDetails{
+							{CertificateStatus: "active"},
+						}, nil
+					},
+				},
+			},
+			args: args{
+				ctx:    context.Background(),
+				zoneID: zoneID,
+			},
+			want: want{
+				obs: &v1beta1.UniversalSSLObservation{
+					Enabled:              ptr.To(true),
+					CertificatePackCount: ptr.To(1),
+					ValidationStatus:     ptr.To("active"),
+				},
+				err: nil,
+			},
+		},
 		"GetUniversalSSLDisabled": {
 			reason: "Get should return disabled Universal SSL settings",
 			fields: fields{
