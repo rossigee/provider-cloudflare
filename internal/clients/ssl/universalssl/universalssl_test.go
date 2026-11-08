@@ -169,6 +169,27 @@ func TestGet(t *testing.T) {
 				err: errors.Wrap(errBoom, "cannot get universal ssl settings"),
 			},
 		},
+		"GetUniversalSSLVerificationAPIError": {
+			reason: "Get should return wrapped error when verification details call fails",
+			fields: fields{
+				client: &MockUniversalSSLAPI{
+					MockUniversalSSLSettingDetails: func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error) {
+						return cloudflare.UniversalSSLSetting{Enabled: true}, nil
+					},
+					MockUniversalSSLVerificationDetails: func(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error) {
+						return nil, errBoom
+					},
+				},
+			},
+			args: args{
+				ctx:    context.Background(),
+				zoneID: zoneID,
+			},
+			want: want{
+				obs: nil,
+				err: errors.Wrap(errBoom, "cannot get universal ssl verification details"),
+			},
+		},
 	}
 
 	for name, tc := range cases {

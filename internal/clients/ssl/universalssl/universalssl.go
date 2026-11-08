@@ -56,8 +56,11 @@ func (c *CloudflareUniversalSSLClient) Get(ctx context.Context, zoneID string) (
 
 	obs := convertUniversalSSLToObservation(settings)
 
-	// Enrich observation with verification details (best-effort).
-	if details, err := c.client.UniversalSSLVerificationDetails(ctx, zoneID); err == nil && len(details) > 0 {
+	details, err := c.client.UniversalSSLVerificationDetails(ctx, zoneID)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot get universal ssl verification details")
+	}
+	if len(details) > 0 {
 		count := len(details)
 		obs.CertificateCount = &count
 		status := details[0].CertificateStatus
