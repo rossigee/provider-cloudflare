@@ -54,6 +54,12 @@ A Crossplane v2 provider for managing Cloudflare resources. All managed resource
 | Certificate (Origin) | `originssl.cloudflare.m.crossplane.io/v1beta1` | Origin certificates |
 | CustomHostname, FallbackOrigin | `sslsaas.cloudflare.m.crossplane.io/v1beta1` | SSL for SaaS |
 
+### AI
+
+| Resource | API Group | Description |
+|----------|-----------|-------------|
+| Gateway | `aigateway.cloudflare.m.crossplane.io/v1beta1` | AI Gateway (gateway settings only; routes, logs, datasets, evaluations, and billing are not modeled) |
+
 ### Provider
 
 | Resource | API Group | Description |
@@ -62,4 +68,4 @@ A Crossplane v2 provider for managing Cloudflare resources. All managed resource
 
 ## API Coverage Gaps
 
-Cloudflare API surface not yet modeled: Pages projects/deployments, D1/KV read-write data operations (namespaces only), Queues, AI Gateway/Workers AI bindings, Waiting Rooms, Web Analytics rules, DNSSEC DS management beyond zone settings, account-level audit logs, and Spectrum origins beyond application tunnels.
+Cloudflare API surface not yet modeled: Pages projects/deployments, D1/KV read-write data operations (namespaces only), Queues, Workers AI (inference and bindings), AI Gateway routes, logs, datasets, evaluations and billing, Waiting Rooms, Web Analytics rules, DNSSEC DS management beyond zone settings, account-level audit logs, and Spectrum origins beyond application tunnels.
