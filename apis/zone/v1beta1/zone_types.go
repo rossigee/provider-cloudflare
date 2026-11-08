@@ -492,9 +492,9 @@ func (l *ZoneList) GetItems() []resource.Managed {
 }
 
 // GetProviderConfigReference returns the ProviderConfig reference.
-func (mg *Zone) GetProviderConfigReference() *xpv1.Reference {
+func (mg *Zone) GetProviderConfigReference() *xpv1.ProviderConfigReference {
 	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
-		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+		return mg.Spec.ProviderConfigReference
 	}
 	return nil
 }

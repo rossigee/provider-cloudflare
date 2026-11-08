@@ -232,9 +232,9 @@ func (in *Certificate) DeepCopyInto(out *Certificate) {
 }
 
 // GetProviderConfigReference returns the ProviderConfig reference.
-func (mg *Certificate) GetProviderConfigReference() *xpv1.Reference {
+func (mg *Certificate) GetProviderConfigReference() *xpv1.ProviderConfigReference {
 	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
-		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+		return mg.Spec.ProviderConfigReference
 	}
 	return nil
 }

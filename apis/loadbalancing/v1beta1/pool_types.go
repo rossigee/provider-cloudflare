@@ -192,9 +192,9 @@ func (l *LoadBalancerPoolList) GetItems() []resource.Managed {
 }
 
 // GetProviderConfigReference returns the ProviderConfig reference.
-func (mg *LoadBalancerPool) GetProviderConfigReference() *xpv1.Reference {
+func (mg *LoadBalancerPool) GetProviderConfigReference() *xpv1.ProviderConfigReference {
 	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
-		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+		return mg.Spec.ProviderConfigReference
 	}
 	return nil
 }

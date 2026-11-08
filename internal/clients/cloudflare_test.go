@@ -36,19 +36,20 @@ import (
 	"testing"
 
 	"github.com/rossigee/provider-cloudflare/apis/v1beta1"
+	workersv1beta1 "github.com/rossigee/provider-cloudflare/apis/workers/v1beta1"
 )
 
 // testProviderConfigReferencer is a test helper that implements ProviderConfigReferencer
 type testProviderConfigReferencer struct {
 	*rtfake.Managed
-	Ref *xpv1.Reference
+	Ref *xpv1.ProviderConfigReference
 }
 
-func (t *testProviderConfigReferencer) GetProviderConfigReference() *xpv1.Reference {
+func (t *testProviderConfigReferencer) GetProviderConfigReference() *xpv1.ProviderConfigReference {
 	return t.Ref
 }
 
-func (t *testProviderConfigReferencer) SetProviderConfigReference(ref *xpv1.Reference) {
+func (t *testProviderConfigReferencer) SetProviderConfigReference(ref *xpv1.ProviderConfigReference) {
 	t.Ref = ref
 }
 
@@ -111,7 +112,7 @@ func TestGetConfig(t *testing.T) {
 			args: args{
 				mg: &testProviderConfigReferencer{
 					Managed: &rtfake.Managed{},
-					Ref:     &xpv1.Reference{},
+					Ref:     &xpv1.ProviderConfigReference{},
 				},
 			},
 			want: want{
@@ -137,7 +138,7 @@ func TestGetConfig(t *testing.T) {
 			args: args{
 				mg: &testProviderConfigReferencer{
 					Managed: &rtfake.Managed{},
-					Ref:     &xpv1.Reference{},
+					Ref:     &xpv1.ProviderConfigReference{},
 				},
 			},
 			want: want{
@@ -182,7 +183,7 @@ func TestGetConfigLooksUpProviderConfigInManagedResourceNamespace(t *testing.T) 
 
 	mg := &testProviderConfigReferencer{
 		Managed: &rtfake.Managed{ObjectMeta: metav1.ObjectMeta{Namespace: "cloudflare-resources"}},
-		Ref:     &xpv1.Reference{Name: "cloudflare-golder-master"},
+		Ref:     &xpv1.ProviderConfigReference{Name: "cloudflare-golder-master"},
 	}
 
 	if _, err := GetConfig(context.Background(), mc, mg); err != nil {
@@ -192,6 +193,41 @@ func TestGetConfigLooksUpProviderConfigInManagedResourceNamespace(t *testing.T) 
 	want := client.ObjectKey{Name: "cloudflare-golder-master", Namespace: "cloudflare-resources"}
 	if diff := cmp.Diff(want, gotKey); diff != "" {
 		t.Errorf("GetConfig(...): -want ProviderConfig key, +got:\n%s", diff)
+	}
+}
+
+// TestGetConfigForGeneratedManagedResource covers a managed resource whose
+// GetProviderConfigReference comes from generated code. Its method returns the
+// spec's ProviderConfigReference type, and GetConfig must accept that type.
+func TestGetConfigForGeneratedManagedResource(t *testing.T) {
+	mc := &test.MockClient{
+		MockGet: func(_ context.Context, _ client.ObjectKey, obj client.Object) error {
+			switch o := obj.(type) {
+			case *v1beta1.ProviderConfig:
+				o.Spec.Credentials.Source = "Secret"
+				o.Spec.Credentials.SecretRef = &xpv1.SecretKeySelector{Key: "credentials"}
+			case *corev1.Secret:
+				o.Data = map[string][]byte{"credentials": []byte(`{"token":"beef"}`)}
+			}
+			return nil
+		},
+	}
+
+	mg := &workersv1beta1.KVNamespace{
+		ObjectMeta: metav1.ObjectMeta{Namespace: "cloudflare-resources"},
+		Spec: workersv1beta1.KVNamespaceSpec{
+			ManagedResourceSpec: xpv1.ManagedResourceSpec{
+				ProviderConfigReference: &xpv1.ProviderConfigReference{Name: "cloudflare-golder-master"},
+			},
+		},
+	}
+
+	cfg, err := GetConfig(context.Background(), mc, mg)
+	if err != nil {
+		t.Fatalf("GetConfig(...): unexpected error: %v", err)
+	}
+	if cfg.Token == nil || *cfg.Token != "beef" {
+		t.Errorf("GetConfig(...): token = %v, want %q", cfg.Token, "beef")
 	}
 }
 
