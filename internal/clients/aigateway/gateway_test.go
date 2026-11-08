@@ -213,6 +213,12 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestNewClient(t *testing.T) {
+	if c := NewClient("test-token"); c == nil {
+		t.Fatal("NewClient(...) returned nil")
+	}
+}
+
 func TestIsNotFound(t *testing.T) {
 	cases := map[string]struct {
 		err  error

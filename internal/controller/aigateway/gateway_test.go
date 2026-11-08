@@ -255,6 +255,70 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+// TestConnect covers only the managed resource type check. The credential paths
+// go through clients.GetConfig, which cannot match generated managed resources
+// (see the note in the commit that added this resource), so they are not tested here.
+func TestConnect(t *testing.T) {
+	c := &gatewayConnector{
+		kube:        &test.MockClient{},
+		newClientFn: func(token string) aigatewayclient.Client { return &mockClient{} },
+	}
+
+	_, err := c.Connect(context.Background(), nil)
+	if diff := cmp.Diff(errors.New(errNotGateway), err, test.EquateErrors()); diff != "" {
+		t.Errorf("Connect(nil): -want error, +got error:\n%s", diff)
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	cases := map[string]struct {
+		reason  string
+		client  *mockClient
+		mg      resource.Managed
+		wantErr error
+	}{
+		"ErrNotGateway": {
+			reason:  "An error should be returned if the managed resource is not a Gateway",
+			client:  &mockClient{},
+			mg:      nil,
+			wantErr: errors.New(errNotGateway),
+		},
+		"UpdateError": {
+			reason: "Errors from the API are returned",
+			client: &mockClient{
+				MockUpdate: func(ctx context.Context, accountID, gatewayID string, p v1beta1.GatewayParameters) (aigatewayclient.Gateway, error) {
+					return aigatewayclient.Gateway{}, errBoom
+				},
+			},
+			mg:      gateway(withExternalName(externalName)),
+			wantErr: errors.Wrap(errBoom, errGatewayUpdate),
+		},
+		"Success": {
+			reason: "The update should target the external name with the desired parameters",
+			client: &mockClient{
+				MockUpdate: func(ctx context.Context, accountID, gatewayID string, p v1beta1.GatewayParameters) (aigatewayclient.Gateway, error) {
+					if accountID != testAccountID || gatewayID != externalName || p.CacheTTL != 60 {
+						return aigatewayclient.Gateway{}, errBoom
+					}
+					return aigatewayclient.Gateway{ID: externalName}, nil
+				},
+			},
+			mg: gateway(withExternalName(externalName), withCacheTTL(60)),
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &gatewayExternal{client: tc.client}
+			_, err := e.Update(context.Background(), tc.mg)
+
+			if diff := cmp.Diff(tc.wantErr, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\nUpdate(...): -want error, +got error:\n%s\n", tc.reason, diff)
+			}
+		})
+	}
+}
+
 func TestDelete(t *testing.T) {
 	cases := map[string]struct {
 		reason  string
