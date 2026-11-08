@@ -36,6 +36,13 @@ A Crossplane v2 provider for managing Cloudflare resources. All managed resource
 | Rule (transform) | `transform.cloudflare.m.crossplane.io/v1beta1` | URL/header transforms, redirects |
 | Application (Spectrum) | `spectrum.cloudflare.m.crossplane.io/v1beta1` | TCP/UDP acceleration |
 | Bucket (R2) | `r2.cloudflare.m.crossplane.io/v1beta1` | R2 object storage buckets |
+| PageRule | `pagerules.cloudflare.m.crossplane.io/v1beta1` | Legacy page rules (prefer Rulesets) |
+
+### Pages
+
+| Resource | API Group | Description |
+|----------|-----------|-------------|
+| Project, Deployment, Domain | `pages.cloudflare.m.crossplane.io/v1beta1` | Cloudflare Pages projects, deployments and custom domains |
 
 ### Workers & Tunnels
 
@@ -68,4 +75,4 @@ A Crossplane v2 provider for managing Cloudflare resources. All managed resource
 
 ## API Coverage Gaps
 
-Cloudflare API surface not yet modeled: Pages projects/deployments, D1/KV read-write data operations (namespaces only), Queues, Workers AI (inference and bindings), AI Gateway routes, logs, datasets, evaluations and billing, Waiting Rooms, Web Analytics rules, DNSSEC DS management beyond zone settings, account-level audit logs, and Spectrum origins beyond application tunnels.
+Cloudflare API surface not yet modeled: D1/KV read-write data operations (namespaces only), Queues, Workers AI (inference and bindings), AI Gateway routes, logs, datasets, evaluations and billing, Waiting Rooms, Web Analytics rules, DNSSEC DS management beyond zone settings, account-level audit logs, and Spectrum origins beyond application tunnels.

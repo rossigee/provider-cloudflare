@@ -1,0 +1,16 @@
+apiVersion: ssl.cloudflare.m.crossplane.io/v1beta1
+kind: CertificatePack
+metadata:
+  namespace: default
+  name: example-certificate-pack
+spec:
+  forProvider:
+    zone: "your-zone-id"
+    type: advanced
+    hosts:
+      - "example.com"
+      - "*.example.com"
+    validationMethod: txt
+    validityDays: 90
+  providerConfigRef:
+    name: default

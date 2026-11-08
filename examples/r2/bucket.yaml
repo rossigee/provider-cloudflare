@@ -1,0 +1,11 @@
+apiVersion: r2.cloudflare.m.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  namespace: default
+  name: example-r2-bucket
+spec:
+  forProvider:
+    name: example-bucket
+    locationHint: "wnam"
+  providerConfigRef:
+    name: default

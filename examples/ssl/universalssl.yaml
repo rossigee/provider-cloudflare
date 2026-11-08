@@ -1,0 +1,11 @@
+apiVersion: ssl.cloudflare.m.crossplane.io/v1beta1
+kind: UniversalSSL
+metadata:
+  namespace: default
+  name: example-universal-ssl
+spec:
+  forProvider:
+    zone: "your-zone-id"
+    enabled: true
+  providerConfigRef:
+    name: default
