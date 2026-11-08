@@ -26,11 +26,15 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/test"
+	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rossigee/provider-cloudflare/apis/aigateway/v1beta1"
+	pcv1beta1 "github.com/rossigee/provider-cloudflare/apis/v1beta1"
 	aigatewayclient "github.com/rossigee/provider-cloudflare/internal/clients/aigateway"
 )
 
@@ -70,6 +74,12 @@ type gatewayModifier func(*v1beta1.Gateway)
 
 func withExternalName(name string) gatewayModifier {
 	return func(g *v1beta1.Gateway) { meta.SetExternalName(g, name) }
+}
+
+func withProviderConfig() gatewayModifier {
+	return func(g *v1beta1.Gateway) {
+		g.Spec.ProviderConfigReference = &xpv1.ProviderConfigReference{Name: "default"}
+	}
 }
 
 func withCacheTTL(ttl int64) gatewayModifier {
@@ -255,18 +265,83 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-// TestConnect covers only the managed resource type check. The credential paths
-// go through clients.GetConfig, which cannot match generated managed resources
-// (see the note in the commit that added this resource), so they are not tested here.
 func TestConnect(t *testing.T) {
-	c := &gatewayConnector{
-		kube:        &test.MockClient{},
-		newClientFn: func(token string) aigatewayclient.Client { return &mockClient{} },
+	const credsKey = "creds"
+
+	// withCredentials returns a mock kube client whose ProviderConfig points at
+	// a secret containing creds as the JSON credentials blob.
+	withCredentials := func(creds string) *test.MockClient {
+		return &test.MockClient{
+			MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+				switch o := obj.(type) {
+				case *pcv1beta1.ProviderConfig:
+					o.Spec.Credentials.Source = xpv1.CredentialsSourceSecret
+					o.Spec.Credentials.SecretRef = &xpv1.SecretKeySelector{
+						SecretReference: xpv1.SecretReference{Name: "creds", Namespace: "crossplane-system"},
+						Key:             credsKey,
+					}
+				case *corev1.Secret:
+					o.Data = map[string][]byte{credsKey: []byte(creds)}
+				}
+				return nil
+			}),
+		}
 	}
 
-	_, err := c.Connect(context.Background(), nil)
-	if diff := cmp.Diff(errors.New(errNotGateway), err, test.EquateErrors()); diff != "" {
-		t.Errorf("Connect(nil): -want error, +got error:\n%s", diff)
+	cases := map[string]struct {
+		reason    string
+		kube      client.Client
+		mg        resource.Managed
+		wantErr   error
+		wantToken string
+	}{
+		"ErrNotGateway": {
+			reason:  "An error should be returned if the managed resource is not a Gateway",
+			kube:    &test.MockClient{},
+			mg:      nil,
+			wantErr: errors.New(errNotGateway),
+		},
+		"ErrGetCredentials": {
+			reason: "An error should be returned if the ProviderConfig cannot be read",
+			kube: &test.MockClient{
+				MockGet: test.NewMockGetFn(errBoom),
+			},
+			mg:      gateway(withProviderConfig()),
+			wantErr: errors.Wrap(errors.Wrap(errBoom, "cannot get ProviderConfig"), errGetCreds),
+		},
+		"ErrAPIKeyOnly": {
+			reason:  "Credentials that carry no API token should be rejected",
+			kube:    withCredentials(`{"apiKey":"key-123","email":"user@example.com"}`),
+			mg:      gateway(withProviderConfig()),
+			wantErr: errors.New(errNoAPIToken),
+		},
+		"Success": {
+			reason:    "A Gateway with API token credentials should connect with that token",
+			kube:      withCredentials(`{"token":"token-123"}`),
+			mg:        gateway(withProviderConfig()),
+			wantToken: "token-123",
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			var gotToken string
+			c := &gatewayConnector{
+				kube: tc.kube,
+				newClientFn: func(token string) aigatewayclient.Client {
+					gotToken = token
+					return &mockClient{}
+				},
+			}
+
+			_, err := c.Connect(context.Background(), tc.mg)
+			if diff := cmp.Diff(tc.wantErr, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\nConnect(...): -want error, +got error:\n%s\n", tc.reason, diff)
+			}
+			if gotToken != tc.wantToken {
+				t.Errorf("\n%s\nConnect(...): token = %q, want %q", tc.reason, gotToken, tc.wantToken)
+			}
+		})
 	}
 }
 
