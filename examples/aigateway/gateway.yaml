@@ -1,0 +1,18 @@
+apiVersion: aigateway.cloudflare.m.crossplane.io/v1beta1
+kind: Gateway
+metadata:
+  namespace: default
+  name: example-ai-gateway
+spec:
+  forProvider:
+    accountId: "your-account-id"
+    gatewayId: "example-ai-gateway"
+    cacheInvalidateOnUpdate: true
+    cacheTTL: 3600
+    collectLogs: true
+    rateLimitingInterval: 60
+    rateLimitingLimit: 100
+    rateLimitingTechnique: "fixed"
+    authentication: false
+  providerConfigRef:
+    name: default

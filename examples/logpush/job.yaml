@@ -1,0 +1,13 @@
+apiVersion: logpush.cloudflare.m.crossplane.io/v1beta1
+kind: Job
+metadata:
+  namespace: default
+  name: example-logpush-job
+spec:
+  forProvider:
+    name: example-http-requests
+    dataset: http_requests
+    destinationConf: "r2://example-logs/http?account-id=your-account-id"
+    enabled: true
+  providerConfigRef:
+    name: default

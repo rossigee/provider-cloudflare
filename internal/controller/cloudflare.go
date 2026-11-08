@@ -23,6 +23,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/rossigee/provider-cloudflare/internal/controller/access"
+	"github.com/rossigee/provider-cloudflare/internal/controller/aigateway"
 	"github.com/rossigee/provider-cloudflare/internal/controller/cache"
 	"github.com/rossigee/provider-cloudflare/internal/controller/device"
 	record "github.com/rossigee/provider-cloudflare/internal/controller/dns"
@@ -62,6 +63,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 		record.Setup,
 		application.Setup,
 		workers.Setup, // Workers client implementation now complete
+		aigateway.Setup,
 		ssl.Setup,
 		sslsaas.Setup,
 		transform.Setup,
@@ -100,6 +102,7 @@ func SetupMinimal(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimi
 		record.Setup,
 		application.Setup,
 		workers.Setup, // Workers client implementation now complete
+		aigateway.Setup,
 		ssl.Setup,
 		sslsaas.Setup,
 		transform.Setup,

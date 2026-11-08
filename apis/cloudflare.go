@@ -19,6 +19,7 @@ package apis
 
 import (
 	accessv1beta1 "github.com/rossigee/provider-cloudflare/apis/access/v1beta1"
+	aigatewayv1beta1 "github.com/rossigee/provider-cloudflare/apis/aigateway/v1beta1"
 	cachev1beta1 "github.com/rossigee/provider-cloudflare/apis/cache/v1beta1"
 	devicev1beta1 "github.com/rossigee/provider-cloudflare/apis/device/v1beta1"
 	dnsv1beta1 "github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
@@ -71,6 +72,7 @@ func init() {
 		devicev1beta1.SchemeBuilder.AddToScheme,
 		pagesv1beta1.SchemeBuilder.AddToScheme,
 		pagerulesv1beta1.SchemeBuilder.AddToScheme,
+		aigatewayv1beta1.SchemeBuilder.AddToScheme,
 	)
 }
 
