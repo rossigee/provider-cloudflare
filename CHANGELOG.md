@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.22.0] - 2026-11-08
+
+### Fixed
+- **Connect failed for generated resource types**: `GetConfig` asserted that
+  managed resources return `*xpv1.Reference` from `GetProviderConfigReference`.
+  The generated methods return the spec's `ProviderConfigReference`, so the
+  assertion never matched and every `Connect` failed with "providerConfigRef
+  not set". Affected: Cache, Device, EmailRouting, Logpush, PageRules, Pages,
+  R2, Rulesets, Security, SSL, Tunnel and Workers resources. This affected
+  v0.21.2 through v0.21.5 (PR #36).
+
+### Added
+- **AI Gateway**: `Gateway` resource in `aigateway.cloudflare.m.crossplane.io/v1beta1`
+  for AI Gateway settings (PR #37). Uses cloudflare-go v7 alongside the v0 SDK.
+  Routes, logs, datasets, evaluations, billing, DLP, guardrails and Workers AI
+  are not modeled.
+- **Zone DNSSEC**: `dnssecEnabled` on Zone, with DS, key tag and algorithm reported in status.
+  DNSSEC state is only read when `spec.forProvider.dnssecEnabled` is set, so zones that
+  do not manage DNSSEC do not depend on that endpoint.
+- **Universal SSL verification status**: `certificatePackCount` and `validationStatus`
+  reported on UniversalSSL. A failed verification lookup is returned as an error.
+- **Records, Spectrum, Rulesets, RateLimit and R2 test coverage** (PR #21).
+- **Examples and docs**: Pages and PageRule documented; examples for UniversalSSL,
+  TotalTLS, CertificatePack, origin Certificate, R2 Bucket, logpush Job and
+  email routing Rule.
+
+### Changed
+- **Workers**: `secret_text` binding type supported (PR #33).
+- **Namespaced references**: references are looked up in the managed resource's namespace (PR #32).
+- **Dependencies**: crossplane-runtime pinned to v2.5.0-dev; golangci-lint v2.15.0 (PRs #34, #35).
+
+## [v0.21.5] - 2026-11-03
+
+### Fixed
+- **ProviderConfig namespace**: the ProviderConfig is looked up in the managed
+  resource's namespace (PR #31).
+- **Pinned versions**: install and package versions updated (PR #27).
+- **RBAC**: core-group RBAC is no longer aggregated into view and edit roles (PR #26).
+
+### Changed
+- **Lint config**: uses the build submodule's lint configuration (PR #28).
+- **CI**: GitHub Actions pinned to commit SHAs (PR #29).
+- **Repository hygiene**: stale status and investigation logs removed (PR #30).
+
+## [v0.21.4] - 2026-10-26
+
+### Added
+- **Core version floor**: the package declares Crossplane core >= v2.5.0 (PR #22).
+
+### Fixed
+- **RBAC for events**: `events.k8s.io` permissions granted for the v2 EventRecorder (PR #18).
+- **CacheSyncTimeout**: increased to 30 minutes for resource-constrained clusters (PR #20).
+- **Rate limiting**: client-side QPS and burst for the Kubernetes API (PR #19).
+
+### Changed
+- **Build**: Go 1.27.3; crossplane-runtime v2.5.1; scanner actions pinned (PRs #23, #24, #25).
+
+## [v0.21.3] - 2026-10-03
+
+### Fixed
+- **Controller names**: qualified with the API group (PR #17).
+- **Release**: standardized release workflow applied (PR #16); image publishing neutralized (PR #14).
+
+### Changed
+- **Dependencies**: Crossplane APIs fork bumped (PR #15).
+
 ## [v0.21.2] - 2026-09-23
 
 ### Changed
