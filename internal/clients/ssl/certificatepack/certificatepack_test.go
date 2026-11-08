@@ -33,10 +33,18 @@ import (
 
 // MockCertificatePackAPI implements the CertificatePackAPI interface for testing
 type MockCertificatePackAPI struct {
+	MockListCertificatePacks         func(ctx context.Context, zoneID string) ([]cloudflare.CertificatePack, error)
 	MockCertificatePack              func(ctx context.Context, zoneID, certificatePackID string) (cloudflare.CertificatePack, error)
 	MockCreateCertificatePack        func(ctx context.Context, zoneID string, cert cloudflare.CertificatePackRequest) (cloudflare.CertificatePack, error)
 	MockDeleteCertificatePack        func(ctx context.Context, zoneID, certificateID string) error
 	MockRestartCertificateValidation func(ctx context.Context, zoneID, certificateID string) (cloudflare.CertificatePack, error)
+}
+
+func (m *MockCertificatePackAPI) ListCertificatePacks(ctx context.Context, zoneID string) ([]cloudflare.CertificatePack, error) {
+	if m.MockListCertificatePacks != nil {
+		return m.MockListCertificatePacks(ctx, zoneID)
+	}
+	return []cloudflare.CertificatePack{}, nil
 }
 
 func (m *MockCertificatePackAPI) CertificatePack(ctx context.Context, zoneID, certificatePackID string) (cloudflare.CertificatePack, error) {

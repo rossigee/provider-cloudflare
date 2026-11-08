@@ -70,6 +70,13 @@ spec:
                       AccountID is the account ID under which this Zone will be
                       created.
                     type: string
+                  dnssecEnabled:
+                    description: |-
+                      DNSSECEnabled enables or disables DNSSEC for this zone.
+                      When true, the provider will enable DNSSEC via the Cloudflare API.
+                      When false, the provider will disable (delete) DNSSEC.
+                      When unset, the current remote state is late-initialized and left alone.
+                    type: boolean
                   jumpStart:
                     default: false
                     description: |-
@@ -191,6 +198,25 @@ spec:
                       CreatedOn indicates when this zone was created
                       on Cloudflare.
                     format: date-time
+                    type: string
+                  dnssecAlgorithm:
+                    description: DNSSECAlgorithm is the DNSSEC algorithm.
+                    type: string
+                  dnssecDS:
+                    description: DNSSECDS is the DS record content for DNSSEC.
+                    type: string
+                  dnssecEnabled:
+                    description: |-
+                      DNSSECEnabled indicates whether DNSSEC is currently enabled
+                      for this zone (true when status is active or pending).
+                    type: boolean
+                  dnssecKeyTag:
+                    description: DNSSECKeyTag is the DNSSEC key tag.
+                    type: integer
+                  dnssecStatus:
+                    description: |-
+                      DNSSECStatus is the status of DNSSEC for this zone
+                      (active, pending, disabled, or unavailable).
                     type: string
                   modifiedOn:
                     description: |-

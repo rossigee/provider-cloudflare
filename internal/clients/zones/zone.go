@@ -30,10 +30,15 @@ import (
 )
 
 const (
-	errLoadSettings   = "error loading settings"
-	errUpdateZone     = "error updating zone"
-	errSetPlan        = "error setting plan"
-	errUpdateSettings = "error updating settings"
+	errLoadSettings     = "error loading settings"
+	errUpdateZone       = "error updating zone"
+	errSetPlan          = "error setting plan"
+	errUpdateSettings   = "error updating settings"
+	errGetDNSSEC        = "error getting DNSSEC status"
+	errEnableDNSSEC     = "error enabling DNSSEC"
+	errDisableDNSSEC    = "error disabling DNSSEC"
+	dnssecStatusActive  = "active"
+	dnssecStatusPending = "pending"
 
 	// Hardcoded string in cloudflare-go library.
 	// It is used to detect a 'not found' zone
@@ -232,6 +237,13 @@ type Client interface {
 	ZoneIDByName(zoneName string) (string, error)
 	ZoneSetPlan(ctx context.Context, zoneID string, planType string) error
 	ZoneSettings(ctx context.Context, zoneID string) (*cloudflare.ZoneSettingResponse, error)
+	ZoneDNSSECSetting(ctx context.Context, zoneID string) (cloudflare.ZoneDNSSEC, error)
+	UpdateZoneDNSSEC(ctx context.Context, zoneID string, options cloudflare.ZoneDNSSECUpdateOptions) (cloudflare.ZoneDNSSEC, error)
+	DeleteZoneDNSSEC(ctx context.Context, zoneID string) (string, error)
+	ZoneActivationCheck(ctx context.Context, zoneID string) (cloudflare.Response, error)
+	PurgeEverything(ctx context.Context, zoneID string) (cloudflare.PurgeCacheResponse, error)
+	PurgeCache(ctx context.Context, zoneID string, pcr cloudflare.PurgeCacheRequest) (cloudflare.PurgeCacheResponse, error)
+	ListZones(ctx context.Context, z ...string) ([]cloudflare.Zone, error)
 }
 
 // NewClient returns a new Cloudflare API client for working with Zones.
@@ -260,6 +272,37 @@ func GenerateObservation(in cloudflare.Zone) v1beta1.ZoneObservation {
 	}
 
 	return observation
+}
+
+// dnssecEnabledFromStatus returns true if the DNSSEC status string
+// indicates DNSSEC is enabled (active) or being enabled (pending).
+func dnssecEnabledFromStatus(status string) bool {
+	return status == dnssecStatusActive || status == dnssecStatusPending
+}
+
+// DNSSECObservation is the observed DNSSEC state of a zone.
+type DNSSECObservation struct {
+	Enabled   bool
+	Status    string
+	DS        string
+	KeyTag    int
+	Algorithm string
+}
+
+// ObserveDNSSEC fetches the current DNSSEC state of a zone.
+func ObserveDNSSEC(ctx context.Context, client Client, zoneID string) (DNSSECObservation, error) {
+	d, err := client.ZoneDNSSECSetting(ctx, zoneID)
+	if err != nil {
+		return DNSSECObservation{}, errors.Wrap(err, errGetDNSSEC)
+	}
+
+	return DNSSECObservation{
+		Enabled:   dnssecEnabledFromStatus(d.Status),
+		Status:    d.Status,
+		DS:        d.DS,
+		KeyTag:    d.KeyTag,
+		Algorithm: d.Algorithm,
+	}, nil
 }
 
 // LateInitialize initializes ZoneParameters based on the remote resource
@@ -681,7 +724,7 @@ func GetChangedSettings(czs, dzs *v1beta1.ZoneSettings) []cloudflare.ZoneSetting
 
 // UpToDate checks if the remote resource is up to date with the
 // requested resource parameters.
-func UpToDate(spec *v1beta1.ZoneParameters, z cloudflare.Zone, ozs *v1beta1.ZoneSettings) bool { //nolint:gocyclo
+func UpToDate(spec *v1beta1.ZoneParameters, z cloudflare.Zone, ozs *v1beta1.ZoneSettings, dnssecObserved *bool) bool { //nolint:gocyclo
 	// NOTE: Gocyclo ignored here because this method has to check each field
 	// properly. Avoid putting any more complex logic here, if possible.
 
@@ -700,6 +743,11 @@ func UpToDate(spec *v1beta1.ZoneParameters, z cloudflare.Zone, ozs *v1beta1.Zone
 	// Since it can take a month for the plan to change from pending
 	// to active.
 	if spec.PlanID != nil && *spec.PlanID != z.Plan.ID && *spec.PlanID != z.PlanPending.ID {
+		return false
+	}
+
+	// DNSSEC enablement mismatch triggers an update.
+	if spec.DNSSECEnabled != nil && dnssecObserved != nil && *spec.DNSSECEnabled != *dnssecObserved {
 		return false
 	}
 
@@ -740,6 +788,28 @@ func UpdateZone(ctx context.Context, client Client, zoneID string, spec v1beta1.
 		err := client.ZoneSetPlan(ctx, zoneID, *spec.PlanID)
 		if err != nil {
 			return errors.Wrap(err, errSetPlan)
+		}
+	}
+
+	// Reconcile DNSSEC enablement.
+	if spec.DNSSECEnabled != nil {
+		cur, err := client.ZoneDNSSECSetting(ctx, zoneID)
+		if err != nil {
+			return errors.Wrap(err, errGetDNSSEC)
+		}
+		curEnabled := dnssecEnabledFromStatus(cur.Status)
+
+		switch {
+		case *spec.DNSSECEnabled && !curEnabled:
+			if _, err := client.UpdateZoneDNSSEC(ctx, zoneID, cloudflare.ZoneDNSSECUpdateOptions{
+				Status: dnssecStatusActive,
+			}); err != nil {
+				return errors.Wrap(err, errEnableDNSSEC)
+			}
+		case !*spec.DNSSECEnabled && curEnabled:
+			if _, err := client.DeleteZoneDNSSEC(ctx, zoneID); err != nil {
+				return errors.Wrap(err, errDisableDNSSEC)
+			}
 		}
 	}
 

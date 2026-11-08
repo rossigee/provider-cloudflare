@@ -26,10 +26,16 @@ import (
 	"github.com/rossigee/provider-cloudflare/internal/clients"
 )
 
+// certificateStatusActive is the certificate pack status Cloudflare reports
+// once a Universal SSL certificate pack is fully issued.
+const certificateStatusActive = "active"
+
 // UniversalSSLAPI defines the interface for Universal SSL operations
 type UniversalSSLAPI interface {
 	UniversalSSLSettingDetails(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error)
 	EditUniversalSSLSetting(ctx context.Context, zoneID string, setting cloudflare.UniversalSSLSetting) (cloudflare.UniversalSSLSetting, error)
+	UniversalSSLVerificationDetails(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error)
+	UpdateUniversalSSLCertificatePackValidationMethod(ctx context.Context, zoneID string, certPackUUID string, setting cloudflare.UniversalSSLCertificatePackValidationMethodSetting) (cloudflare.UniversalSSLCertificatePackValidationMethodSetting, error)
 }
 
 // CloudflareUniversalSSLClient is a Cloudflare API client for Universal SSL settings.
@@ -42,7 +48,7 @@ func NewClient(client UniversalSSLAPI) *CloudflareUniversalSSLClient {
 	return &CloudflareUniversalSSLClient{client: client}
 }
 
-// Get retrieves Universal SSL settings for a zone.
+// Get retrieves Universal SSL settings for a zone, including verification details.
 func (c *CloudflareUniversalSSLClient) Get(ctx context.Context, zoneID string) (*v1beta1.UniversalSSLObservation, error) {
 	settings, err := c.client.UniversalSSLSettingDetails(ctx, zoneID)
 	if err != nil {
@@ -52,7 +58,33 @@ func (c *CloudflareUniversalSSLClient) Get(ctx context.Context, zoneID string) (
 		return nil, errors.Wrap(err, "cannot get universal ssl settings")
 	}
 
-	return convertUniversalSSLToObservation(settings), nil
+	obs := convertUniversalSSLToObservation(settings)
+
+	details, err := c.client.UniversalSSLVerificationDetails(ctx, zoneID)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot get universal ssl verification details")
+	}
+	if len(details) > 0 {
+		count := len(details)
+		obs.CertificatePackCount = &count
+		status := aggregateValidationStatus(details)
+		obs.ValidationStatus = &status
+	}
+
+	return obs, nil
+}
+
+// aggregateValidationStatus reports the first certificate pack status that is
+// not active, so a pack that is pending or failed is never hidden behind an
+// active one. It returns active when every pack is active. details must not be
+// empty.
+func aggregateValidationStatus(details []cloudflare.UniversalSSLVerificationDetails) string {
+	for _, d := range details {
+		if d.CertificateStatus != certificateStatusActive {
+			return d.CertificateStatus
+		}
+	}
+	return certificateStatusActive
 }
 
 // Update updates Universal SSL settings for a zone.

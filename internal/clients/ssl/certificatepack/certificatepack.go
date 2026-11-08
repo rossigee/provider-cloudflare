@@ -29,6 +29,7 @@ import (
 
 // CertificatePackAPI defines the interface for Certificate Pack operations
 type CertificatePackAPI interface {
+	ListCertificatePacks(ctx context.Context, zoneID string) ([]cloudflare.CertificatePack, error)
 	CertificatePack(ctx context.Context, zoneID, certificatePackID string) (cloudflare.CertificatePack, error)
 	CreateCertificatePack(ctx context.Context, zoneID string, cert cloudflare.CertificatePackRequest) (cloudflare.CertificatePack, error)
 	DeleteCertificatePack(ctx context.Context, zoneID, certificateID string) error

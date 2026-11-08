@@ -17,17 +17,356 @@ limitations under the License.
 package records
 
 import (
+	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	"github.com/rossigee/provider-cloudflare/apis/dns/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 )
 
 func uint16Ptr(v uint16) *uint16 {
 	return &v
+}
+
+func stringPtr(s string) *string {
+	return &s
+}
+
+// mockRecordsAPI mocks the DNS Records API client
+type mockRecordsAPI struct {
+	MockCreateDNSRecord  func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error)
+	MockUpdateDNSRecord  func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error)
+	MockGetDNSRecord     func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error)
+	MockDeleteDNSRecord  func(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error
+	MockListDNSRecords   func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListDNSRecordsParams) ([]cloudflare.DNSRecord, *cloudflare.ResultInfo, error)
+	MockExportDNSRecords func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ExportDNSRecordsParams) (string, error)
+	MockImportDNSRecords func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ImportDNSRecordsParams) error
+}
+
+func (m *mockRecordsAPI) CreateDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+	return m.MockCreateDNSRecord(ctx, rc, params)
+}
+
+func (m *mockRecordsAPI) UpdateDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+	return m.MockUpdateDNSRecord(ctx, rc, params)
+}
+
+func (m *mockRecordsAPI) GetDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) (cloudflare.DNSRecord, error) {
+	return m.MockGetDNSRecord(ctx, rc, recordID)
+}
+
+func (m *mockRecordsAPI) DeleteDNSRecord(ctx context.Context, rc *cloudflare.ResourceContainer, recordID string) error {
+	return m.MockDeleteDNSRecord(ctx, rc, recordID)
+}
+
+func (m *mockRecordsAPI) ListDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ListDNSRecordsParams) ([]cloudflare.DNSRecord, *cloudflare.ResultInfo, error) {
+	if m.MockListDNSRecords != nil {
+		return m.MockListDNSRecords(ctx, rc, params)
+	}
+	return nil, nil, errors.New("not implemented")
+}
+
+func (m *mockRecordsAPI) ExportDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ExportDNSRecordsParams) (string, error) {
+	if m.MockExportDNSRecords != nil {
+		return m.MockExportDNSRecords(ctx, rc, params)
+	}
+	return "", errors.New("not implemented")
+}
+
+func (m *mockRecordsAPI) ImportDNSRecords(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.ImportDNSRecordsParams) error {
+	if m.MockImportDNSRecords != nil {
+		return m.MockImportDNSRecords(ctx, rc, params)
+	}
+	return errors.New("not implemented")
+}
+
+func TestIsRecordNotFound(t *testing.T) {
+	cases := map[string]struct {
+		reason string
+		err    error
+		want   bool
+	}{
+		"RecordNotFound": {
+			reason: "Should return true when error contains record not found code",
+			err:    errors.New("error code 81044"),
+			want:   true,
+		},
+		"RecordNotFoundFullMessage": {
+			reason: "Should match error code 81044 in full message",
+			err:    errors.New("HTTP status 400: error code 81044: Invalid record type"),
+			want:   true,
+		},
+		"OtherError": {
+			reason: "Should return false for other errors",
+			err:    errors.New("some other error"),
+			want:   false,
+		},
+		"NilError": {
+			reason: "Should panic when error is nil - typical error handling",
+			err:    nil,
+			want:   false, // Would panic in real usage
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			if tc.err == nil {
+				return // Skip nil check as it would panic
+			}
+			got := IsRecordNotFound(tc.err)
+			if got != tc.want {
+				t.Errorf("%s: expected %v, got %v", tc.reason, tc.want, got)
+			}
+		})
+	}
+}
+
+func TestGenerateObservation(t *testing.T) {
+	now := time.Now()
+
+	cases := map[string]struct {
+		reason string
+		input  cloudflare.DNSRecord
+		want   v1beta1.RecordObservation
+	}{
+		"BasicRecord": {
+			reason: "Should generate observation from basic record",
+			input: cloudflare.DNSRecord{
+				ID:         "record-123",
+				Type:       "A",
+				Name:       "www.example.com",
+				Content:    "192.0.2.1",
+				TTL:        3600,
+				Proxiable:  true,
+				Proxied:    ptr.To(false),
+				CreatedOn:  now,
+				ModifiedOn: now,
+			},
+			want: v1beta1.RecordObservation{
+				Proxiable:  true,
+				FQDN:       "www.example.com",
+				Zone:       "",
+				Locked:     false,
+				CreatedOn:  &metav1.Time{Time: now},
+				ModifiedOn: &metav1.Time{Time: now},
+			},
+		},
+		"ProxiedRecord": {
+			reason: "Should handle proxied records",
+			input: cloudflare.DNSRecord{
+				ID:         "record-456",
+				Type:       "A",
+				Name:       "app.example.com",
+				Content:    "192.0.2.2",
+				TTL:        120,
+				Proxiable:  true,
+				Proxied:    ptr.To(true),
+				CreatedOn:  now,
+				ModifiedOn: now,
+			},
+			want: v1beta1.RecordObservation{
+				Proxiable:  true,
+				FQDN:       "app.example.com",
+				Zone:       "",
+				Locked:     false,
+				CreatedOn:  &metav1.Time{Time: now},
+				ModifiedOn: &metav1.Time{Time: now},
+			},
+		},
+		"CNAMERecord": {
+			reason: "Should handle CNAME records",
+			input: cloudflare.DNSRecord{
+				ID:         "record-789",
+				Type:       "CNAME",
+				Name:       "alias.example.com",
+				Content:    "target.example.com",
+				TTL:        1800,
+				Proxiable:  false,
+				CreatedOn:  now,
+				ModifiedOn: now,
+			},
+			want: v1beta1.RecordObservation{
+				Proxiable:  false,
+				FQDN:       "alias.example.com",
+				Zone:       "",
+				Locked:     false,
+				CreatedOn:  &metav1.Time{Time: now},
+				ModifiedOn: &metav1.Time{Time: now},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GenerateObservation(tc.input)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("%s: -want, +got:\n%s", tc.reason, diff)
+			}
+		})
+	}
+}
+
+func TestUpdateRecord(t *testing.T) {
+	ctx := context.Background()
+	zoneID := "zone-123"
+	recordID := "record-456"
+
+	cases := map[string]struct {
+		reason  string
+		mock    func() Client
+		spec    *v1beta1.RecordParameters
+		wantErr bool
+	}{
+		"SuccessUpdateA": {
+			reason: "Should successfully update A record",
+			mock: func() Client {
+				return &mockRecordsAPI{
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						if params.Type != "A" || params.Content != "192.0.2.1" {
+							t.Errorf("Unexpected params: type=%s, content=%s", params.Type, params.Content)
+						}
+						return cloudflare.DNSRecord{
+							ID:      recordID,
+							Type:    "A",
+							Name:    params.Name,
+							Content: params.Content,
+							TTL:     params.TTL,
+						}, nil
+					},
+				}
+			},
+			spec: &v1beta1.RecordParameters{
+				Type:    stringPtr("A"),
+				Name:    "www.example.com",
+				Content: "192.0.2.1",
+				TTL:     ptr.To[int64](3600),
+				Proxied: ptr.To(false),
+			},
+			wantErr: false,
+		},
+		"SuccessUpdateWithPriority": {
+			reason: "Should successfully update record with priority",
+			mock: func() Client {
+				return &mockRecordsAPI{
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						if params.Type != "MX" || params.Priority == nil {
+							t.Errorf("Expected MX record with priority")
+						}
+						return cloudflare.DNSRecord{
+							ID:       recordID,
+							Type:     "MX",
+							Name:     params.Name,
+							Content:  params.Content,
+							Priority: uint16Ptr(uint16(*params.Priority)),
+						}, nil
+					},
+				}
+			},
+			spec: &v1beta1.RecordParameters{
+				Type:     stringPtr("MX"),
+				Name:     "example.com",
+				Content:  "mail.example.com",
+				Priority: ptr.To[int32](10),
+			},
+			wantErr: false,
+		},
+		"SuccessUpdateSRV": {
+			reason: "Should successfully update SRV record",
+			mock: func() Client {
+				return &mockRecordsAPI{
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						if params.Type != "SRV" || params.Data == nil {
+							t.Errorf("Expected SRV record with Data field")
+						}
+						return cloudflare.DNSRecord{
+							ID:   recordID,
+							Type: "SRV",
+							Name: params.Name,
+						}, nil
+					},
+				}
+			},
+			spec: &v1beta1.RecordParameters{
+				Type:     stringPtr("SRV"),
+				Name:     "_http._tcp.example.com",
+				Content:  "target.example.com",
+				Priority: ptr.To[int32](10),
+				Weight:   ptr.To[int32](20),
+				Port:     ptr.To[int32](80),
+			},
+			wantErr: false,
+		},
+		"SuccessUpdateTLSA": {
+			reason: "Should successfully update TLSA record",
+			mock: func() Client {
+				return &mockRecordsAPI{
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						if params.Type != "TLSA" || params.Data == nil {
+							t.Errorf("Expected TLSA record with Data field")
+						}
+						return cloudflare.DNSRecord{
+							ID:   recordID,
+							Type: "TLSA",
+							Name: params.Name,
+						}, nil
+					},
+				}
+			},
+			spec: &v1beta1.RecordParameters{
+				Type:    stringPtr("TLSA"),
+				Name:    "_443._tcp.example.com",
+				Content: "3 1 1 0b9fa5a59eed715c26c1020c711b4f6ec42d58b0015e14337a39dad301c5afc3",
+			},
+			wantErr: false,
+		},
+		"ErrInvalidTLSA": {
+			reason: "Should return error for invalid TLSA content",
+			mock: func() Client {
+				return &mockRecordsAPI{
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{}, nil
+					},
+				}
+			},
+			spec: &v1beta1.RecordParameters{
+				Type:    stringPtr("TLSA"),
+				Name:    "_443._tcp.example.com",
+				Content: "invalid tlsa",
+			},
+			wantErr: true,
+		},
+		"ErrUpdateFailed": {
+			reason: "Should return error when API call fails",
+			mock: func() Client {
+				return &mockRecordsAPI{
+					MockUpdateDNSRecord: func(ctx context.Context, rc *cloudflare.ResourceContainer, params cloudflare.UpdateDNSRecordParams) (cloudflare.DNSRecord, error) {
+						return cloudflare.DNSRecord{}, errors.New("API error")
+					},
+				}
+			},
+			spec: &v1beta1.RecordParameters{
+				Type:    stringPtr("A"),
+				Name:    "www.example.com",
+				Content: "192.0.2.1",
+			},
+			wantErr: true,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := UpdateRecord(ctx, tc.mock(), zoneID, recordID, tc.spec)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("%s: expected error %v, got %v", tc.reason, tc.wantErr, err != nil)
+			}
+		})
+	}
 }
 
 func TestLateInitialize(t *testing.T) {

@@ -31,8 +31,10 @@ import (
 
 // MockUniversalSSLAPI implements the UniversalSSLAPI interface for testing
 type MockUniversalSSLAPI struct {
-	MockUniversalSSLSettingDetails func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error)
-	MockEditUniversalSSLSetting    func(ctx context.Context, zoneID string, setting cloudflare.UniversalSSLSetting) (cloudflare.UniversalSSLSetting, error)
+	MockUniversalSSLSettingDetails                        func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error)
+	MockEditUniversalSSLSetting                           func(ctx context.Context, zoneID string, setting cloudflare.UniversalSSLSetting) (cloudflare.UniversalSSLSetting, error)
+	MockUniversalSSLVerificationDetails                   func(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error)
+	MockUpdateUniversalSSLCertificatePackValidationMethod func(ctx context.Context, zoneID string, certPackUUID string, setting cloudflare.UniversalSSLCertificatePackValidationMethodSetting) (cloudflare.UniversalSSLCertificatePackValidationMethodSetting, error)
 }
 
 func (m *MockUniversalSSLAPI) UniversalSSLSettingDetails(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error) {
@@ -45,6 +47,20 @@ func (m *MockUniversalSSLAPI) UniversalSSLSettingDetails(ctx context.Context, zo
 func (m *MockUniversalSSLAPI) EditUniversalSSLSetting(ctx context.Context, zoneID string, setting cloudflare.UniversalSSLSetting) (cloudflare.UniversalSSLSetting, error) {
 	if m.MockEditUniversalSSLSetting != nil {
 		return m.MockEditUniversalSSLSetting(ctx, zoneID, setting)
+	}
+	return setting, nil
+}
+
+func (m *MockUniversalSSLAPI) UniversalSSLVerificationDetails(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error) {
+	if m.MockUniversalSSLVerificationDetails != nil {
+		return m.MockUniversalSSLVerificationDetails(ctx, zoneID)
+	}
+	return []cloudflare.UniversalSSLVerificationDetails{}, nil
+}
+
+func (m *MockUniversalSSLAPI) UpdateUniversalSSLCertificatePackValidationMethod(ctx context.Context, zoneID string, certPackUUID string, setting cloudflare.UniversalSSLCertificatePackValidationMethodSetting) (cloudflare.UniversalSSLCertificatePackValidationMethodSetting, error) {
+	if m.MockUpdateUniversalSSLCertificatePackValidationMethod != nil {
+		return m.MockUpdateUniversalSSLCertificatePackValidationMethod(ctx, zoneID, certPackUUID, setting)
 	}
 	return setting, nil
 }
@@ -91,6 +107,62 @@ func TestGet(t *testing.T) {
 			want: want{
 				obs: &v1beta1.UniversalSSLObservation{
 					Enabled: ptr.To(true),
+				},
+				err: nil,
+			},
+		},
+		"GetUniversalSSLMultiplePacks": {
+			reason: "Get should count certificate packs and report the first non-active validation status",
+			fields: fields{
+				client: &MockUniversalSSLAPI{
+					MockUniversalSSLSettingDetails: func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error) {
+						return cloudflare.UniversalSSLSetting{Enabled: true}, nil
+					},
+					MockUniversalSSLVerificationDetails: func(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error) {
+						return []cloudflare.UniversalSSLVerificationDetails{
+							{CertificateStatus: "active"},
+							{CertificateStatus: "pending_validation"},
+							{CertificateStatus: "timed_out"},
+						}, nil
+					},
+				},
+			},
+			args: args{
+				ctx:    context.Background(),
+				zoneID: zoneID,
+			},
+			want: want{
+				obs: &v1beta1.UniversalSSLObservation{
+					Enabled:              ptr.To(true),
+					CertificatePackCount: ptr.To(3),
+					ValidationStatus:     ptr.To("pending_validation"),
+				},
+				err: nil,
+			},
+		},
+		"GetUniversalSSLAllActive": {
+			reason: "Get should report active when every certificate pack is active",
+			fields: fields{
+				client: &MockUniversalSSLAPI{
+					MockUniversalSSLSettingDetails: func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error) {
+						return cloudflare.UniversalSSLSetting{Enabled: true}, nil
+					},
+					MockUniversalSSLVerificationDetails: func(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error) {
+						return []cloudflare.UniversalSSLVerificationDetails{
+							{CertificateStatus: "active"},
+						}, nil
+					},
+				},
+			},
+			args: args{
+				ctx:    context.Background(),
+				zoneID: zoneID,
+			},
+			want: want{
+				obs: &v1beta1.UniversalSSLObservation{
+					Enabled:              ptr.To(true),
+					CertificatePackCount: ptr.To(1),
+					ValidationStatus:     ptr.To("active"),
 				},
 				err: nil,
 			},
@@ -151,6 +223,27 @@ func TestGet(t *testing.T) {
 			want: want{
 				obs: nil,
 				err: errors.Wrap(errBoom, "cannot get universal ssl settings"),
+			},
+		},
+		"GetUniversalSSLVerificationAPIError": {
+			reason: "Get should return wrapped error when verification details call fails",
+			fields: fields{
+				client: &MockUniversalSSLAPI{
+					MockUniversalSSLSettingDetails: func(ctx context.Context, zoneID string) (cloudflare.UniversalSSLSetting, error) {
+						return cloudflare.UniversalSSLSetting{Enabled: true}, nil
+					},
+					MockUniversalSSLVerificationDetails: func(ctx context.Context, zoneID string) ([]cloudflare.UniversalSSLVerificationDetails, error) {
+						return nil, errBoom
+					},
+				},
+			},
+			args: args{
+				ctx:    context.Background(),
+				zoneID: zoneID,
+			},
+			want: want{
+				obs: nil,
+				err: errors.Wrap(errBoom, "cannot get universal ssl verification details"),
 			},
 		},
 	}
