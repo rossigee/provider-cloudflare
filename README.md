@@ -1,4 +1,13 @@
-# provider-cloudflare
+# provider-cloudflare (archived)
+
+> [!WARNING]
+> This project has been archived as per [Crossplane's project
+> governance](https://github.com/crossplane/crossplane/blob/main/GOVERNANCE.md#archival-policy)
+> for community extension projects and is no longer actively maintained.
+>
+> It is recommended to use the
+> [provider-upjet-cloudflare](https://github.com/crossplane-contrib/provider-upjet-cloudflare)
+> project instead.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/rossigee/provider-cloudflare/ci.yml?branch=master)][build]
 [![Version](https://img.shields.io/github/v/release/rossigee/provider-cloudflare)][releases]
