@@ -81,11 +81,13 @@ func NewClient(c Config, hc *http.Client) (*cloudflare.API, error) {
 // GetConfig returns a valid Cloudflare API configuration
 func GetConfig(ctx context.Context, c client.Client, mg resource.Managed) (*Config, error) {
 	// Get provider config reference from the managed resource's ResourceSpec
-	var pcRef *xpv1.Reference
+	var pcRef *xpv1.ProviderConfigReference
 
 	// Type assert to extract the ProviderConfigReference from the managed resource
 	switch mr := mg.(type) {
-	case interface{ GetProviderConfigReference() *xpv1.Reference }:
+	case interface {
+		GetProviderConfigReference() *xpv1.ProviderConfigReference
+	}:
 		pcRef = mr.GetProviderConfigReference()
 	default:
 		return nil, errors.New(errPCRef)
@@ -100,11 +102,13 @@ func GetConfig(ctx context.Context, c client.Client, mg resource.Managed) (*Conf
 // UseProviderConfig produces a config that can be used to authenticate with Cloudflare.
 func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed) (*Config, error) {
 	// Get provider config reference from the managed resource's ResourceSpec
-	var pcRef *xpv1.Reference
+	var pcRef *xpv1.ProviderConfigReference
 
 	// Type assert to extract the ProviderConfigReference from the managed resource
 	switch mr := mg.(type) {
-	case interface{ GetProviderConfigReference() *xpv1.Reference }:
+	case interface {
+		GetProviderConfigReference() *xpv1.ProviderConfigReference
+	}:
 		pcRef = mr.GetProviderConfigReference()
 	default:
 		return nil, errors.New(errPCRef)
