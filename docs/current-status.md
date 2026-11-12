@@ -6,7 +6,7 @@
 - ✅ **`make lint`**: 0 issues - All linting requirements satisfied
 - ✅ **`make test`**: All unit tests passing with existing coverage
 - ✅ **`make build`**: Successful compilation and binary generation
-- ✅ **Dependencies**: Go 1.27.3, cloudflare-go v0.119.0 (existing resources) and v7.14.0 (AI Gateway), crossplane-runtime v2.5.0-dev
+- ✅ **Dependencies**: Go 1.27.4, cloudflare-go v0.119.0 (existing resources) and v7.14.0 (AI Gateway), crossplane-runtime v2.5.0-dev
 
 ### **Crossplane v2 Migration: COMPLETE**
 - ✅ **v2-native architecture**: Full migration to Crossplane v2 patterns
