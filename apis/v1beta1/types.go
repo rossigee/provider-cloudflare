@@ -25,6 +25,15 @@ import (
 type ProviderConfigSpec struct {
 	// Credentials required to authenticate to this provider.
 	Credentials ProviderCredentials `json:"credentials"`
+
+	// AccountID is the Cloudflare account ID used for account-scoped resources
+	// (Workers scripts, KV namespaces, cron triggers, domains and subdomains).
+	// It must be set whenever the API token can see more than one account:
+	// the API does not guarantee account ordering, so guessing accounts[0]
+	// would manage resources in the wrong account.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	AccountID *string `json:"accountID,omitempty"`
 }
 
 // ProviderCredentials required to authenticate.

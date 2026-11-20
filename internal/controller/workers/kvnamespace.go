@@ -100,7 +100,7 @@ func (c *kvNamespaceConnector) Connect(ctx context.Context, mg resource.Managed)
 	}
 
 	// Wrap with adapter to implement ClientInterface
-	adapter := clients.NewCloudflareAPIAdapter(api)
+	adapter := clients.NewCloudflareAPIAdapter(api, clients.ConfiguredAccountID(config))
 	return &kvNamespaceExternal{client: adapter}, nil
 }
 

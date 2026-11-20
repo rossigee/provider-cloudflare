@@ -102,7 +102,7 @@ func (c *routeConnector) Connect(ctx context.Context, mg resource.Managed) (mana
 	}
 
 	// Wrap with adapter to implement ClientInterface
-	adapter := clients.NewCloudflareAPIAdapter(api)
+	adapter := clients.NewCloudflareAPIAdapter(api, clients.ConfiguredAccountID(config))
 	return &routeExternal{client: adapter, kube: c.kube}, nil
 }
 

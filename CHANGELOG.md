@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v0.24.0] - 2026-11-20
+
+### Fixed
+- Account-scoped resources (Workers scripts, KV namespaces, cron triggers,
+  domains, subdomains, R2 buckets and Logpush jobs) now use the `accountID`
+  declared on the ProviderConfig. Previously the provider blindly used
+  `accounts[0]` from the token, which silently targeted the wrong account
+  whenever a token could see more than one. Removed the hardcoded account-ID
+  fallback as well.
+- When no `accountID` is configured and the token sees multiple accounts (or
+  the account list fails), account resolution returns empty and API calls fail
+  loudly instead of guessing.
+
 ## [v0.23.0] - 2026-11-19
 
 ### Changed

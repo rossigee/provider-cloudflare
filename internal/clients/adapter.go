@@ -29,31 +29,43 @@ type CloudflareAPIAdapter struct {
 	accountID string
 }
 
-// NewCloudflareAPIAdapter creates a new adapter for cloudflare.API
-func NewCloudflareAPIAdapter(api *cloudflare.API) *CloudflareAPIAdapter {
+// NewCloudflareAPIAdapter creates a new adapter for cloudflare.API. accountID
+// should come from the ProviderConfig (or credentials secret) so account-scoped
+// resources are never placed in a guessed account.
+func NewCloudflareAPIAdapter(api *cloudflare.API, accountID string) *CloudflareAPIAdapter {
 	return &CloudflareAPIAdapter{
-		api: api,
+		api:       api,
+		accountID: accountID,
 	}
 }
 
-// GetAccountID returns the account ID
+type listAccountsFn func(context.Context, cloudflare.AccountsListParams) ([]cloudflare.Account, cloudflare.ResultInfo, error)
+
+// resolveAccountID returns the account to use for account-scoped operations.
+// A configured value always wins. When none is configured we may only fall
+// back to the API when the answer is unambiguous: Cloudflare does not promise
+// account ordering, so taking accounts[0] from a multi-account token silently
+// manages Workers in the wrong account. An empty result makes callers fail
+// loudly instead, which is preferable to corrupting another tenant's resources.
+func resolveAccountID(ctx context.Context, configured string, listAccounts listAccountsFn) string {
+	if configured != "" {
+		return configured
+	}
+	accounts, _, err := listAccounts(ctx, cloudflare.AccountsListParams{})
+	if err != nil || len(accounts) != 1 {
+		return ""
+	}
+	return accounts[0].ID
+}
+
+// GetAccountID returns the account ID, or an empty string when it cannot be
+// determined unambiguously. Account-scoped API calls will then fail with a
+// clear "invalid account id" error rather than targeting the wrong account.
 func (a *CloudflareAPIAdapter) GetAccountID() string {
 	if a.accountID != "" {
 		return a.accountID
 	}
-
-	// Try to get account ID from Cloudflare API by listing accounts
-	// Most users have access to only one account, so we'll use the first one
-	accounts, _, err := a.api.Accounts(context.Background(), cloudflare.AccountsListParams{})
-	if err == nil && len(accounts) > 0 {
-		a.accountID = accounts[0].ID
-		// Log successful account ID retrieval
-		return a.accountID
-	}
-
-	// If API call fails, use the known account ID for this deployment
-	// Log fallback usage for debugging
-	a.accountID = "c1b74f148aee28025816e104a92622c5"
+	a.accountID = resolveAccountID(context.Background(), "", a.api.Accounts)
 	return a.accountID
 }
 

@@ -59,6 +59,20 @@ type AuthByAPIToken struct {
 type Config struct {
 	*AuthByAPIKey   `json:",inline"`
 	*AuthByAPIToken `json:",inline"`
+
+	// AccountID is the Cloudflare account to use for account-scoped operations.
+	// It may be supplied either in the ProviderConfig spec or in the credentials
+	// secret; the ProviderConfig spec takes precedence when both are set.
+	AccountID *string `json:"accountID,omitempty"`
+}
+
+// ConfiguredAccountID returns the account ID from the config as a plain
+// string, or an empty string when it was not configured.
+func ConfiguredAccountID(c *Config) string {
+	if c != nil && c.AccountID != nil {
+		return *c.AccountID
+	}
+	return ""
 }
 
 // NewClient creates a new Cloudflare Client with provided Credentials.
@@ -140,7 +154,17 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 	if err != nil {
 		return nil, errors.Wrap(err, errGetPC)
 	}
-	return UseProviderSecret(ctx, data)
+	config, err := UseProviderSecret(ctx, data)
+	if err != nil {
+		return nil, err
+	}
+	// An account ID declared on the ProviderConfig always wins over one in the
+	// credentials secret. This is the supported way to disambiguate a token
+	// that can see multiple Cloudflare accounts.
+	if pc.Spec.AccountID != nil {
+		config.AccountID = pc.Spec.AccountID
+	}
+	return config, nil
 }
 
 // UseProviderSecret extracts a JSON blob containing configuration

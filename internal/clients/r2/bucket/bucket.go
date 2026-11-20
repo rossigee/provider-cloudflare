@@ -48,32 +48,32 @@ type BucketClient struct {
 	accountID string
 }
 
-// NewClient creates a new R2 Bucket client.
-func NewClient(client R2BucketAPI) *BucketClient {
+// NewClient creates a new R2 Bucket client. accountID comes from the
+// ProviderConfig and takes precedence over account discovery.
+func NewClient(client R2BucketAPI, accountID string) *BucketClient {
 	return &BucketClient{
 		client:    client,
-		accountID: "", // Account ID will be retrieved when needed
+		accountID: accountID,
 	}
 }
 
-// getAccountID gets the account ID from the Cloudflare API
+// getAccountID returns the configured account, or the sole account visible to
+// the token. A token that can see multiple accounts is ambiguous: the API does
+// not guarantee ordering, so we fail rather than pick accounts[0] and create
+// buckets in the wrong account.
 func (c *BucketClient) getAccountID(ctx context.Context) (string, error) {
 	if c.accountID != "" {
 		return c.accountID, nil
 	}
 
-	// Get account ID from Cloudflare API by listing accounts
-	// Most users have access to only one account, so we'll use the first one
 	accounts, _, err := c.client.Accounts(ctx, cloudflare.AccountsListParams{})
 	if err != nil {
 		return "", errors.Wrap(err, "failed to list accounts")
 	}
-
-	if len(accounts) == 0 {
-		return "", errors.New("no accounts found")
+	if len(accounts) != 1 {
+		return "", errors.New("cannot determine Cloudflare account: set accountID on the ProviderConfig")
 	}
 
-	// Use the first account (most common case for users)
 	c.accountID = accounts[0].ID
 	return c.accountID, nil
 }
