@@ -114,7 +114,7 @@ func (c *scriptConnector) Connect(ctx context.Context, mg resource.Managed) (man
 	}
 
 	// Wrap with adapter to implement ClientInterface
-	adapter := clients.NewCloudflareAPIAdapter(api)
+	adapter := clients.NewCloudflareAPIAdapter(api, clients.ConfiguredAccountID(config))
 	client := c.newCloudflareClientFn(adapter)
 	return &scriptExternal{client: client, kube: c.kube}, nil
 }

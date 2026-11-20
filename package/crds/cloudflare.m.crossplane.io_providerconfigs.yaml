@@ -51,6 +51,15 @@ spec:
           spec:
             description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
             properties:
+              accountID:
+                description: |-
+                  AccountID is the Cloudflare account ID used for account-scoped resources
+                  (Workers scripts, KV namespaces, cron triggers, domains and subdomains).
+                  It must be set whenever the API token can see more than one account:
+                  the API does not guarantee account ordering, so guessing accounts[0]
+                  would manage resources in the wrong account.
+                minLength: 1
+                type: string
               credentials:
                 description: Credentials required to authenticate to this provider.
                 properties:

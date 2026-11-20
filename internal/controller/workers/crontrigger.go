@@ -106,7 +106,7 @@ func (c *cronTriggerConnector) Connect(ctx context.Context, mg resource.Managed)
 	}
 
 	// Wrap with adapter to implement ClientInterface
-	adapter := clients.NewCloudflareAPIAdapter(api)
+	adapter := clients.NewCloudflareAPIAdapter(api, clients.ConfiguredAccountID(config))
 	workersClient := c.newWorkersClientFn(adapter)
 	return &cronTriggerExternal{client: workersClient}, nil
 }

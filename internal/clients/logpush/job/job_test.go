@@ -154,7 +154,7 @@ func TestGetAccountID(t *testing.T) {
 			},
 			want: want{
 				accountID: "",
-				err:       errors.New("no accounts found"),
+				err:       errors.New("cannot determine Cloudflare account: set accountID on the ProviderConfig"),
 			},
 		},
 		"GetAccountIDAPIError": {
@@ -375,7 +375,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			client := NewClient(tc.fields.client)
+			client := NewClient(tc.fields.client, "")
 			got, err := client.Create(tc.args.ctx, tc.args.params)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -556,7 +556,7 @@ func TestGet(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			client := NewClient(tc.fields.client)
+			client := NewClient(tc.fields.client, "")
 			got, err := client.Get(tc.args.ctx, tc.args.jobID)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -704,7 +704,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			client := NewClient(tc.fields.client)
+			client := NewClient(tc.fields.client, "")
 			got, err := client.Update(tc.args.ctx, tc.args.jobID, tc.args.params)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -836,7 +836,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			client := NewClient(tc.fields.client)
+			client := NewClient(tc.fields.client, "")
 			err := client.Delete(tc.args.ctx, tc.args.jobID)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -996,7 +996,7 @@ func TestList(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			client := NewClient(tc.fields.client)
+			client := NewClient(tc.fields.client, "")
 			got, err := client.List(tc.args.ctx)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -1154,7 +1154,7 @@ func TestIsUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			client := NewClient(tc.fields.client)
+			client := NewClient(tc.fields.client, "")
 			got, err := client.IsUpToDate(tc.args.ctx, tc.args.params, tc.args.obs)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

@@ -51,32 +51,31 @@ type JobClient struct {
 	accountID string
 }
 
-// NewClient creates a new Logpush Job client.
-func NewClient(client LogpushJobAPI) *JobClient {
+// NewClient creates a new Logpush Job client. accountID comes from the
+// ProviderConfig and takes precedence over account discovery.
+func NewClient(client LogpushJobAPI, accountID string) *JobClient {
 	return &JobClient{
 		client:    client,
-		accountID: "", // Account ID will be retrieved when needed
+		accountID: accountID,
 	}
 }
 
-// getAccountID gets the account ID from the Cloudflare API
+// getAccountID returns the configured account, or the sole account visible to
+// the token. A token that can see multiple accounts is ambiguous: the API does
+// not guarantee ordering, so we fail rather than pick accounts[0].
 func (c *JobClient) getAccountID(ctx context.Context) (string, error) {
 	if c.accountID != "" {
 		return c.accountID, nil
 	}
 
-	// Get account ID from Cloudflare API by listing accounts
-	// Most users have access to only one account, so we'll use the first one
 	accounts, _, err := c.client.Accounts(ctx, cloudflare.AccountsListParams{})
 	if err != nil {
 		return "", errors.Wrap(err, "failed to list accounts")
 	}
-
-	if len(accounts) == 0 {
-		return "", errors.New("no accounts found")
+	if len(accounts) != 1 {
+		return "", errors.New("cannot determine Cloudflare account: set accountID on the ProviderConfig")
 	}
 
-	// Use the first account (most common case for users)
 	c.accountID = accounts[0].ID
 	return c.accountID, nil
 }

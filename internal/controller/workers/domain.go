@@ -100,7 +100,7 @@ func (c *domainConnector) Connect(ctx context.Context, mg resource.Managed) (man
 	}
 
 	// Wrap with adapter to implement ClientInterface
-	adapter := clients.NewCloudflareAPIAdapter(api)
+	adapter := clients.NewCloudflareAPIAdapter(api, clients.ConfiguredAccountID(config))
 	return &domainExternal{client: adapter}, nil
 }
 

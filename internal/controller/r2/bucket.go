@@ -111,7 +111,7 @@ func (c *bucketConnector) Connect(ctx context.Context, mg resource.Managed) (man
 	}
 
 	// Create the bucket client wrapper
-	bucketClient := bucketclient.NewClient(client)
+	bucketClient := bucketclient.NewClient(client, clients.ConfiguredAccountID(config))
 
 	return &bucketExternal{client: bucketClient}, nil
 }
